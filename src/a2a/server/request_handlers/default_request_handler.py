@@ -1,8 +1,8 @@
 import asyncio
 import contextlib
 import logging
-
 from collections.abc import AsyncGenerator
+from typing import cast
 
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import (
@@ -29,12 +29,13 @@ from a2a.types import (
 )
 from a2a.utils.errors import ServerError
 
-
 logger = logging.getLogger(__name__)
 
 
 class DefaultRequestHandler(RequestHandler):
     """Default request handler for all incoming requests."""
+
+    _running_agents: dict[str, asyncio.Task]
 
     def __init__(
         self,
@@ -45,6 +46,9 @@ class DefaultRequestHandler(RequestHandler):
         self.agent_executor = agent_executor
         self.task_store = task_store
         self._queue_manager = queue_manager or InMemoryQueueManager()
+        # TODO: Likely want an interface for managing this, like AgentExecutionManager.
+        self._running_agents = {}
+        self._running_agents_lock = asyncio.Lock()
 
     async def on_get_task(self, params: TaskQueryParams) -> Task | None:
         """Default handler for 'tasks/get'."""
@@ -80,6 +84,10 @@ class DefaultRequestHandler(RequestHandler):
             ),
             queue,
         )
+        # Cancel the ongoing task, if one exists.
+        if producer_task := self._running_agents.get(task.id):
+            producer_task.cancel()
+
         consumer = EventConsumer(queue)
         result = await result_aggregator.consume_all(consumer)
         if isinstance(result, Task):
@@ -108,37 +116,47 @@ class DefaultRequestHandler(RequestHandler):
         task: Task | None = await task_manager.get_task()
         if task:
             task = task_manager.update_with_message(params.message, task)
-            queue = await self._queue_manager.create_or_tap(task.id)
-        else:
-            queue = EventQueue()
+        request_context = RequestContext(
+            params,
+            task.id if task else None,
+            task.contextId if task else None,
+            task,
+        )
+        task_id = cast(str, request_context.task_id)
+        # Always assign a task ID. We may not actually upgrade to a task, but
+        # dictating the task ID at this layer is useful for tracking running
+        # agents.
+        queue = await self._queue_manager.create_or_tap(task_id)
         result_aggregator = ResultAggregator(task_manager)
         # TODO to manage the non-blocking flows.
         producer_task = asyncio.create_task(
             self._run_event_stream(
-                RequestContext(
-                    params,
-                    task.id if task else None,
-                    task.contextId if task else None,
-                    task,
-                ),
+                request_context,
                 queue,
             )
         )
+        await self._register_producer(task_id, producer_task)
 
+        consumer = EventConsumer(queue)
+
+        interrupted = False
         try:
-            consumer = EventConsumer(queue)
-
-            # TODO - register the queue for the task upon the first sign it is a task.
-            result = await result_aggregator.consume_all(consumer)
+            (
+                result,
+                interrupted,
+            ) = await result_aggregator.consume_and_break_on_interrupt(consumer)
             if not result:
                 raise ServerError(error=InternalError())
-
-            return result
         finally:
-            await producer_task
-            if task:
-                with contextlib.suppress(NoTaskQueue):
-                    await self._queue_manager.close(task.id)
+            if interrupted:
+                # TODO: Track this disconnected cleanup task.
+                asyncio.create_task(
+                    self._cleanup_producer(producer_task, task_id)
+                )
+            else:
+                await self._cleanup_producer(producer_task, task_id)
+
+        return result
 
     async def on_message_send_stream(
         self, params: MessageSendParams
@@ -154,22 +172,24 @@ class DefaultRequestHandler(RequestHandler):
 
         if task:
             task = task_manager.update_with_message(params.message, task)
-            queue = await self._queue_manager.create_or_tap(task.id)
-        else:
-            queue = EventQueue()
+
         result_aggregator = ResultAggregator(task_manager)
-        task_id: str | None = task.id if task else None
+        request_context = RequestContext(
+            params,
+            task.id if task else None,
+            task.contextId if task else None,
+            task,
+        )
+        task_id = cast(str, request_context.task_id)
+        queue = await self._queue_manager.create_or_tap(task_id)
         producer_task = asyncio.create_task(
             self._run_event_stream(
-                RequestContext(
-                    params,
-                    task.id if task else None,
-                    task.contextId if task else None,
-                    task,
-                ),
+                request_context,
                 queue,
             )
         )
+        await self._register_producer(task_id, producer_task)
+
         try:
             consumer = EventConsumer(queue)
             async for event in result_aggregator.consume_and_emit(consumer):
@@ -184,10 +204,17 @@ class DefaultRequestHandler(RequestHandler):
                         )
                 yield event
         finally:
-            await producer_task
-            if task_id:
-                with contextlib.suppress(NoTaskQueue):
-                    await self._queue_manager.close(task_id)
+            await self._cleanup_producer(producer_task, task_id)
+
+    async def _register_producer(self, task_id, producer_task):
+        async with self._running_agents_lock:
+            self._running_agents[task_id] = producer_task
+
+    async def _cleanup_producer(self, producer_task, task_id):
+        await producer_task
+        await self._queue_manager.close(task_id)
+        async with self._running_agents_lock:
+            self._running_agents.pop(task_id, None)
 
     async def on_set_task_push_notification_config(
         self, params: TaskPushNotificationConfig

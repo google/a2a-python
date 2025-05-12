@@ -5,6 +5,7 @@ requires-python = ">=3.13"
 [manifest]
 members = [
     "a2a-sdk",
+    "adk-a2a-client-example",
     "adk-auth-example",
     "helloworld",
     "langgraph-example",
@@ -57,6 +58,33 @@ dev = [
     { name = "pytest-cov", specifier = ">=6.1.1" },
     { name = "pytest-mock", specifier = ">=3.14.0" },
     { name = "ruff", specifier = ">=0.11.6" },
+]
+
+[[package]]
+name = "adk-a2a-client-example"
+version = "0.1.0"
+source = { editable = "examples/google_adk/birthday_planner" }
+dependencies = [
+    { name = "a2a-sdk" },
+    { name = "click" },
+    { name = "dotenv" },
+    { name = "google-adk" },
+    { name = "google-genai" },
+    { name = "httpx" },
+    { name = "pydantic" },
+    { name = "python-dotenv" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "a2a-sdk", editable = "." },
+    { name = "click", specifier = ">=8.1.8" },
+    { name = "dotenv", specifier = ">=0.9.9" },
+    { name = "google-adk", specifier = ">=0.0.3" },
+    { name = "google-genai", specifier = ">=1.9.0" },
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "pydantic", specifier = ">=2.11.4" },
+    { name = "python-dotenv", specifier = ">=1.1.0" },
 ]
 
 [[package]]

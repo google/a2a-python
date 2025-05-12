@@ -1,0 +1,26 @@
+[project]
+name = "adk-a2a-client-example"
+version = "0.1.0"
+description = "Birthday planner agent example"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "a2a-sdk",
+    "click>=8.1.8",
+    "dotenv>=0.9.9",
+    "httpx>=0.28.1",
+    "google-genai>=1.9.0",
+    "google-adk>=0.0.3",
+    "pydantic>=2.11.4",
+    "python-dotenv>=1.1.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.uv.sources]
+a2a-sdk = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
