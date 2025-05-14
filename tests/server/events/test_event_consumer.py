@@ -1,24 +1,27 @@
 import asyncio
-import pytest
+
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock
+
+import pytest
+
 from a2a.server.events.event_consumer import EventConsumer
 from a2a.server.events.event_queue import EventQueue
-from a2a.utils.errors import ServerError
 from a2a.types import (
     A2AError,
     Artifact,
     InternalError,
-    Message,
-    Task,
-    TaskStatusUpdateEvent,
-    TaskArtifactUpdateEvent,
-    TaskStatus,
     JSONRPCError,
-    TaskState,
+    Message,
     Part,
+    Task,
+    TaskArtifactUpdateEvent,
+    TaskState,
+    TaskStatus,
+    TaskStatusUpdateEvent,
     TextPart,
 )
-from typing import Any
+from a2a.utils.errors import ServerError
 
 
 MINIMAL_TASK: dict[str, Any] = {

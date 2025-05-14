@@ -60,7 +60,7 @@ negative impact on the project or its community.
 
 We do not believe that all conflict is bad; healthy debate and disagreement
 often yield positive results. However, it is never okay to be disrespectful or
-to engage in behavior that violates the project’s code of conduct.
+to engage in behavior that violates the project's code of conduct.
 
 If you see someone violating the code of conduct, you are encouraged to address
 the behavior directly with those involved. Many issues can be resolved quickly
@@ -70,7 +70,7 @@ behavior is threatening or harassing, report it. We are dedicated to providing
 an environment where participants feel welcome and safe.
 
 Reports should be directed to _[PROJECT STEWARD NAME(s) AND EMAIL(s)]_, the
-Project Steward(s) for _[PROJECT NAME]_. It is the Project Steward’s duty to
+Project Steward(s) for _[PROJECT NAME]_. It is the Project Steward's duty to
 receive and address reported violations of the code of conduct. They will then
 work with a committee consisting of representatives from the Open Source
 Programs Office and the Google Open Source Strategy team. If for any reason you
