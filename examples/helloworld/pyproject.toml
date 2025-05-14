@@ -5,7 +5,7 @@ description = "HelloWorld agent example that only returns Messages"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "a2a",
+    "a2a-sdk",
     "click>=8.1.8",
     "dotenv>=0.9.9",
     "httpx>=0.28.1",
@@ -13,13 +13,14 @@ dependencies = [
     "langgraph>=0.4.1",
     "pydantic>=2.11.4",
     "python-dotenv>=1.1.0",
+    "uvicorn>=0.34.2",
 ]
 
 [tool.hatch.build.targets.wheel]
 packages = ["."]
 
 [tool.uv.sources]
-a2a = { workspace = true }
+a2a-sdk = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]
