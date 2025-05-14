@@ -1,8 +1,16 @@
-from collections.abc import AsyncGenerator
 import json
 import logging
 import traceback
+
+from collections.abc import AsyncGenerator
 from typing import Any
+
+from pydantic import ValidationError
+from sse_starlette.sse import EventSourceResponse
+from starlette.applications import Starlette
+from starlette.requests import Request
+from starlette.responses import JSONResponse, Response
+from starlette.routing import Route
 
 from a2a.server.request_handlers.jsonrpc_handler import (
     JSONRPCHandler,
@@ -29,12 +37,6 @@ from a2a.types import (
     UnsupportedOperationError,
 )
 from a2a.utils.errors import MethodNotImplementedError
-from pydantic import ValidationError
-from sse_starlette.sse import EventSourceResponse
-from starlette.applications import Starlette
-from starlette.requests import Request
-from starlette.responses import JSONResponse, Response
-from starlette.routing import Route
 
 
 logger = logging.getLogger(__name__)
@@ -116,7 +118,7 @@ class A2AStarletteApplication:
             return await self._process_non_streaming_request(
                 request_id, a2a_request
             )
-        except MethodNotImplementedError as e:
+        except MethodNotImplementedError:
             traceback.print_exc()
             return self._generate_error_response(
                 request_id, A2AError(root=UnsupportedOperationError())

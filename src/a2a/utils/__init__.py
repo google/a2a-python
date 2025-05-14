@@ -11,6 +11,7 @@ from a2a.utils.message import (
 )
 from a2a.utils.task import new_task
 
+
 __all__ = [
     'append_artifact_to_task',
     'build_text_artifact',

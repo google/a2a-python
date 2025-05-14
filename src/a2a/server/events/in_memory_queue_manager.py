@@ -1,6 +1,12 @@
 import asyncio
+
 from a2a.server.events.event_queue import EventQueue
-from a2a.server.events.queue_manager import QueueManager, TaskQueueExists, NoTaskQueue
+from a2a.server.events.queue_manager import (
+    NoTaskQueue,
+    QueueManager,
+    TaskQueueExists,
+)
+
 
 class InMemoryQueueManager(QueueManager):
     """InMemoryQueueManager is used for a single binary management.

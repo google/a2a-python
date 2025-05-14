@@ -1,31 +1,31 @@
 import logging
 import os
-import sys
 
 import click
 import uvicorn
 
-from adk_agent_executor import ADKAgentExecutor
 from adk_agent import create_agent
+from adk_agent_executor import ADKAgentExecutor
 from dotenv import load_dotenv
+from google.adk.artifacts import InMemoryArtifactService
+from google.adk.memory.in_memory_memory_service import InMemoryMemoryService
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+from starlette.applications import Starlette
+from starlette.requests import Request
+from starlette.responses import PlainTextResponse
+from starlette.routing import Route
 
-from a2a.server.tasks import InMemoryTaskStore
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
+from a2a.server.tasks import InMemoryTaskStore
 from a2a.types import (
     AgentAuthentication,
     AgentCapabilities,
     AgentCard,
     AgentSkill,
 )
-from google.adk.artifacts import InMemoryArtifactService
-from google.adk.memory.in_memory_memory_service import InMemoryMemoryService
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
-from starlette.applications import Starlette
-from starlette.routing import Route
-from starlette.requests import Request
-from starlette.responses import PlainTextResponse
+
 
 load_dotenv()
 

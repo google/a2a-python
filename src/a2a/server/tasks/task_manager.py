@@ -1,18 +1,18 @@
 import logging
 
-from a2a.server.tasks.task_store import TaskStore
 from a2a.server.events.event_queue import Event
-from a2a.utils.errors import ServerError
+from a2a.server.tasks.task_store import TaskStore
 from a2a.types import (
+    InvalidParamsError,
     Message,
     Task,
     TaskArtifactUpdateEvent,
     TaskState,
     TaskStatus,
     TaskStatusUpdateEvent,
-    InvalidParamsError,
 )
 from a2a.utils import append_artifact_to_task
+from a2a.utils.errors import ServerError
 
 
 logger = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class TaskManager:
                     message=f"Task in event doesn't match TaskManager {self.task_id} : {task_id_from_event}"
                 )
             )
-        elif not self.task_id:
+        if not self.task_id:
             self.task_id = task_id_from_event
         if not self.context_id and self.context_id != event.contextId:
             self.context_id = event.contextId

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from a2a.server.events.event_queue import EventQueue
 
 
@@ -28,6 +29,7 @@ class QueueManager(ABC):
 
 class TaskQueueExists(Exception):
     pass
+
 
 class NoTaskQueue(Exception):
     pass

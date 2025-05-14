@@ -5,7 +5,6 @@ from a2a.types import (
     Message,
     MessageSendParams,
     Task,
-    TextPart,
 )
 from a2a.utils import get_message_text
 from a2a.utils.errors import ServerError

@@ -1,8 +1,16 @@
 import uuid
 
 from a2a.server.events import EventQueue
-from a2a.types import (Artifact, Message, Part, Role, TaskArtifactUpdateEvent,
-                       TaskState, TaskStatus, TaskStatusUpdateEvent)
+from a2a.types import (
+    Artifact,
+    Message,
+    Part,
+    Role,
+    TaskArtifactUpdateEvent,
+    TaskState,
+    TaskStatus,
+    TaskStatusUpdateEvent,
+)
 
 
 class TaskUpdater:

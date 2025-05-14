@@ -1,9 +1,8 @@
 import asyncio
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 from a2a.server.events.event_consumer import EventConsumer
 from a2a.server.events.event_queue import EventQueue
-from a2a.server.tasks.task_manager import TaskManager
 from a2a.utils.errors import ServerError
 from a2a.types import (
     A2AError,

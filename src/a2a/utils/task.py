@@ -1,8 +1,6 @@
 import uuid
 
-from a2a.types import (Artifact, Message, Part, Role, Task,
-                       TaskArtifactUpdateEvent, TaskState, TaskStatus,
-                       TaskStatusUpdateEvent)
+from a2a.types import Message, Task, TaskState, TaskStatus
 
 
 def new_task(request: Message) -> Task:

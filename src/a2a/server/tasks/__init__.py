@@ -4,4 +4,11 @@ from a2a.server.tasks.task_manager import TaskManager
 from a2a.server.tasks.task_store import TaskStore
 from a2a.server.tasks.task_updater import TaskUpdater
 
-__all__ = ['InMemoryTaskStore', 'TaskManager', 'TaskStore', 'ResultAggregator', 'TaskUpdater']
+
+__all__ = [
+    'InMemoryTaskStore',
+    'ResultAggregator',
+    'TaskManager',
+    'TaskStore',
+    'TaskUpdater',
+]
