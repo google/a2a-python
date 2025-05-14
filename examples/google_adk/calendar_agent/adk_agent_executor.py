@@ -63,7 +63,7 @@ class ADKAgentExecutor(AgentExecutor):
         new_message: types.Content,
         session_id: str,
         task_updater: TaskUpdater,
-    ):
+    ) -> None:
         session_id = self._upsert_session(
             session_id,
         ).id
@@ -160,7 +160,7 @@ class ADKAgentExecutor(AgentExecutor):
         session_id: str,
         auth_details: ADKAuthDetails,
         task_updater: TaskUpdater,
-    ):
+    ) -> None:
         logger.debug('Waiting for auth event')
         try:
             auth_uri = await asyncio.wait_for(
@@ -296,7 +296,7 @@ def convert_genai_part_to_a2a(part: types.Part) -> Part:
 
 
 def get_auth_request_function_call(event: Event) -> types.FunctionCall:
-    """Get the special auth request function call from the event"""
+    """Get the special auth request function call from the event."""
     if not (event.content and event.content.parts):
         return None
     for part in event.content.parts:
@@ -308,12 +308,13 @@ def get_auth_request_function_call(event: Event) -> types.FunctionCall:
             and part.function_call.id in event.long_running_tool_ids
         ):
             return part.function_call
+    return None
 
 
 def get_auth_config(
     auth_request_function_call: types.FunctionCall,
 ) -> AuthConfig:
-    """Extracts the AuthConfig object from the arguments of the auth request function call"""
+    """Extracts the AuthConfig object from the arguments of the auth request function call."""
     if not auth_request_function_call.args or not (
         auth_config := auth_request_function_call.args.get('auth_config')
     ):

@@ -19,8 +19,10 @@ class RequestContext:
         task_id: str | None = None,
         context_id: str | None = None,
         task: Task | None = None,
-        related_tasks: list[Task] = [],
+        related_tasks: list[Task] = None,
     ):
+        if related_tasks is None:
+            related_tasks = []
         self._params = request
         self._task_id = task_id
         self._context_id = context_id
