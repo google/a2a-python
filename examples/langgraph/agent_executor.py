@@ -1,7 +1,7 @@
 from agent import CurrencyAgent
 from typing_extensions import override
 
-from a2a.server.agent_execution import AgentExecutor, RequestContext
+from a2a.server.agent_execution import BaseAgentExecutor, RequestContext
 from a2a.server.events.event_queue import EventQueue
 from a2a.types import (
     TaskArtifactUpdateEvent,
@@ -12,7 +12,7 @@ from a2a.types import (
 from a2a.utils import new_agent_text_message, new_task, new_text_artifact
 
 
-class CurrencyAgentExecutor(AgentExecutor):
+class CurrencyAgentExecutor(BaseAgentExecutor):
     """Currency AgentExecutor Example."""
 
     def __init__(self):
@@ -89,9 +89,3 @@ class CurrencyAgentExecutor(AgentExecutor):
                         taskId=task.id,
                     )
                 )
-
-    @override
-    async def cancel(
-        self, context: RequestContext, event_queue: EventQueue
-    ) -> None:
-        raise Exception('cancel not supported')

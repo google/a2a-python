@@ -10,8 +10,7 @@ from google.adk.auth import AuthConfig
 from google.adk.events import Event
 from google.genai import types
 
-from a2a.server.agent_execution import AgentExecutor
-from a2a.server.agent_execution.context import RequestContext
+from a2a.server.agent_execution import BaseAgentExecutor, RequestContext
 from a2a.server.events.event_queue import EventQueue
 from a2a.server.tasks import TaskUpdater
 from a2a.types import (
@@ -22,9 +21,7 @@ from a2a.types import (
     Part,
     TaskState,
     TextPart,
-    UnsupportedOperationError,
 )
-from a2a.utils.errors import ServerError
 from a2a.utils.message import new_agent_text_message
 
 
@@ -40,7 +37,7 @@ ADKAuthDetails = namedtuple(
 auth_receive_timeout_seconds = 60
 
 
-class ADKAgentExecutor(AgentExecutor):
+class ADKAgentExecutor(BaseAgentExecutor):
     """An AgentExecutor that runs an ADK-based Agent."""
 
     _awaiting_auth: dict[str, asyncio.Future]
@@ -220,10 +217,6 @@ class ADKAgentExecutor(AgentExecutor):
             updater,
         )
         logger.debug('[Calendar] execute exiting')
-
-    async def cancel(self, context: RequestContext, event_queue: EventQueue):
-        # Ideally: kill any ongoing tasks.
-        raise ServerError(error=UnsupportedOperationError())
 
     async def on_auth_callback(self, state: str, uri: str):
         self._awaiting_auth[state].set_result(uri)
