@@ -4,14 +4,14 @@ on:
   # Remove the push event entirely
   pull_request:
     branches:
-      - '**'
+      - "**"
     types:
-      - 'opened'
-      - 'reopened'
-      - 'synchronize'
+      - "opened"
+      - "reopened"
+      - "synchronize"
   issue_comment:
     types:
-      - 'created'
+      - "created"
 
 jobs:
   spelling:
@@ -81,6 +81,6 @@ jobs:
             cspell:sql/src/tsql.txt
             cspell:terraform/dict/terraform.txt
             cspell:typescript/dict/typescript.txt
-          check_extra_dictionaries: ''
+          check_extra_dictionaries: ""
           only_check_changed_files: true
-          longest_word: '10'
+          longest_word: "10"
