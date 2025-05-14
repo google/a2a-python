@@ -5,18 +5,6 @@
 # This file follows the standards in Google Python Style Guide
 # https://google.github.io/styleguide/pyguide.html
 #  
-# The settings below are for the IDE configuration, and are optional.
-#{
-#    "editor.formatOnSave": true,
-#    "[python]": {
-#        "editor.defaultFormatter": "charliermarsh.ruff",
-#        "editor.formatOnSave": true,
-#        "editor.codeActionsOnSave": {
-#            "source.organizeImports": "true"
-#        },
-#    },    
-#    "ruff.importStrategy": "fromEnvironment",
-#}
 
 line-length = 80 # Google Style Guide §3.2: 80 columns
 indent-width = 4 # Google Style Guide §3.4: 4 spaces
@@ -34,7 +22,7 @@ ignore = [
     "ANN201",
     "ANN204",
     "D100", # Ignore Missing docstring in public module (often desired at top level __init__.py)
-    "D102", # Ignore return type annotiation in public method
+    "D102", # Ignore return type annotation in public method
     "D104", # Ignore Missing docstring in public package (often desired at top level __init__.py)
     "D107", # Ignore Missing docstring in __init__ (use class docstring)
     "TD002", # Ignore Missing author in TODOs (often not required)
