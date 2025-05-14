@@ -1,7 +1,6 @@
 name: Check Spelling
 
 on:
-  # Remove the push event entirely
   pull_request:
     branches:
       - "**"
