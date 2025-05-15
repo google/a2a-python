@@ -24,7 +24,6 @@ class HelloWorldAgentExecutor(AgentExecutor):
         context: RequestContext,
         event_queue: EventQueue,
     ) -> None:
-        raise Exception('cancel not supported')
         result = await self.agent.invoke()
         event_queue.enqueue_event(new_agent_text_message(result))
 
