@@ -50,6 +50,11 @@ class EventConsumer:
             if self._exception:
                 raise self._exception
             try:
+                # We use a timeout when waiting for an event from the queue.
+                # This is required because it allows the loop to check if 
+                # `self._exception` has been set by the `agent_task_callback`. 
+                # Without the timeout, loop might hang indefinitely if no events are
+                # enqueued by the agent and the agent simply threw an exception
                 event = await asyncio.wait_for(self.queue.dequeue_event(), timeout=self._timeout)
                 logger.debug(
                     f'Dequeued event of type: {type(event)} in consume_all.'
