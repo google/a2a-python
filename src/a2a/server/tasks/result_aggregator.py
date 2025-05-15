@@ -36,7 +36,7 @@ class ResultAggregator:
 
     async def consume_and_emit(
         self, consumer: EventConsumer
-    ) -> AsyncGenerator[Event, None]:
+    ) -> AsyncGenerator[Event]:
         """Processes the event stream and emits the same event stream out."""
         async for event in consumer.consume_all():
             await self.task_manager.process(event)

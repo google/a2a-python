@@ -161,7 +161,7 @@ class DefaultRequestHandler(RequestHandler):
 
     async def on_message_send_stream(
         self, params: MessageSendParams
-    ) -> AsyncGenerator[Event, None]:
+    ) -> AsyncGenerator[Event]:
         """Default handler for 'message/stream'."""
         task_manager = TaskManager(
             task_id=params.message.taskId,
@@ -232,7 +232,7 @@ class DefaultRequestHandler(RequestHandler):
 
     async def on_resubscribe_to_task(
         self, params: TaskIdParams
-    ) -> AsyncGenerator[Event, None]:
+    ) -> AsyncGenerator[Event]:
         """Default handler for 'tasks/resubscribe'."""
         task: Task | None = await self.task_store.get(params.id)
         if not task:

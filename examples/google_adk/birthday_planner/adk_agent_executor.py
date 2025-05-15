@@ -99,7 +99,7 @@ class ADKAgentExecutor(AgentExecutor):
         session_id,
         new_message: types.Content,
         task_updater: TaskUpdater,
-    ) -> AsyncGenerator[Event, None]:
+    ) -> AsyncGenerator[Event]:
         return self.runner.run_async(
             session_id=session_id,
             user_id='self',

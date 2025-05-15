@@ -85,7 +85,7 @@ class EventConsumer:
                     logger.debug('Stopping event consumption in consume_all.')
                     self.queue.close()
                     break
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 # continue polling until there is a final event
                 continue
             except asyncio.QueueShutDown:
