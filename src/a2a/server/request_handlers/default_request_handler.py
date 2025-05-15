@@ -177,7 +177,7 @@ class DefaultRequestHandler(RequestHandler):
 
     async def on_message_send_stream(
         self, params: MessageSendParams
-    ) -> AsyncGenerator[Event, None]:
+    ) -> AsyncGenerator[Event]:
         """Default handler for 'message/stream'."""
         task_manager = TaskManager(
             task_id=params.message.taskId,
@@ -248,11 +248,11 @@ class DefaultRequestHandler(RequestHandler):
         finally:
             await self._cleanup_producer(producer_task, task_id)
 
-    async def _register_producer(self, task_id, producer_task):
+    async def _register_producer(self, task_id, producer_task) -> None:
         async with self._running_agents_lock:
             self._running_agents[task_id] = producer_task
 
-    async def _cleanup_producer(self, producer_task, task_id):
+    async def _cleanup_producer(self, producer_task, task_id) -> None:
         await producer_task
         await self._queue_manager.close(task_id)
         async with self._running_agents_lock:
@@ -297,7 +297,7 @@ class DefaultRequestHandler(RequestHandler):
 
     async def on_resubscribe_to_task(
         self, params: TaskIdParams
-    ) -> AsyncGenerator[Event, None]:
+    ) -> AsyncGenerator[Event]:
         """Default handler for 'tasks/resubscribe'."""
         task: Task | None = await self.task_store.get(params.id)
         if not task:

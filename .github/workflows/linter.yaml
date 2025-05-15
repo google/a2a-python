@@ -61,3 +61,5 @@ jobs:
           VALIDATE_CHECKOV: false
           VALIDATE_JAVASCRIPT_STANDARD: false
           VALIDATE_TYPESCRIPT_STANDARD: false
+          VALIDATE_GIT_COMMITLINT: false
+          MARKDOWN_CONFIG_FILE: .markdownlint.json

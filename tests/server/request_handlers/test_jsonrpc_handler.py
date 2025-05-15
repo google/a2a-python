@@ -3,10 +3,10 @@ import unittest.async_case
 
 from collections.abc import AsyncGenerator
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, call, patch
+from unittest.mock import AsyncMock, MagicMock, patch, call
 
-import httpx
 import pytest
+import httpx
 
 from a2a.server.agent_execution import AgentExecutor
 from a2a.server.events import (
@@ -35,9 +35,9 @@ from a2a.types import (
     MessageSendConfiguration,
     MessageSendParams,
     Part,
-    PushNotificationConfig,
     SendMessageRequest,
     SendMessageSuccessResponse,
+    PushNotificationConfig,
     SendStreamingMessageRequest,
     SendStreamingMessageSuccessResponse,
     SetTaskPushNotificationConfigRequest,
@@ -57,7 +57,6 @@ from a2a.types import (
     UnsupportedOperationError,
 )
 from a2a.utils.errors import ServerError
-
 
 MINIMAL_TASK: dict[str, Any] = {
     'id': 'task_123',
@@ -574,7 +573,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         request_handler = DefaultRequestHandler(
             mock_agent_executor, mock_task_store, mock_queue_manager
         )
-        mock_agent_card = MagicMock(spec=AgentCard)
+        self.mock_agent_card = MagicMock(spec=AgentCard)
         handler = JSONRPCHandler(self.mock_agent_card, request_handler)
         mock_task = Task(**MINIMAL_TASK, history=[])
         events: list[Any] = [
