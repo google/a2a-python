@@ -17,5 +17,3 @@ opensource
 socio
 sse
 tagwords
-AClient
-ARun
