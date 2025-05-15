@@ -1,11 +1,12 @@
 import asyncio
 import logging
+
 from collections.abc import AsyncGenerator, AsyncIterator
-from typing import Tuple
 
 from a2a.server.events import Event, EventConsumer
 from a2a.server.tasks.task_manager import TaskManager
 from a2a.types import Message, Task, TaskState, TaskStatusUpdateEvent
+
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +55,7 @@ class ResultAggregator:
 
     async def consume_and_break_on_interrupt(
         self, consumer: EventConsumer
-    ) -> Tuple[Task | Message | None, bool]:
+    ) -> tuple[Task | Message | None, bool]:
         """Process the event stream until completion or an interruptable state is encountered."""
         event_stream = consumer.consume_all()
         interrupted = False

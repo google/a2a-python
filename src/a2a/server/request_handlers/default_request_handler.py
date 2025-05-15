@@ -1,6 +1,6 @@
 import asyncio
-import contextlib
 import logging
+
 from collections.abc import AsyncGenerator
 from typing import cast
 
@@ -10,12 +10,16 @@ from a2a.server.events import (
     EventConsumer,
     EventQueue,
     InMemoryQueueManager,
-    NoTaskQueue,
     QueueManager,
     TaskQueueExists,
 )
 from a2a.server.request_handlers.request_handler import RequestHandler
-from a2a.server.tasks import ResultAggregator, TaskManager, TaskStore
+from a2a.server.tasks import (
+    PushNotifier,
+    ResultAggregator,
+    TaskManager,
+    TaskStore,
+)
 from a2a.types import (
     InternalError,
     Message,
@@ -28,6 +32,7 @@ from a2a.types import (
     UnsupportedOperationError,
 )
 from a2a.utils.errors import ServerError
+
 
 logger = logging.getLogger(__name__)
 
@@ -42,10 +47,12 @@ class DefaultRequestHandler(RequestHandler):
         agent_executor: AgentExecutor,
         task_store: TaskStore,
         queue_manager: QueueManager | None = None,
+        push_notifier: PushNotifier | None = None,
     ) -> None:
         self.agent_executor = agent_executor
         self.task_store = task_store
         self._queue_manager = queue_manager or InMemoryQueueManager()
+        self._push_notifier = push_notifier
         # TODO: Likely want an interface for managing this, like AgentExecutionManager.
         self._running_agents = {}
         self._running_agents_lock = asyncio.Lock()
@@ -116,6 +123,15 @@ class DefaultRequestHandler(RequestHandler):
         task: Task | None = await task_manager.get_task()
         if task:
             task = task_manager.update_with_message(params.message, task)
+            if (
+                self._push_notifier
+                and params.configuration
+                and params.configuration.pushNotificationConfig
+                and not params.configuration.blocking
+            ):
+                await self._push_notifier.set_info(
+                    task.id, params.configuration.pushNotificationConfig
+                )
         request_context = RequestContext(
             params,
             task.id if task else None,
@@ -173,6 +189,16 @@ class DefaultRequestHandler(RequestHandler):
         if task:
             task = task_manager.update_with_message(params.message, task)
 
+            if (
+                self._push_notifier
+                and params.configuration
+                and params.configuration.pushNotificationConfig
+            ):
+                await self._push_notifier.set_info(
+                    task.id, params.configuration.pushNotificationConfig
+                )
+        else:
+            queue = EventQueue()
         result_aggregator = ResultAggregator(task_manager)
         request_context = RequestContext(
             params,
@@ -196,12 +222,26 @@ class DefaultRequestHandler(RequestHandler):
                 # Now we know we have a Task, register the queue
                 if isinstance(event, Task):
                     try:
-                        await self._queue_manager.add(event.id, queue)
-                        task_id = event.id
+                        created_task: Task = event
+                        await self._queue_manager.add(created_task.id, queue)
+                        task_id = created_task.id
                     except TaskQueueExists:
                         logging.info(
                             'Multiple Task objects created in event stream.'
                         )
+                    if (
+                        self._push_notifier
+                        and params.configuration
+                        and params.configuration.pushNotificationConfig
+                    ):
+                        await self._push_notifier.set_info(
+                            created_task.id,
+                            params.configuration.pushNotificationConfig,
+                        )
+                if self._push_notifier and task_id:
+                    latest_task = await result_aggregator.current_result
+                    if isinstance(latest_task, Task):
+                        await self._push_notifier.send_notification(latest_task)
                 yield event
         finally:
             await self._cleanup_producer(producer_task, task_id)
@@ -220,13 +260,38 @@ class DefaultRequestHandler(RequestHandler):
         self, params: TaskPushNotificationConfig
     ) -> TaskPushNotificationConfig:
         """Default handler for 'tasks/pushNotificationConfig/set'."""
-        raise ServerError(error=UnsupportedOperationError())
+        if not self._push_notifier:
+            raise ServerError(error=UnsupportedOperationError())
+
+        task: Task | None = await self.task_store.get(params.taskId)
+        if not task:
+            raise ServerError(error=TaskNotFoundError())
+
+        await self._push_notifier.set_info(
+            params.taskId,
+            params.pushNotificationConfig,
+        )
+
+        return params
 
     async def on_get_task_push_notification_config(
         self, params: TaskIdParams
     ) -> TaskPushNotificationConfig:
         """Default handler for 'tasks/pushNotificationConfig/get'."""
-        raise ServerError(error=UnsupportedOperationError())
+        if not self._push_notifier:
+            raise ServerError(error=UnsupportedOperationError())
+
+        task: Task | None = await self.task_store.get(params.id)
+        if not task:
+            raise ServerError(error=TaskNotFoundError())
+
+        push_notification_config = await self._push_notifier.get_info(params.id)
+        if not push_notification_config:
+            raise ServerError(error=TaskNotFoundError())
+
+        return TaskPushNotificationConfig(
+            taskId=params.id, pushNotificationConfig=push_notification_config
+        )
 
     async def on_resubscribe_to_task(
         self, params: TaskIdParams
