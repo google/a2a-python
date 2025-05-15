@@ -1,5 +1,7 @@
 from typing import Any
+
 import pytest
+
 from a2a.server.tasks import InMemoryTaskStore
 from a2a.types import Task
 
@@ -24,7 +26,7 @@ async def test_in_memory_task_store_save_and_get() -> None:
 
 @pytest.mark.asyncio
 async def test_in_memory_task_store_get_nonexistent() -> None:
-    """Test retrieving a non-existent task."""
+    """Test retrieving a nonexistent task."""
     store = InMemoryTaskStore()
     retrieved_task = await store.get('nonexistent')
     assert retrieved_task is None
@@ -43,6 +45,6 @@ async def test_in_memory_task_store_delete() -> None:
 
 @pytest.mark.asyncio
 async def test_in_memory_task_store_delete_nonexistent() -> None:
-    """Test deleting a non-existent task."""
+    """Test deleting a nonexistent task."""
     store = InMemoryTaskStore()
     await store.delete('nonexistent')
