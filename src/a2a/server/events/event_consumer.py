@@ -22,6 +22,8 @@ class EventConsumer:
 
     def __init__(self, queue: EventQueue):
         self.queue = queue
+        self._timeout = 0.5
+        self._exception: BaseException | None = None
         logger.debug('EventConsumer initialized')
 
     async def consume_one(self) -> Event:
@@ -45,8 +47,10 @@ class EventConsumer:
         """Consume all the generated streaming events from the agent."""
         logger.debug('Starting to consume all events from the queue.')
         while True:
+            if self._exception:
+                raise self._exception
             try:
-                event = await self.queue.dequeue_event()
+                event = await asyncio.wait_for(self.queue.dequeue_event(), timeout=self._timeout)
                 logger.debug(
                     f'Dequeued event of type: {type(event)} in consume_all.'
                 )
@@ -74,5 +78,16 @@ class EventConsumer:
                     logger.debug('Stopping event consumption in consume_all.')
                     self.queue.close()
                     break
+            except asyncio.TimeoutError:
+                # continue polling until there is a final event
+                continue
             except asyncio.QueueShutDown:
                 break
+        
+                
+
+
+
+    def agent_task_callback(self, agent_task: asyncio.Task[None]):
+            if agent_task.exception() is not None:
+                self._exception = agent_task.exception()
