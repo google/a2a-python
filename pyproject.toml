@@ -1,9 +1,12 @@
 [project]
 name = "a2a-sdk"
-version = "0.2.0"
+dynamic = ["version"]
 description = "A2A Python SDK"
 readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Google LLC", email = "googleapis-packages@google.com" }]
 requires-python = ">=3.13"
+keywords = ["A2A", "A2A SDK", "A2A Protocol", "Agent2Agent"]
 dependencies = [
     "httpx>=0.28.1",
     "httpx-sse>=0.4.0",
@@ -15,6 +18,22 @@ dependencies = [
     "typing-extensions>=4.13.2",
 ]
 
+classifiers = [
+  "Intended Audience :: Developers",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "License :: OSI Approved :: Apache Software License",
+]
+
+[project.urls]
+homepage = "https://google.github.io/A2A/"
+repository = "https://github.com/google/a2a-python"
+changelog = "https://github.com/google/a2a-python/blob/main/CHANGELOG.md"
+documentation = "https://google.github.io/A2A/"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/a2a"]
 
@@ -25,8 +44,20 @@ python_functions = "test_*"
 addopts = "--cov=src --cov-config=.coveragerc --cov-report term --cov-report xml:coverage.xml --cov-branch"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "uv-dynamic-versioning"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "tests/",
+]
+
+[tool.uv-dynamic-versioning]
+vcs = "git"
+style = "pep440"
 
 [tool.uv.workspace]
 members = [
@@ -45,4 +76,11 @@ dev = [
     "pytest-cov>=6.1.1",
     "pytest-mock>=3.14.0",
     "ruff>=0.11.6",
+    "uv-dynamic-versioning>=0.8.2",
 ]
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true
