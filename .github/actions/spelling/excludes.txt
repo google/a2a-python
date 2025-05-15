@@ -86,3 +86,4 @@
 \.gitignore\E$
 \.vscode/
 /noxfile.py$
+\.ruff.toml$
