@@ -13,7 +13,7 @@ An example LangGraph agent that helps with currency conversion.
 2. Start the server
 
    ```bash
-   uv run main.py
+   uv run .
    ```
 
 3. Run the test client
