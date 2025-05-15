@@ -91,10 +91,11 @@ def validate(expression, error_message=None):
     def decorator(function):
         def wrapper(self, *args, **kwargs):
             if not expression(self):
-                final_message = error_message or str(expression)
-                logger.error(f'Unsupported Operation: {final_message}')
+                if not error_message:
+                    message = str(expression)
+                logger.error(f'Unsupported Operation: {error_message}')
                 raise ServerError(
-                    UnsupportedOperationError(message=final_message)
+                    UnsupportedOperationError(message=error_message)
                 )
             return function(self, *args, **kwargs)
 
