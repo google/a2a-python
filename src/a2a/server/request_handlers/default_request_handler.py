@@ -138,6 +138,7 @@ class DefaultRequestHandler(RequestHandler):
         await self._register_producer(task_id, producer_task)
 
         consumer = EventConsumer(queue)
+        producer_task.add_done_callback(consumer.agent_task_callback)
 
         interrupted = False
         try:
@@ -192,6 +193,7 @@ class DefaultRequestHandler(RequestHandler):
 
         try:
             consumer = EventConsumer(queue)
+            producer_task.add_done_callback(consumer.agent_task_callback)
             async for event in result_aggregator.consume_and_emit(consumer):
                 # Now we know we have a Task, register the queue
                 if isinstance(event, Task):
