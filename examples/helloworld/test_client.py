@@ -34,6 +34,7 @@ async def main() -> None:
             params=MessageSendParams(**send_message_payload)
         )
 
+        # if you want to stream the response, please make sure to set streaming=True in the agent card (__main__.py)
         stream_response = client.send_message_streaming(streaming_request)
         async for chunk in stream_response:
             print(chunk.model_dump(mode='json', exclude_none=True))
