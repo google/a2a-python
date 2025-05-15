@@ -1,4 +1,3 @@
-# type: ignore
 """OpenTelemetry Tracing Utilities for A2A Python SDK.
 
 This module provides decorators to simplify the integration of OpenTelemetry
@@ -57,11 +56,15 @@ Usage:
 import functools
 import inspect
 import logging
+import traceback
 
 from opentelemetry import trace
-from opentelemetry.trace import SpanKind, StatusCode
+from opentelemetry.trace import SpanKind as _SpanKind
+from opentelemetry.trace import StatusCode
 
 
+SpanKind = _SpanKind
+__all__ = ['SpanKind']
 INSTRUMENTING_MODULE_NAME = 'a2a-python-sdk'
 INSTRUMENTING_MODULE_VERSION = '1.0.0'
 
@@ -160,6 +163,10 @@ def trace_function(
             except Exception as e:
                 exception = e
                 span.record_exception(e)
+                formatted_traceback = ''.join(
+                    traceback.format_exception(type(e), e, e.__traceback__)
+                )
+                print(formatted_traceback)
                 span.set_status(StatusCode.ERROR, description=str(e))
                 raise
             finally:
@@ -211,8 +218,8 @@ def trace_function(
 
 
 def trace_class(
-    include_list: list[str] = None,
-    exclude_list: list[str] = None,
+    include_list: list[str] | None = None,
+    exclude_list: list[str] | None = None,
     kind=SpanKind.INTERNAL,
 ):
     """A class decorator to automatically trace specified methods of a class.
