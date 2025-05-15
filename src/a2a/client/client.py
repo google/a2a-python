@@ -113,7 +113,7 @@ class A2AClient:
         request: SendStreamingMessageRequest,
         *,
         http_kwargs: dict[str, Any] | None = None,
-    ) -> AsyncGenerator[SendStreamingMessageResponse, None]:
+    ) -> AsyncGenerator[SendStreamingMessageResponse]:
         if not request.id:
             request.id = str(uuid4())
 
