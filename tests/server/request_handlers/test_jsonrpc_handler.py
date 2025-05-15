@@ -390,7 +390,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
             mock_agent_executor.execute.assert_called_once()
             assert mock_task.history is not None and len(mock_task.history) == 1
 
-    async def test_set_push_notif_success(self) -> None:
+    async def test_set_push_notification_success(self) -> None:
         mock_agent_executor = AsyncMock(spec=AgentExecutor)
         mock_task_store = AsyncMock(spec=TaskStore)
         mock_push_notifier = AsyncMock(spec=PushNotifier)
@@ -425,7 +425,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
             mock_task.id, task_push_config.pushNotificationConfig
         )
 
-    async def test_get_push_notif_success(self) -> None:
+    async def test_get_push_notification_success(self) -> None:
         mock_agent_executor = AsyncMock(spec=AgentExecutor)
         mock_task_store = AsyncMock(spec=TaskStore)
         mock_httpx_client = AsyncMock(spec=httpx.AsyncClient)
@@ -463,7 +463,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         )
         assert get_response.root.result == task_push_config  # type: ignore
 
-    async def test_on_message_stream_new_message_send_push_notif_success(
+    async def test_on_message_stream_new_message_send_push_notification_success(
         self,
     ) -> None:
         mock_agent_executor = AsyncMock(spec=AgentExecutor)
