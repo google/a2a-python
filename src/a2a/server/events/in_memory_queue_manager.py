@@ -20,7 +20,7 @@ class InMemoryQueueManager(QueueManager):
     true scalable deployment.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._task_queue: dict[str, EventQueue] = {}
         self._lock = asyncio.Lock()
 

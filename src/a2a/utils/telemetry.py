@@ -210,11 +210,13 @@ def trace_function(
     return async_wrapper if is_async_func else sync_wrapper
 
 
+
 def trace_class(
     include_list: list[str] = None,
     exclude_list: list[str] = None,
     kind=SpanKind.INTERNAL,
 ):
+
     """A class decorator to automatically trace specified methods of a class.
 
     This decorator iterates over the methods of a class and applies the

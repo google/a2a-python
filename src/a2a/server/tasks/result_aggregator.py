@@ -1,14 +1,11 @@
+import asyncio
 import logging
-
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, AsyncIterator
+from typing import Tuple
 
 from a2a.server.events import Event, EventConsumer
 from a2a.server.tasks.task_manager import TaskManager
-from a2a.types import (
-    Message,
-    Task,
-)
-
+from a2a.types import Message, Task, TaskState, TaskStatusUpdateEvent
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +51,40 @@ class ResultAggregator:
                 return event
             await self.task_manager.process(event)
         return await self.task_manager.get_task()
+
+    async def consume_and_break_on_interrupt(
+        self, consumer: EventConsumer
+    ) -> Tuple[Task | Message | None, bool]:
+        """Process the event stream until completion or an interruptable state is encountered."""
+        event_stream = consumer.consume_all()
+        interrupted = False
+        async for event in event_stream:
+            if isinstance(event, Message):
+                self._message = event
+                return event, False
+            await self.task_manager.process(event)
+            if (
+                isinstance(event, (Task, TaskStatusUpdateEvent))
+                and event.status.state == TaskState.auth_required
+            ):
+                # auth-required is a special state: the message should be
+                # escalated back to the caller, but the agent is expected to
+                # continue producing events once the authorization is received
+                # out-of-band. This is in contrast to input-required, where a
+                # new request is expected in order for the agent to make progress,
+                # so the agent should exit.
+                logger.debug(
+                    'Encountered an auth-required task: breaking synchronous message/send flow.'
+                )
+                # TODO: We should track all outstanding tasks to ensure they eventually complete.
+                asyncio.create_task(self._continue_consuming(event_stream))
+                interrupted = True
+                break
+        return await self.task_manager.get_task(), interrupted
+
+    async def _continue_consuming(self, event_stream: AsyncIterator[Event]):
+        async for event in event_stream:
+            await self.task_manager.process(event)
 
     # async def consume_and_emit_task(
     #     self, consumer: EventConsumer

@@ -1,5 +1,5 @@
 [project]
-name = "a2a"
+name = "a2a-sdk"
 version = "0.2.0"
 description = "A2A Python SDK"
 readme = "README.md"
@@ -15,6 +15,9 @@ dependencies = [
     "typing-extensions>=4.13.2",
 ]
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/a2a"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
@@ -29,6 +32,7 @@ build-backend = "hatchling.build"
 members = [
     "examples/langgraph",
     "examples/helloworld",
+    "examples/google_adk/birthday_planner",
     "examples/google_adk/calendar_agent",
 ]
 
