@@ -1,6 +1,6 @@
 import asyncio
-import contextlib
 import logging
+
 from collections.abc import AsyncGenerator
 from typing import cast
 
@@ -10,7 +10,6 @@ from a2a.server.events import (
     EventConsumer,
     EventQueue,
     InMemoryQueueManager,
-    NoTaskQueue,
     QueueManager,
     TaskQueueExists,
 )
@@ -28,6 +27,7 @@ from a2a.types import (
     UnsupportedOperationError,
 )
 from a2a.utils.errors import ServerError
+
 
 logger = logging.getLogger(__name__)
 
@@ -206,11 +206,11 @@ class DefaultRequestHandler(RequestHandler):
         finally:
             await self._cleanup_producer(producer_task, task_id)
 
-    async def _register_producer(self, task_id, producer_task):
+    async def _register_producer(self, task_id, producer_task) -> None:
         async with self._running_agents_lock:
             self._running_agents[task_id] = producer_task
 
-    async def _cleanup_producer(self, producer_task, task_id):
+    async def _cleanup_producer(self, producer_task, task_id) -> None:
         await producer_task
         await self._queue_manager.close(task_id)
         async with self._running_agents_lock:
