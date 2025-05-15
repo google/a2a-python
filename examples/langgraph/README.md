@@ -15,7 +15,7 @@ An example LangGraph agent that helps with currency conversion.
 3. Start the server
 
    ```bash
-   uv run main.py
+   uv run .
    ```
 
 4. Run the test client
