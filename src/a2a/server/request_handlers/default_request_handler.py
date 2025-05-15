@@ -23,7 +23,9 @@ from a2a.server.tasks import (
 from a2a.types import (
     InternalError,
     Message,
+    MessageSendConfiguration,
     MessageSendParams,
+    PushNotificationConfig,
     Task,
     TaskIdParams,
     TaskNotFoundError,
@@ -123,12 +125,10 @@ class DefaultRequestHandler(RequestHandler):
         task: Task | None = await task_manager.get_task()
         if task:
             task = task_manager.update_with_message(params.message, task)
-            if (
-                self._push_notifier
-                and params.configuration
-                and params.configuration.pushNotificationConfig
-                and not params.configuration.blocking
-            ):
+            if self.should_add_push_info(params):
+                assert isinstance(self._push_notifier, PushNotifier) # For typechecker
+                assert isinstance(params.configuration, MessageSendConfiguration) # For typechecker
+                assert isinstance(params.configuration.pushNotificationConfig, PushNotificationConfig) # For typechecker
                 await self._push_notifier.set_info(
                     task.id, params.configuration.pushNotificationConfig
                 )
@@ -190,11 +190,10 @@ class DefaultRequestHandler(RequestHandler):
         if task:
             task = task_manager.update_with_message(params.message, task)
 
-            if (
-                self._push_notifier
-                and params.configuration
-                and params.configuration.pushNotificationConfig
-            ):
+            if self.should_add_push_info(params):
+                assert isinstance(self._push_notifier, PushNotifier) # For typechecker
+                assert isinstance(params.configuration, MessageSendConfiguration) # For typechecker
+                assert isinstance(params.configuration.pushNotificationConfig, PushNotificationConfig) # For typechecker
                 await self._push_notifier.set_info(
                     task.id, params.configuration.pushNotificationConfig
                 )
@@ -319,3 +318,13 @@ class DefaultRequestHandler(RequestHandler):
         consumer = EventConsumer(queue)
         async for event in result_aggregator.consume_and_emit(consumer):
             yield event
+
+    def should_add_push_info(self, params: MessageSendParams) -> bool:
+        if (
+            self._push_notifier
+            and params.configuration
+            and params.configuration.pushNotificationConfig
+        ):
+            return True
+        else:
+            return False
