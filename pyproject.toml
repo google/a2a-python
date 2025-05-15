@@ -5,6 +5,7 @@ description = "A2A Python SDK"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "fastapi>=0.115.12",
     "httpx>=0.28.1",
     "httpx-sse>=0.4.0",
     "opentelemetry-api>=1.33.0",
@@ -13,6 +14,7 @@ dependencies = [
     "sse-starlette>=2.3.3",
     "starlette>=0.46.2",
     "typing-extensions>=4.13.2",
+    "uvicorn>=0.34.2",
 ]
 
 [tool.hatch.build.targets.wheel]
