@@ -65,7 +65,7 @@ def append_artifact_to_task(task: Task, event: TaskArtifactUpdateEvent) -> None:
             )
             task.artifacts.append(new_artifact_data)
     elif existing_artifact:
-        # Append new parts to the existing artifact's parts list
+        # Append new parts to the existing artifact's part list
         logger.debug(
             f'Appending parts to artifact id {artifact_id} for task {task.id}'
         )
@@ -93,7 +93,7 @@ def validate(expression, error_message=None):
             if not expression(self):
                 if not error_message:
                     message = str(expression)
-                logger.error(f'Unsuppported Operation: {error_message}')
+                logger.error(f'Unsupported Operation: {error_message}')
                 raise ServerError(
                     UnsupportedOperationError(message=error_message)
                 )
