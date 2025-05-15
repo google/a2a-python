@@ -56,7 +56,6 @@ Usage:
 import functools
 import inspect
 import logging
-import traceback
 
 from opentelemetry import trace
 from opentelemetry.trace import SpanKind as _SpanKind
