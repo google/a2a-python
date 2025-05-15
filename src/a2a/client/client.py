@@ -26,36 +26,6 @@ from a2a.types import (
 )
 
 
-async def _make_httpx_request(
-    client: httpx.AsyncClient,
-    method: str,
-    url: str,
-    json_payload: dict[str, Any] | None = None,
-    http_kwargs: dict[str, Any] | None = None,
-) -> dict[str, Any]:
-    """Makes an HTTP request and handles common errors, returning parsed JSON."""
-    try:
-        if method.upper() == 'GET':
-            response = await client.get(url, **(http_kwargs or {}))
-        elif method.upper() == 'POST':
-            response = await client.post(
-                url, json=json_payload, **(http_kwargs or {})
-            )
-        else:
-            raise ValueError(f'Unsupported HTTP method: {method}')
-
-        response.raise_for_status()
-        return response.json()
-    except httpx.HTTPStatusError as e:
-        raise A2AClientHTTPError(e.response.status_code, str(e)) from e
-    except json.JSONDecodeError as e:
-        raise A2AClientJSONError(str(e)) from e
-    except httpx.RequestError as e:
-        raise A2AClientHTTPError(
-            503, f'Network communication error: {e}'
-        ) from e
-
-
 class A2ACardResolver:
     """Agent Card resolver."""
 
@@ -72,13 +42,21 @@ class A2ACardResolver:
     async def get_agent_card(
         self, http_kwargs: dict[str, Any] | None = None
     ) -> AgentCard:
-        response_json = await _make_httpx_request(
-            client=self.httpx_client,
-            method='GET',
-            url=f'{self.base_url}/{self.agent_card_path}',
-            http_kwargs=http_kwargs,
-        )
-        return AgentCard.model_validate(response_json)
+        try:
+            response = await self.httpx_client.get(
+                f'{self.base_url}/{self.agent_card_path}',
+                **(http_kwargs or {}),
+            )
+            response.raise_for_status()
+            return AgentCard.model_validate(response.json())
+        except httpx.HTTPStatusError as e:
+            raise A2AClientHTTPError(e.response.status_code, str(e)) from e
+        except json.JSONDecodeError as e:
+            raise A2AClientJSONError(str(e)) from e
+        except httpx.RequestError as e:
+            raise A2AClientHTTPError(
+                503, f'Network communication error: {e}'
+            ) from e
 
 
 class A2AClient:
@@ -174,15 +152,22 @@ class A2AClient:
 
         Args:
             rpc_request_payload: JSON RPC payload for sending the request
-            http_kwargs: Additional keyword arguments to pass to the httpx client.
+            **kwargs: Additional keyword arguments to pass to the httpx client.
         """
-        return await _make_httpx_request(
-            client=self.httpx_client,
-            method='POST',
-            url=self.url,
-            json_payload=rpc_request_payload,
-            http_kwargs=http_kwargs,
-        )
+        try:
+            response = await self.httpx_client.post(
+                self.url, json=rpc_request_payload, **(http_kwargs or {})
+            )
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPStatusError as e:
+            raise A2AClientHTTPError(e.response.status_code, str(e)) from e
+        except json.JSONDecodeError as e:
+            raise A2AClientJSONError(str(e)) from e
+        except httpx.RequestError as e:
+            raise A2AClientHTTPError(
+                503, f'Network communication error: {e}'
+            ) from e
 
     async def get_task(
         self,
