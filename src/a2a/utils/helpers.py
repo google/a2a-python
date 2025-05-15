@@ -13,11 +13,13 @@ from a2a.types import (
     TextPart,
 )
 from a2a.utils.errors import ServerError, UnsupportedOperationError
+from a2a.utils.telemetry import trace_function
 
 
 logger = logging.getLogger(__name__)
 
 
+@trace_function()
 def create_task_obj(message_send_params: MessageSendParams) -> Task:
     """Create a new task object from message send params."""
     if not message_send_params.message.contextId:
@@ -31,6 +33,7 @@ def create_task_obj(message_send_params: MessageSendParams) -> Task:
     )
 
 
+@trace_function()
 def append_artifact_to_task(task: Task, event: TaskArtifactUpdateEvent) -> None:
     """Helper method for updating Task with new artifact data."""
     if not task.artifacts:

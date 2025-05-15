@@ -1,3 +1,6 @@
+# type: ignore
+from opentelemetry.trace import SpanKind as OTelSpanKind
+
 from a2a.utils.artifact import new_text_artifact
 from a2a.utils.helpers import (
     append_artifact_to_task,
@@ -12,7 +15,9 @@ from a2a.utils.message import (
 from a2a.utils.task import new_task
 
 
+SpanKind = OTelSpanKind
 __all__ = [
+    'SpanKind',
     'append_artifact_to_task',
     'build_text_artifact',
     'create_task_obj',

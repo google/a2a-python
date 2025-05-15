@@ -28,11 +28,13 @@ from a2a.types import (
     UnsupportedOperationError,
 )
 from a2a.utils.errors import ServerError
+from a2a.utils.telemetry import SpanKind, trace_class
 
 
 logger = logging.getLogger(__name__)
 
 
+@trace_class(kind=SpanKind.SERVER)
 class DefaultRequestHandler(RequestHandler):
     """Default request handler for all incoming requests."""
 
@@ -112,7 +114,7 @@ class DefaultRequestHandler(RequestHandler):
         else:
             queue = EventQueue()
         result_aggregator = ResultAggregator(task_manager)
-        # TODO to manage the non-blocking flows.
+        # TODO: to manage the non-blocking flows.
         producer_task = asyncio.create_task(
             self._run_event_stream(
                 RequestContext(
@@ -128,7 +130,8 @@ class DefaultRequestHandler(RequestHandler):
         try:
             consumer = EventConsumer(queue)
 
-            # TODO - register the queue for the task upon the first sign it is a task.
+            # TODO: - register the queue for the task upon
+            # the first sign it is a task.
             result = await result_aggregator.consume_all(consumer)
             if not result:
                 raise ServerError(error=InternalError())
