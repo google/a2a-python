@@ -52,7 +52,7 @@ async def main() -> None:
     print_welcome_message()
     async with httpx.AsyncClient() as httpx_client:
         client = await A2AClient.get_client_from_agent_card_url(
-            httpx_client, 'http://localhost:9999'
+            httpx_client, 'http://localhost:10001'
         )
         await interact_with_server(client)
 

@@ -64,12 +64,7 @@ class TravelPlannerAgent:
                 # Return the text content block.
                 if hasattr(chunk, 'content') and chunk.content:
                     yield  {'content': chunk.content, 'done': False}
-            i = 1
-            while i <= 100:
-                yield  {'content': str(i), 'done': False}
-                i += 1
-                await asyncio.sleep(0.5)
-            yield {'content': '\n', 'done': True}
+            yield {'content': '', 'done': True}
 
         except Exception as e:
             print(f"error：{str(e)}")

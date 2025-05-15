@@ -24,7 +24,7 @@ if __name__ == '__main__':
     agent_card = AgentCard(
         name='travel planner Agent',
         description='travel planner',
-        url='http://localhost:9999/',
+        url='http://localhost:10001/',
         version='1.0.0',
         defaultInputModes=['text'],
         defaultOutputModes=['text'],
@@ -44,4 +44,4 @@ if __name__ == '__main__':
     )
     import uvicorn
 
-    uvicorn.run(server.build(), host='0.0.0.0', port=9999)
+    uvicorn.run(server.build(), host='0.0.0.0', port=10001)
