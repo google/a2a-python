@@ -933,7 +933,7 @@ class SetTaskPushNotificationConfigSuccessResponse(BaseModel):
 
 class Artifact(BaseModel):
     """
-    Represents an artifact generated for a task task.
+    Represents an artifact generated for a task.
     """
 
     artifactId: str
