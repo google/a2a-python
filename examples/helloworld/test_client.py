@@ -30,14 +30,6 @@ async def main() -> None:
         response = await client.send_message(request)
         print(response.model_dump(mode='json', exclude_none=True))
 
-        streaming_request = SendStreamingMessageRequest(
-            params=MessageSendParams(**send_message_payload)
-        )
-
-        stream_response = client.send_message_streaming(streaming_request)
-        async for chunk in stream_response:
-            print(chunk.model_dump(mode='json', exclude_none=True))
-
 
 if __name__ == '__main__':
     import asyncio
