@@ -163,10 +163,6 @@ def trace_function(
             except Exception as e:
                 exception = e
                 span.record_exception(e)
-                formatted_traceback = ''.join(
-                    traceback.format_exception(type(e), e, e.__traceback__)
-                )
-                print(formatted_traceback)
                 span.set_status(StatusCode.ERROR, description=str(e))
                 raise
             finally:
