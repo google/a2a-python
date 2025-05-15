@@ -14,7 +14,6 @@ dependencies = [
     "sse-starlette>=2.3.3",
     "starlette>=0.46.2",
     "typing-extensions>=4.13.2",
-    "uvicorn>=0.34.2",
 ]
 
 [tool.hatch.build.targets.wheel]
