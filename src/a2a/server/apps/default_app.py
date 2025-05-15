@@ -1,15 +1,15 @@
 import json
 import logging
 import traceback
+
 from abc import ABC, abstractmethod
-
 from collections.abc import AsyncGenerator
-from typing import Any, Optional, Union
+from typing import Any
 
+from fastapi import FastAPI
 from pydantic import ValidationError
 from sse_starlette.sse import EventSourceResponse
 from starlette.applications import Starlette
-from fastapi import FastAPI
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
@@ -38,6 +38,7 @@ from a2a.types import (
     UnsupportedOperationError,
 )
 from a2a.utils.errors import MethodNotImplementedError
+
 
 logger = logging.getLogger(__name__)
 
@@ -258,7 +259,7 @@ class DefaultA2AApplication(ABC):
         agent_card_url: str = '/.well-known/agent.json',
         rpc_url: str = '/',
         **kwargs: Any,
-    ) -> Union[Starlette, FastAPI]:
+    ) -> Starlette | FastAPI:
         """Builds and returns the FastAPI application instance.
 
         Args:
@@ -269,4 +270,3 @@ class DefaultA2AApplication(ABC):
         Returns:
             A configured FastAPI application instance.
         """
-        pass

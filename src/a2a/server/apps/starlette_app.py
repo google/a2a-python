@@ -59,7 +59,7 @@ class A2AStarletteApplication(DefaultA2AApplication):
                 name='agent_card',
             ),
         ]
-    
+
     def build(
         self,
         agent_card_url: str = '/.well-known/agent.json',
