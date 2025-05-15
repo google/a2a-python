@@ -289,7 +289,7 @@ class DefaultRequestHandler(RequestHandler):
 
         push_notification_config = await self._push_notifier.get_info(params.id)
         if not push_notification_config:
-            raise ServerError(error=TaskNotFoundError())
+            raise ServerError(error=InternalError())
 
         return TaskPushNotificationConfig(
             taskId=params.id, pushNotificationConfig=push_notification_config

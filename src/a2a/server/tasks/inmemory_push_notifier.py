@@ -41,7 +41,7 @@ class InMemoryPushNotifier(PushNotifier):
 
         try:
             response = await self._client.post(
-                url, json=task.model_dump(exclude_none=True)
+                url, json=task.model_dump(mode='json', exclude_none=True)
             )
             response.raise_for_status()
             logger.info(f'Push-notification sent for URL: {url}')
