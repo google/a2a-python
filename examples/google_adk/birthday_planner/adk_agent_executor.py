@@ -1,10 +1,12 @@
 import asyncio
 import logging
-from collections.abc import AsyncGenerator
-from typing import Any, AsyncIterable
+
+from collections.abc import AsyncGenerator, AsyncIterable
+from typing import Any
 from uuid import uuid4
 
 import httpx
+
 from google.adk import Runner
 from google.adk.agents import LlmAgent, RunConfig
 from google.adk.artifacts import InMemoryArtifactService
@@ -42,6 +44,7 @@ from a2a.types import (
 from a2a.utils import get_text_parts
 from a2a.utils.errors import ServerError
 
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -49,7 +52,7 @@ AUTH_TASK_POLLING_DELAY_SECONDS = 0.2
 
 
 class A2ARunConfig(RunConfig):
-    """Custom override of ADK RunConfig to smuggle extra data through the event loop"""
+    """Custom override of ADK RunConfig to smuggle extra data through the event loop."""
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
@@ -66,7 +69,7 @@ class ADKAgentExecutor(AgentExecutor):
             name='birthday_planner_agent',
             description='An agent that helps manage birthday parties.',
             after_tool_callback=self._handle_auth_required_task,
-            instruction=f"""
+            instruction="""
     You are an agent that helps plan birthday parties.
 
     Your job as a party planner is to act as a sounding board and idea generator for
@@ -96,7 +99,7 @@ class ADKAgentExecutor(AgentExecutor):
         session_id,
         new_message: types.Content,
         task_updater: TaskUpdater,
-    ) -> AsyncGenerator[Event, None]:
+    ) -> AsyncGenerator[Event]:
         return self.runner.run_async(
             session_id=session_id,
             user_id='self',
@@ -111,7 +114,7 @@ class ADKAgentExecutor(AgentExecutor):
         tool_context: ToolContext,
         tool_response: dict,
     ) -> dict | None:
-        """Handle requests that return auth-required"""
+        """Handle requests that return auth-required."""
         if tool.name != 'message_calendar_agent':
             return None
         if not tool_context.state.get('task_suspended'):
@@ -165,7 +168,7 @@ class ADKAgentExecutor(AgentExecutor):
                 task_updater.add_artifact(response)
                 task_updater.complete()
                 break
-            elif calls := event.get_function_calls():
+            if calls := event.get_function_calls():
                 for call in calls:
                     # Provide an update on what we're doing.
                     if call.name == 'message_calendar_agent':
@@ -305,36 +308,34 @@ class ADKAgentExecutor(AgentExecutor):
 
 
 def convert_a2a_parts_to_genai(parts: list[Part]) -> list[types.Part]:
-    """Convert a list of A2A Part types into a list of Google GenAI Part types."""
+    """Convert a list of A2A Part types into a list of Google Gen AI Part types."""
     return [convert_a2a_part_to_genai(part) for part in parts]
 
 
 def convert_a2a_part_to_genai(part: Part) -> types.Part:
-    """Convert a single A2A Part type into a Google GenAI Part type."""
+    """Convert a single A2A Part type into a Google Gen AI Part type."""
     part = part.root
     if isinstance(part, TextPart):
         return types.Part(text=part.text)
-    elif isinstance(part, FilePart):
+    if isinstance(part, FilePart):
         if isinstance(part.file, FileWithUri):
             return types.Part(
                 file_data=types.FileData(
                     file_uri=part.file.uri, mime_type=part.file.mime_type
                 )
             )
-        elif isinstance(part.file, FileWithBytes):
+        if isinstance(part.file, FileWithBytes):
             return types.Part(
                 inline_data=types.Blob(
                     data=part.file.bytes, mime_type=part.file.mime_type
                 )
             )
-        else:
-            raise ValueError(f'Unsupported file type: {type(part.file)}')
-    else:
-        raise ValueError(f'Unsupported part type: {type(part)}')
+        raise ValueError(f'Unsupported file type: {type(part.file)}')
+    raise ValueError(f'Unsupported part type: {type(part)}')
 
 
 def convert_genai_parts_to_a2a(parts: list[types.Part]) -> list[Part]:
-    """Convert a list of Google GenAI Part types into a list of A2A Part types."""
+    """Convert a list of Google Gen AI Part types into a list of A2A Part types."""
     return [
         convert_genai_part_to_a2a(part)
         for part in parts
@@ -343,17 +344,17 @@ def convert_genai_parts_to_a2a(parts: list[types.Part]) -> list[Part]:
 
 
 def convert_genai_part_to_a2a(part: types.Part) -> Part:
-    """Convert a single Google GenAI Part type into an A2A Part type."""
+    """Convert a single Google Gen AI Part type into an A2A Part type."""
     if part.text:
         return TextPart(text=part.text)
-    elif part.file_data:
+    if part.file_data:
         return FilePart(
             file=FileWithUri(
                 uri=part.file_data.file_uri,
                 mime_type=part.file_data.mime_type,
             )
         )
-    elif part.inline_data:
+    if part.inline_data:
         return Part(
             root=FilePart(
                 file=FileWithBytes(
@@ -362,5 +363,4 @@ def convert_genai_part_to_a2a(part: types.Part) -> Part:
                 )
             )
         )
-    else:
-        raise ValueError(f'Unsupported part type: {part}')
+    raise ValueError(f'Unsupported part type: {part}')

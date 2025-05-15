@@ -47,7 +47,7 @@ offensive, or harmful.
 
 This Code of Conduct applies both within project spaces and in public spaces
 when an individual is representing the project or its community. Examples of
-representing a project or community include using an official project e-mail
+representing a project or community include using an official project email
 address, posting via an official social media account, or acting as an appointed
 representative at an online or offline event. Representation of a project may be
 further defined and clarified by project maintainers.
@@ -93,4 +93,4 @@ available at
 https://www.contributor-covenant.org/version/1/4/code-of-conduct.html
 
 Note: A version of this file is also available in the
-[New Project repo](https://github.com/google/new-project/blob/master/docs/code-of-conduct.md).
+[New Project repository](https://github.com/google/new-project/blob/master/docs/code-of-conduct.md).
