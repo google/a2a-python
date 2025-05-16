@@ -81,8 +81,7 @@
 \.xz$
 \.zip$
 ^\.github/actions/spelling/
-^\Q.github/workflows/spelling.yaml\E$
-^\Q.github/workflows/linter.yaml\E$
+^\.github/workflows/
 \.gitignore\E$
 \.vscode/
 noxfile.py

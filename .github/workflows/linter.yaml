@@ -13,10 +13,9 @@ name: Lint Code Base
 #############################
 # Start the job on all push #
 #############################
-# on:
-#   pull_request:
-#     branches: [main]
-on: workflow_dispatch
+on:
+  pull_request:
+    branches: [main]
 
 ###############
 # Set the Job #
@@ -64,3 +63,5 @@ jobs:
           VALIDATE_TYPESCRIPT_STANDARD: false
           VALIDATE_GIT_COMMITLINT: false
           MARKDOWN_CONFIG_FILE: .markdownlint.json
+          PYTHON_MYPY_CONFIG_FILE: .mypy.ini
+          FILTER_REGEX_EXCLUDE: "^examples/.*"

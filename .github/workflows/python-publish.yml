@@ -24,7 +24,7 @@ jobs:
 
       - name: Build
         run: uv build
-      
+
       - name: Upload distributions
         uses: actions/upload-artifact@v4
         with:
@@ -49,6 +49,3 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
-  
-        
-      
