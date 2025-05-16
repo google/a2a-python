@@ -1,18 +1,20 @@
 from typing import Any
 from unittest.mock import AsyncMock
+
 import pytest
+
 from a2a.server.tasks import TaskManager
 from a2a.types import (
+    Artifact,
+    Message,
+    Part,
+    Role,
     Task,
     TaskArtifactUpdateEvent,
     TaskState,
     TaskStatus,
     TaskStatusUpdateEvent,
-    Message,
-    Role,
-    Part,
     TextPart,
-    Artifact,
 )
 
 
@@ -57,7 +59,7 @@ async def test_get_task_existing(
 async def test_get_task_nonexistent(
     task_manager: TaskManager, mock_task_store: AsyncMock
 ) -> None:
-    """Test getting a non-existent task."""
+    """Test getting a nonexistent task."""
     mock_task_store.get.return_value = None
     retrieved_task = await task_manager.get_task()
     assert retrieved_task is None
@@ -146,7 +148,7 @@ async def test_ensure_task_existing(
 async def test_ensure_task_nonexistent(
     mock_task_store: AsyncMock,
 ) -> None:
-    """Test ensuring a non-existent task (creates a new one)."""
+    """Test ensuring a nonexistent task (creates a new one)."""
     mock_task_store.get.return_value = None
     task_manager_without_id = TaskManager(
         task_id=None,

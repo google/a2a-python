@@ -24,6 +24,7 @@ from a2a.types import (
     SetTaskPushNotificationConfigRequest,
     SetTaskPushNotificationConfigResponse,
 )
+from a2a.utils.telemetry import SpanKind, trace_class
 
 
 class A2ACardResolver:
@@ -59,6 +60,7 @@ class A2ACardResolver:
             ) from e
 
 
+@trace_class(kind=SpanKind.CLIENT)
 class A2AClient:
     """A2A Client."""
 
@@ -111,7 +113,7 @@ class A2AClient:
         request: SendStreamingMessageRequest,
         *,
         http_kwargs: dict[str, Any] | None = None,
-    ) -> AsyncGenerator[SendStreamingMessageResponse, None]:
+    ) -> AsyncGenerator[SendStreamingMessageResponse]:
         if not request.id:
             request.id = str(uuid4())
 
