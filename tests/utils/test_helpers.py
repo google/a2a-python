@@ -112,7 +112,7 @@ def test_append_artifact_to_task():
     assert len(task.artifacts[0].parts) == 2
     assert len(task.artifacts[1].parts) == 1
 
-    # Test appending parts to a non existing artifact
+    # Test appending part to a task that does not have a matching artifact
     non_existing_artifact_with_parts = Artifact(
         artifactId="artifact-456", parts=[Part(root=TextPart(text="Part 1"))]
     )
