@@ -22,6 +22,7 @@ def new_agent_text_message(
         contextId=context_id,
     )
 
+
 def new_agent_parts_message(
     parts: list[Part],
     context_id: str | None,
@@ -34,6 +35,7 @@ def new_agent_parts_message(
         taskId=task_id,
         contextId=context_id,
     )
+
 
 def get_text_parts(parts: list[Part]) -> list[str]:
     """Return all text parts from a list of parts."""

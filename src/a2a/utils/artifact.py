@@ -1,6 +1,6 @@
 import uuid
 
-from a2a.types import Artifact, Part, TextPart
+from a2a.types import Artifact, DataPart, Part, TextPart
 
 
 def new_artifact(
@@ -13,14 +13,18 @@ def new_artifact(
         description=description,
     )
 
+
 def new_text_artifact(
     name: str,
     text: str,
     description: str = '',
 ) -> Artifact:
     return new_artifact(
-        [Part(root=TextPart(text=text))], name, description,
+        [Part(root=TextPart(text=text))],
+        name,
+        description,
     )
+
 
 def new_data_artifact(
     name: str,
@@ -28,5 +32,7 @@ def new_data_artifact(
     description: str = '',
 ):
     return new_artifact(
-        [Part(root=DataPart(data=data))], name, description,
+        [Part(root=DataPart(data=data))],
+        name,
+        description,
     )

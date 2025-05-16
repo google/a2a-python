@@ -3,8 +3,8 @@ import uuid
 from a2a.types import (
     InvalidParamsError,
     Message,
-    MessageSendParams,
     MessageSendConfiguration,
+    MessageSendParams,
     Task,
 )
 from a2a.utils import get_message_text

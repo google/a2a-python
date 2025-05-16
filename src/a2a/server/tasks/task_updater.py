@@ -68,11 +68,7 @@ class TaskUpdater:
 
     def failed(self, message: Message | None = None):
         """Mark the task as failed."""
-        self.update_status(
-            TaskState.failed,
-            message=message,
-            final=True
-        )
+        self.update_status(TaskState.failed, message=message, final=True)
 
     def submit(self, message: Message | None = None):
         """Mark the task as submitted."""

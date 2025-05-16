@@ -128,9 +128,14 @@ class DefaultRequestHandler(RequestHandler):
         if task:
             task = task_manager.update_with_message(params.message, task)
             if self.should_add_push_info(params):
-                assert isinstance(self._push_notifier, PushNotifier) # For typechecker
-                assert isinstance(params.configuration, MessageSendConfiguration) # For typechecker
-                assert isinstance(params.configuration.pushNotificationConfig, PushNotificationConfig) # For typechecker
+                assert isinstance(self._push_notifier, PushNotifier)
+                assert isinstance(
+                    params.configuration, MessageSendConfiguration
+                )
+                assert isinstance(
+                    params.configuration.pushNotificationConfig,
+                    PushNotificationConfig,
+                )
                 await self._push_notifier.set_info(
                     task.id, params.configuration.pushNotificationConfig
                 )
@@ -193,9 +198,14 @@ class DefaultRequestHandler(RequestHandler):
             task = task_manager.update_with_message(params.message, task)
 
             if self.should_add_push_info(params):
-                assert isinstance(self._push_notifier, PushNotifier) # For typechecker
-                assert isinstance(params.configuration, MessageSendConfiguration) # For typechecker
-                assert isinstance(params.configuration.pushNotificationConfig, PushNotificationConfig) # For typechecker
+                assert isinstance(self._push_notifier, PushNotifier)
+                assert isinstance(
+                    params.configuration, MessageSendConfiguration
+                )
+                assert isinstance(
+                    params.configuration.pushNotificationConfig,
+                    PushNotificationConfig,
+                )
                 await self._push_notifier.set_info(
                     task.id, params.configuration.pushNotificationConfig
                 )
@@ -324,11 +334,8 @@ class DefaultRequestHandler(RequestHandler):
             yield event
 
     def should_add_push_info(self, params: MessageSendParams) -> bool:
-        if (
+        return bool(
             self._push_notifier
             and params.configuration
             and params.configuration.pushNotificationConfig
-        ):
-            return True
-        else:
-            return False
+        )
