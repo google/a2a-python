@@ -10,7 +10,6 @@ from a2a.types import (
     AgentSkill,
 )
 
-
 if __name__ == '__main__':
     skill = AgentSkill(
         id='hello_world',
@@ -18,6 +17,14 @@ if __name__ == '__main__':
         description='just returns hello world',
         tags=['hello world'],
         examples=['hi', 'hello world'],
+    )
+
+    extended_skill = AgentSkill(
+        id='super_hello_world',
+        name='Returns a SUPER Hello World',
+        description='A more enthusiastic greeting, only for authenticated users.',
+        tags=['hello world', 'super', 'extended'],
+        examples=['super hi', 'give me a super hello'],
     )
 
     agent_card = AgentCard(
@@ -28,8 +35,10 @@ if __name__ == '__main__':
         defaultInputModes=['text'],
         defaultOutputModes=['text'],
         capabilities=AgentCapabilities(streaming=True),
-        skills=[skill],
+        skills=[skill, extended_skill], # Include both skills
         authentication=AgentAuthentication(schemes=['public']),
+        # Adding this line to enable extended card support:
+        supportsAuthenticatedExtendedCard=True,
     )
 
     request_handler = DefaultRequestHandler(

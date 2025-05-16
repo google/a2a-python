@@ -1,7 +1,6 @@
 import json
 import logging
 import traceback
-
 from collections.abc import AsyncGenerator
 from typing import Any
 
@@ -37,7 +36,6 @@ from a2a.types import (
     UnsupportedOperationError,
 )
 from a2a.utils.errors import MethodNotImplementedError
-
 
 logger = logging.getLogger(__name__)
 
@@ -247,6 +245,53 @@ class A2AStarletteApplication:
 
     async def _handle_get_agent_card(self, request: Request) -> JSONResponse:
         """Handles GET requests for the agent card."""
+        # Construct the public view of the agent card.
+        public_card_data = {
+            "version": self.agent_card.version,
+            "name": self.agent_card.name,
+            "providerName": self.agent_card.provider.organization if self.agent_card.provider else None,
+            "url": self.agent_card.url,
+            "authentication": self.agent_card.authentication.model_dump(mode='json', exclude_none=True)
+            if self.agent_card.authentication else None, # authentication is a single object, can be None if made Optional
+            "skills": [
+                f.model_dump(mode='json', exclude_none=True)
+                for f in self.agent_card.skills if f.id == 'hello_world' # Explicitly filter for public skills
+            ]
+            if self.agent_card.skills
+            else [], # Default to empty list if no skills
+            "capabilities": self.agent_card.capabilities.model_dump(
+                mode='json', exclude_none=True
+            ),
+            "supportsAuthenticatedExtendedCard": (
+                self.agent_card.supportsAuthenticatedExtendedCard
+            ),
+            # Include other fields from types.py AgentCard designated as public
+            "description": self.agent_card.description,
+            "documentationUrl": self.agent_card.documentationUrl,
+            "defaultInputModes": self.agent_card.defaultInputModes,
+            "defaultOutputModes": self.agent_card.defaultOutputModes,
+        }
+        # Filter out None values from the public card data.
+        public_card_data_cleaned = {
+            k: v for k, v in public_card_data.items() if v is not None
+        }
+        return JSONResponse(public_card_data_cleaned)
+
+    async def _handle_get_authenticated_extended_agent_card(
+        self, request: Request
+    ) -> JSONResponse:
+        """Handles GET requests for the authenticated extended agent card."""
+        if not self.agent_card.supportsAuthenticatedExtendedCard:
+            return JSONResponse(
+                {"error": "Extended agent card not supported or not enabled."},
+                status_code=404,
+            )
+
+        # Authentication and authorization are NOT YET IMPLEMENTED for this endpoint.
+        # As per current requirements, if 'supportsAuthenticatedExtendedCard' is true,
+        # this endpoint returns the complete agent card.
+        # In the future, proper authentication checks will be added here, and the
+        # returned card may be filtered based on the client's authorization scopes.
         return JSONResponse(
             self.agent_card.model_dump(mode='json', exclude_none=True)
         )
@@ -254,6 +299,7 @@ class A2AStarletteApplication:
     def routes(
         self,
         agent_card_url: str = '/.well-known/agent.json',
+        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
         rpc_url: str = '/',
     ) -> list[Route]:
         """Returns the Starlette Routes for handling A2A requests.
@@ -261,11 +307,12 @@ class A2AStarletteApplication:
         Args:
             agent_card_url: The URL for the agent card endpoint.
             rpc_url: The URL for the A2A JSON-RPC endpoint
+            extended_agent_card_url: The URL for the authenticated extended agent card endpoint.
 
         Returns:
             The Starlette Routes serving A2A requests.
         """
-        return [
+        app_routes = [
             Route(
                 rpc_url,
                 self._handle_requests,
@@ -280,9 +327,21 @@ class A2AStarletteApplication:
             ),
         ]
 
+        if self.agent_card.supportsAuthenticatedExtendedCard:
+            app_routes.append(
+                Route(
+                    extended_agent_card_url,
+                    self._handle_get_authenticated_extended_agent_card,
+                    methods=['GET'],
+                    name='authenticated_extended_agent_card',
+                )
+            )
+        return app_routes
+
     def build(
         self,
         agent_card_url: str = '/.well-known/agent.json',
+        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
         rpc_url: str = '/',
         **kwargs: Any,
     ) -> Starlette:
@@ -291,16 +350,17 @@ class A2AStarletteApplication:
         Args:
             agent_card_url: The URL for the agent card endpoint.
             rpc_url: The URL for the A2A JSON-RPC endpoint
+            extended_agent_card_url: The URL for the authenticated extended agent card endpoint.
             **kwargs: Additional keyword arguments to pass to the Starlette
               constructor.
 
         Returns:
             A configured Starlette application instance.
         """
-        routes = self.routes(agent_card_url, rpc_url)
+        app_routes = self.routes(agent_card_url, extended_agent_card_url, rpc_url)
         if 'routes' in kwargs:
-            kwargs['routes'] += routes
+            kwargs['routes'].extend(app_routes)
         else:
-            kwargs['routes'] = routes
+            kwargs['routes'] = app_routes
 
         return Starlette(**kwargs)

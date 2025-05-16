@@ -4,9 +4,9 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Literal
+from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, RootModel
+from pydantic import BaseModel, Field, RootModel
 
 
 class A2A(RootModel[Any]):
@@ -710,7 +710,10 @@ class AgentCard(BaseModel):
     """
     The version of the agent - format is up to the provider.
     """
-
+    supportsAuthenticatedExtendedCard: Optional[bool] = Field(default=None)
+    """
+    Optional field indicating there is an extended card available post authentication at the /agent/authenticatedExtendedCard endpoint.
+    """
 
 class CancelTaskRequest(BaseModel):
     """
