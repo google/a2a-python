@@ -133,13 +133,13 @@ class DataPart(BaseModel):
     """
     Structured data content
     """
+    itemType: Literal['data'] = 'data'
+    """
+    Part type - data for DataParts
+    """
     metadata: dict[str, Any] | None = None
     """
     Optional metadata associated with the part.
-    """
-    type: Literal['data'] = 'data'
-    """
-    Part type - data for DataParts
     """
 
 
@@ -577,11 +577,11 @@ class TaskState(Enum):
     submitted = 'submitted'
     working = 'working'
     input_required = 'input-required'
-    auth_required = 'auth-required'
     completed = 'completed'
     canceled = 'canceled'
     failed = 'failed'
     rejected = 'rejected'
+    auth_required = 'auth-required'
     unknown = 'unknown'
 
 
@@ -590,6 +590,10 @@ class TextPart(BaseModel):
     Represents a text segment within parts.
     """
 
+    itemType: Literal['text'] = 'text'
+    """
+    Part type - text for TextParts
+    """
     metadata: dict[str, Any] | None = None
     """
     Optional metadata associated with the part.
@@ -597,10 +601,6 @@ class TextPart(BaseModel):
     text: str
     """
     Text content
-    """
-    type: Literal['text'] = 'text'
-    """
-    Part type - text for TextParts
     """
 
 
@@ -745,13 +745,13 @@ class FilePart(BaseModel):
     """
     File content either as url or bytes
     """
+    itemType: Literal['file'] = 'file'
+    """
+    Part type - file for FileParts
+    """
     metadata: dict[str, Any] | None = None
     """
     Optional metadata associated with the part.
-    """
-    type: Literal['file'] = 'file'
-    """
-    Part type - file for FileParts
     """
 
 
@@ -933,7 +933,7 @@ class SetTaskPushNotificationConfigSuccessResponse(BaseModel):
 
 class Artifact(BaseModel):
     """
-    Represents an artifact generated for a task.
+    Represents an artifact generated for a task task.
     """
 
     artifactId: str
@@ -959,9 +959,7 @@ class Artifact(BaseModel):
 
 
 class GetTaskPushNotificationConfigResponse(
-    RootModel[
-        JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse
-    ]
+    RootModel[JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse]
 ):
     root: JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse
     """
@@ -982,6 +980,10 @@ class Message(BaseModel):
     """
     indicates the end of the event stream
     """
+    itemType: Literal['message'] = 'message'
+    """
+    event type
+    """
     messageId: str
     """
     identifier created by the message creator
@@ -1001,10 +1003,6 @@ class Message(BaseModel):
     taskId: str | None = None
     """
     identifier of task the message is related to
-    """
-    type: Literal['message'] = 'message'
-    """
-    event type
     """
 
 
@@ -1076,9 +1074,7 @@ class SendStreamingMessageRequest(BaseModel):
 
 
 class SetTaskPushNotificationConfigResponse(
-    RootModel[
-        JSONRPCErrorResponse | SetTaskPushNotificationConfigSuccessResponse
-    ]
+    RootModel[JSONRPCErrorResponse | SetTaskPushNotificationConfigSuccessResponse]
 ):
     root: JSONRPCErrorResponse | SetTaskPushNotificationConfigSuccessResponse
     """
@@ -1103,6 +1099,10 @@ class TaskArtifactUpdateEvent(BaseModel):
     """
     the context the task is associated with
     """
+    itemType: Literal['artifact-update'] = 'artifact-update'
+    """
+    event type
+    """
     lastChunk: bool | None = None
     """
     Indicates if this is the last chunk of the artifact
@@ -1114,10 +1114,6 @@ class TaskArtifactUpdateEvent(BaseModel):
     taskId: str
     """
     Task id
-    """
-    type: Literal['artifact-update'] = 'artifact-update'
-    """
-    event type
     """
 
 
@@ -1150,6 +1146,10 @@ class TaskStatusUpdateEvent(BaseModel):
     """
     indicates the end of the event stream
     """
+    itemType: Literal['status-update'] = 'status-update'
+    """
+    event type
+    """
     metadata: dict[str, Any] | None = None
     """
     extension metadata
@@ -1161,10 +1161,6 @@ class TaskStatusUpdateEvent(BaseModel):
     taskId: str
     """
     Task id
-    """
-    type: Literal['status-update'] = 'status-update'
-    """
-    event type
     """
 
 
@@ -1207,6 +1203,10 @@ class Task(BaseModel):
     """
     unique identifier for the task
     """
+    itemType: Literal['task'] = 'task'
+    """
+    event type
+    """
     metadata: dict[str, Any] | None = None
     """
     extension metadata
@@ -1214,10 +1214,6 @@ class Task(BaseModel):
     status: TaskStatus
     """
     current status of the task
-    """
-    type: Literal['task'] = 'task'
-    """
-    event type
     """
 
 
@@ -1301,9 +1297,7 @@ class SendStreamingMessageSuccessResponse(BaseModel):
     """
 
 
-class CancelTaskResponse(
-    RootModel[JSONRPCErrorResponse | CancelTaskSuccessResponse]
-):
+class CancelTaskResponse(RootModel[JSONRPCErrorResponse | CancelTaskSuccessResponse]):
     root: JSONRPCErrorResponse | CancelTaskSuccessResponse
     """
     JSON-RPC response for the 'tasks/cancel' method.
@@ -1342,9 +1336,7 @@ class JSONRPCResponse(
     """
 
 
-class SendMessageResponse(
-    RootModel[JSONRPCErrorResponse | SendMessageSuccessResponse]
-):
+class SendMessageResponse(RootModel[JSONRPCErrorResponse | SendMessageSuccessResponse]):
     root: JSONRPCErrorResponse | SendMessageSuccessResponse
     """
     JSON-RPC response model for the 'message/send' method.

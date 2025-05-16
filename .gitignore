@@ -8,3 +8,4 @@ __pycache__
 .venv
 coverage.xml
 .nox
+spec.json
