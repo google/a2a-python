@@ -82,7 +82,6 @@ def test_append_artifact_to_task():
     artifact_2 = Artifact(
         artifactId="artifact-123", name="updated name", parts=[Part(root=TextPart(text="Updated"))]
     )
-#    artifact_2['name'] = "updated name"
     append_event_2 = TaskArtifactUpdateEvent(artifact=artifact_2, append=False, taskId="123", contextId="123")
     append_artifact_to_task(task, append_event_2)
     assert len(task.artifacts) == 1  # Should still have one artifact
@@ -113,7 +112,7 @@ def test_append_artifact_to_task():
     assert len(task.artifacts[0].parts) == 2
     assert len(task.artifacts[1].parts) == 1
 
-    # Test appending parts to an non existing artifact
+    # Test appending parts to a non existing artifact
     non_existing_artifact_with_parts = Artifact(
         artifactId="artifact-456", parts=[Part(root=TextPart(text="Part 1"))]
     )
