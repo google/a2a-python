@@ -1,13 +1,15 @@
-import pytest
 import asyncio
+
 from unittest import mock
-from a2a.utils.telemetry import trace_function, trace_class
+
+import pytest
+
+from a2a.utils.telemetry import trace_class, trace_function
 
 
 @pytest.fixture
 def mock_span():
-    span = mock.MagicMock()
-    return span
+    return mock.MagicMock()
 
 
 @pytest.fixture

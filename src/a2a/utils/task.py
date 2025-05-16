@@ -18,7 +18,7 @@ def completed_task(
     task_id: str,
     context_id: str,
     artifacts: list[Artifact],
-    history: list[Message] = None,
+    history: list[Message] | None = None,
 ) -> Task:
     if history is None:
         history = []
