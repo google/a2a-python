@@ -63,14 +63,14 @@ MINIMAL_TASK: dict[str, Any] = {
     'id': 'task-abc',
     'contextId': 'session-xyz',
     'status': {'state': 'working'},
-    'type': 'task',
+    'itemType': 'task',
 }
 
 MINIMAL_CANCELLED_TASK: dict[str, Any] = {
     'id': 'task-abc',
     'contextId': 'session-xyz',
     'status': {'state': 'canceled'},
-    'type': 'task',
+    'itemType': 'task',
 }
 
 
