@@ -121,7 +121,7 @@ def format(session):
             session.run(
                 'pyupgrade',
                 '--exit-zero-even-if-changed',
-                '--py311-plus',
+                '--py313-plus',
                 *lint_paths_py,
             )
         session.run(

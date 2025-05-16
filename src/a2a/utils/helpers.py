@@ -13,11 +13,13 @@ from a2a.types import (
     TextPart,
 )
 from a2a.utils.errors import ServerError, UnsupportedOperationError
+from a2a.utils.telemetry import trace_function
 
 
 logger = logging.getLogger(__name__)
 
 
+@trace_function()
 def create_task_obj(message_send_params: MessageSendParams) -> Task:
     """Create a new task object from message send params."""
     if not message_send_params.message.contextId:
@@ -31,6 +33,7 @@ def create_task_obj(message_send_params: MessageSendParams) -> Task:
     )
 
 
+@trace_function()
 def append_artifact_to_task(task: Task, event: TaskArtifactUpdateEvent) -> None:
     """Helper method for updating Task with new artifact data."""
     if not task.artifacts:
@@ -91,14 +94,28 @@ def validate(expression, error_message=None):
     def decorator(function):
         def wrapper(self, *args, **kwargs):
             if not expression(self):
-                if not error_message:
-                    message = str(expression)
-                logger.error(f'Unsupported Operation: {error_message}')
+                final_message = error_message or str(expression)
+                logger.error(f'Unsupported Operation: {final_message}')
                 raise ServerError(
-                    UnsupportedOperationError(message=error_message)
+                    UnsupportedOperationError(message=final_message)
                 )
             return function(self, *args, **kwargs)
 
         return wrapper
 
     return decorator
+
+
+def are_modalities_compatible(
+    server_output_modes: list[str], client_output_modes: list[str]
+):
+    """Modalities are compatible if they are both non-empty
+    and there is at least one common element.
+    """
+    if client_output_modes is None or len(client_output_modes) == 0:
+        return True
+
+    if server_output_modes is None or len(server_output_modes) == 0:
+        return True
+
+    return any(x in server_output_modes for x in client_output_modes)

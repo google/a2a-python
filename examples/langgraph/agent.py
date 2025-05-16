@@ -11,9 +11,10 @@ from langchain_core.runnables.config import (
 )
 from langchain_core.tools import tool  # type: ignore
 from langchain_google_genai import ChatGoogleGenerativeAI
+from pydantic import BaseModel
+
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent  # type: ignore
-from pydantic import BaseModel
 
 
 logger = logging.getLogger(__name__)

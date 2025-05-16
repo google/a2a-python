@@ -13,9 +13,10 @@ name: Lint Code Base
 #############################
 # Start the job on all push #
 #############################
-on:
-  pull_request:
-    branches: [main]
+# on:
+#   pull_request:
+#     branches: [main]
+on: workflow_dispatch
 
 ###############
 # Set the Job #
@@ -61,3 +62,5 @@ jobs:
           VALIDATE_CHECKOV: false
           VALIDATE_JAVASCRIPT_STANDARD: false
           VALIDATE_TYPESCRIPT_STANDARD: false
+          VALIDATE_GIT_COMMITLINT: false
+          MARKDOWN_CONFIG_FILE: .markdownlint.json

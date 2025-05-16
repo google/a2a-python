@@ -1,6 +1,6 @@
 import asyncio
-import contextlib
 import logging
+
 from collections.abc import AsyncGenerator
 from typing import cast
 
@@ -10,7 +10,6 @@ from a2a.server.events import (
     EventConsumer,
     EventQueue,
     InMemoryQueueManager,
-    NoTaskQueue,
     QueueManager,
     TaskQueueExists,
 )
@@ -28,10 +27,13 @@ from a2a.types import (
     UnsupportedOperationError,
 )
 from a2a.utils.errors import ServerError
+from a2a.utils.telemetry import SpanKind, trace_class
+
 
 logger = logging.getLogger(__name__)
 
 
+@trace_class(kind=SpanKind.SERVER)
 class DefaultRequestHandler(RequestHandler):
     """Default request handler for all incoming requests."""
 
@@ -128,7 +130,7 @@ class DefaultRequestHandler(RequestHandler):
         # agents.
         queue = await self._queue_manager.create_or_tap(task_id)
         result_aggregator = ResultAggregator(task_manager)
-        # TODO to manage the non-blocking flows.
+        # TODO: to manage the non-blocking flows.
         producer_task = asyncio.create_task(
             self._run_event_stream(
                 request_context,
@@ -161,7 +163,7 @@ class DefaultRequestHandler(RequestHandler):
 
     async def on_message_send_stream(
         self, params: MessageSendParams
-    ) -> AsyncGenerator[Event, None]:
+    ) -> AsyncGenerator[Event]:
         """Default handler for 'message/stream'."""
         task_manager = TaskManager(
             task_id=params.message.taskId,
@@ -208,11 +210,11 @@ class DefaultRequestHandler(RequestHandler):
         finally:
             await self._cleanup_producer(producer_task, task_id)
 
-    async def _register_producer(self, task_id, producer_task):
+    async def _register_producer(self, task_id, producer_task) -> None:
         async with self._running_agents_lock:
             self._running_agents[task_id] = producer_task
 
-    async def _cleanup_producer(self, producer_task, task_id):
+    async def _cleanup_producer(self, producer_task, task_id) -> None:
         await producer_task
         await self._queue_manager.close(task_id)
         async with self._running_agents_lock:
@@ -232,7 +234,7 @@ class DefaultRequestHandler(RequestHandler):
 
     async def on_resubscribe_to_task(
         self, params: TaskIdParams
-    ) -> AsyncGenerator[Event, None]:
+    ) -> AsyncGenerator[Event]:
         """Default handler for 'tasks/resubscribe'."""
         task: Task | None = await self.task_store.get(params.id)
         if not task:

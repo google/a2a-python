@@ -42,6 +42,7 @@ class TaskUpdater:
         parts: list[Part],
         artifact_id=str(uuid.uuid4()),
         name: str | None = None,
+        metadata: dict[str, any] | None = None,
     ):
         """Add an artifact to the task."""
         self.event_queue.enqueue_event(
@@ -52,6 +53,7 @@ class TaskUpdater:
                     artifactId=artifact_id,
                     name=name,
                     parts=parts,
+                    metadata=metadata,
                 ),
             )
         )
@@ -62,6 +64,14 @@ class TaskUpdater:
             TaskState.completed,
             message=message,
             final=True,
+        )
+
+    def failed(self, message: Message | None = None):
+        """Mark the task as failed."""
+        self.update_status(
+            TaskState.failed,
+            message=message,
+            final=True
         )
 
     def submit(self, message: Message | None = None):

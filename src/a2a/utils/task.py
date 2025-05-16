@@ -1,6 +1,6 @@
 import uuid
 
-from a2a.types import Message, Task, TaskState, TaskStatus
+from a2a.types import Artifact, Message, Task, TaskState, TaskStatus
 
 
 def new_task(request: Message) -> Task:
@@ -11,4 +11,19 @@ def new_task(request: Message) -> Task:
             request.contextId if request.contextId else str(uuid.uuid4())
         ),
         history=[request],
+    )
+
+
+def completed_task(
+    task_id: str,
+    context_id: str,
+    artifacts: list[Artifact],
+    history: list[Message] = [],
+) -> Task:
+    return Task(
+        status=TaskStatus(state=TaskState.completed),
+        id=task_id,
+        contextId=context_id,
+        artifacts=artifacts,
+        history=history,
     )
