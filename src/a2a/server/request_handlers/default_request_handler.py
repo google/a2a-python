@@ -197,8 +197,10 @@ class DefaultRequestHandler(RequestHandler):
             consumer = EventConsumer(queue)
             producer_task.add_done_callback(consumer.agent_task_callback)
             async for event in result_aggregator.consume_and_emit(consumer):
-                # Now we know we have a Task, register the queue
-                if isinstance(event, Task):
+                if isinstance(event, Task) and task_id != event.id:
+                    logger.warning(
+                        f'Agent generated task_id={event.id} does not match the RequestContext task_id={task_id}.'
+                    )
                     try:
                         await self._queue_manager.add(event.id, queue)
                         task_id = event.id
