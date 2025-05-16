@@ -9,7 +9,9 @@ from a2a.types import (
 
 
 def new_agent_text_message(
-    text: str, context_id: str | None = None, task_id: str | None = None
+    text: str,
+    context_id: str | None = None,
+    task_id: str | None = None,
 ) -> Message:
     """Creates a new agent text message."""
     return Message(
@@ -20,6 +22,18 @@ def new_agent_text_message(
         contextId=context_id,
     )
 
+def new_agent_parts_message(
+    parts: list[Part],
+    context_id: str | None,
+    task_id: str | None = None,
+):
+    return Message(
+        role=Role.agent,
+        parts=parts,
+        messageId=str(uuid.uuid4()),
+        taskId=task_id,
+        contextId=context_id,
+    )
 
 def get_text_parts(parts: list[Part]) -> list[str]:
     """Return all text parts from a list of parts."""
