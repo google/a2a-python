@@ -1,5 +1,7 @@
 import uuid
 
+from typing import Any
+
 from a2a.types import Artifact, DataPart, Part, TextPart
 
 
@@ -28,7 +30,7 @@ def new_text_artifact(
 
 def new_data_artifact(
     name: str,
-    data: dict[str, any],
+    data: dict[str, Any],
     description: str = '',
 ):
     return new_artifact(
