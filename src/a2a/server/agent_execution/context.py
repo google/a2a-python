@@ -82,6 +82,8 @@ class RequestContext:
 
     @property
     def configuration(self) -> MessageSendConfiguration | None:
+        if not self._params:
+            return None
         return self._params.configuration
 
     def _check_or_generate_task_id(self) -> None:

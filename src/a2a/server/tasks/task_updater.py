@@ -1,5 +1,7 @@
 import uuid
 
+from typing import Any
+
 from a2a.server.events import EventQueue
 from a2a.types import (
     Artifact,
@@ -42,7 +44,7 @@ class TaskUpdater:
         parts: list[Part],
         artifact_id=str(uuid.uuid4()),
         name: str | None = None,
-        metadata: dict[str, any] | None = None,
+        metadata: dict[str, Any] | None = None,
     ):
         """Add an artifact to the task."""
         self.event_queue.enqueue_event(
