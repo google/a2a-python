@@ -22,7 +22,7 @@ MINIMAL_TASK: dict[str, Any] = {
     'id': 'task-abc',
     'contextId': 'session-xyz',
     'status': {'state': 'submitted'},
-    'type': 'task',
+    'itemType': 'task',
 }
 
 
@@ -205,7 +205,7 @@ async def test_save_task_event_new_task_no_task_id(
         'id': 'new-task-id',
         'contextId': 'some-context',
         'status': {'state': 'working'},
-        'type': 'task',
+        'itemType': 'task',
     }
     task = Task(**task_data)
     await task_manager_without_id.save_task_event(task)
