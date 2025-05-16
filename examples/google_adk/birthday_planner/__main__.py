@@ -6,7 +6,7 @@ import os
 import click
 import uvicorn
 
-from adk_agent_executor import ADKAgentExecutor
+from adk_agent_executor import ADKAgentExecutor # type: ignore[import-untyped]
 from dotenv import load_dotenv
 
 from a2a.server.apps import A2AStarletteApplication
