@@ -74,7 +74,7 @@ def test_append_artifact_to_task():
     append_artifact_to_task(task, append_event_1)
     assert len(task.artifacts) == 1
     assert task.artifacts[0].artifactId == 'artifact-123'
-    assert task.artifacts[0].name == None
+    assert task.artifacts[0].name is None
     assert len(task.artifacts[0].parts) == 1
     assert task.artifacts[0].parts[0].root.text == 'Hello'
 
