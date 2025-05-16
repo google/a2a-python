@@ -11,6 +11,7 @@ from a2a.types import (
     TaskArtifactUpdateEvent,
     TaskStatusUpdateEvent,
 )
+from a2a.utils.telemetry import SpanKind, trace_class
 
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,7 @@ Event = (
 )
 
 
+@trace_class(kind=SpanKind.SERVER)
 class EventQueue:
     """Event queue for A2A responses from agent."""
 
