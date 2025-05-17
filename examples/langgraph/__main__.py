@@ -4,8 +4,8 @@ import sys
 import click
 import httpx
 
-from agent import CurrencyAgent
-from agent_executor import CurrencyAgentExecutor
+from agent import CurrencyAgent # type: ignore[import-untyped]
+from agent_executor import CurrencyAgentExecutor # type: ignore[import-untyped]
 from dotenv import load_dotenv
 
 from a2a.server.apps import A2AStarletteApplication
