@@ -976,10 +976,6 @@ class Message(BaseModel):
     """
     the context the message is associated with
     """
-    final: bool | None = None
-    """
-    indicates the end of the event stream
-    """
     itemType: Literal['message'] = 'message'
     """
     event type
