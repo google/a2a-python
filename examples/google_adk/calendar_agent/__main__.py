@@ -4,13 +4,19 @@ import os
 import click
 import uvicorn
 
-from adk_agent import create_agent # type: ignore[import-not-found]
-from adk_agent_executor import ADKAgentExecutor # type: ignore[import-untyped]
+from adk_agent import create_agent  # type: ignore[import-not-found]
+from adk_agent_executor import ADKAgentExecutor  # type: ignore[import-untyped]
 from dotenv import load_dotenv
-from google.adk.artifacts import InMemoryArtifactService # type: ignore[import-untyped]
-from google.adk.memory.in_memory_memory_service import InMemoryMemoryService # type: ignore[import-untyped]
-from google.adk.runners import Runner # type: ignore[import-untyped]
-from google.adk.sessions import InMemorySessionService # type: ignore[import-untyped]
+from google.adk.artifacts import (
+    InMemoryArtifactService,  # type: ignore[import-untyped]
+)
+from google.adk.memory.in_memory_memory_service import (
+    InMemoryMemoryService,  # type: ignore[import-untyped]
+)
+from google.adk.runners import Runner  # type: ignore[import-untyped]
+from google.adk.sessions import (
+    InMemorySessionService,  # type: ignore[import-untyped]
+)
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
@@ -19,12 +25,7 @@ from starlette.routing import Route
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore
-from a2a.types import (
-    AgentAuthentication,
-    AgentCapabilities,
-    AgentCard,
-    AgentSkill,
-)
+from a2a.types import AgentCapabilities, AgentCard, AgentSkill
 
 
 load_dotenv()

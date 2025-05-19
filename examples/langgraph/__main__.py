@@ -4,19 +4,14 @@ import sys
 import click
 import httpx
 
-from agent import CurrencyAgent # type: ignore[import-untyped]
-from agent_executor import CurrencyAgentExecutor # type: ignore[import-untyped]
+from agent import CurrencyAgent  # type: ignore[import-untyped]
+from agent_executor import CurrencyAgentExecutor  # type: ignore[import-untyped]
 from dotenv import load_dotenv
 
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryPushNotifier, InMemoryTaskStore
-from a2a.types import (
-    AgentAuthentication,
-    AgentCapabilities,
-    AgentCard,
-    AgentSkill,
-)
+from a2a.types import AgentCapabilities, AgentCard, AgentSkill
 
 
 load_dotenv()
@@ -64,7 +59,6 @@ def get_agent_card(host: str, port: int):
         defaultOutputModes=CurrencyAgent.SUPPORTED_CONTENT_TYPES,
         capabilities=capabilities,
         skills=[skill],
-        authentication=AgentAuthentication(schemes=['public']),
     )
 
 

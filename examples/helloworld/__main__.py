@@ -1,14 +1,11 @@
-from agent_executor import HelloWorldAgentExecutor # type: ignore[import-untyped]
+from agent_executor import (
+    HelloWorldAgentExecutor,  # type: ignore[import-untyped]
+)
 
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore
-from a2a.types import (
-    AgentAuthentication,
-    AgentCapabilities,
-    AgentCard,
-    AgentSkill,
-)
+from a2a.types import AgentCapabilities, AgentCard, AgentSkill
 
 
 if __name__ == '__main__':
@@ -29,7 +26,6 @@ if __name__ == '__main__':
         defaultOutputModes=['text'],
         capabilities=AgentCapabilities(streaming=True),
         skills=[skill],
-        authentication=AgentAuthentication(schemes=['public']),
     )
 
     request_handler = DefaultRequestHandler(
