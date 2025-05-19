@@ -1,8 +1,18 @@
 [run]
 branch = True
+omit = 
+    */tests/*
+    */site-packages/*
+    */__init__.py
+    */noxfile.py*
 
 [report]
-exclude_also =
-    pass
+exclude_lines =
+    pragma: no cover
     import
+    def __repr__
+    raise NotImplementedError
+    if TYPE_CHECKING
     @abstractmethod
+    pass
+    raise ImportError
