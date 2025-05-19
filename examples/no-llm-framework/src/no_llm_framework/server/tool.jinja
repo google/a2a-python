@@ -1,0 +1,4 @@
+Tools{% for tool in tools %}
+- {{loop.index}}: {{ tool.name }}
+  - Description: {{ tool.description }}
+  - Input Schema: {{tool.inputSchema.properties}}{% endfor %}
