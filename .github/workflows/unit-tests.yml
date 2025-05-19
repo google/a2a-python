@@ -28,8 +28,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: uv
-          cache-dependency-path: uv.lock
 
       - name: Install uv
         run: |
