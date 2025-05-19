@@ -1,8 +1,13 @@
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+
 from collections.abc import AsyncGenerator
+from typing import Any
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import httpx
 import pytest
+
+from httpx_sse import EventSource, ServerSentEvent
 
 from a2a.client import (
     A2ACardResolver,
@@ -12,31 +17,28 @@ from a2a.client import (
     create_text_message_object,
 )
 from a2a.types import (
+    A2ARequest,
+    AgentCapabilities,
     AgentCard,
     AgentSkill,
-    AgentCapabilities,
-    AgentAuthentication,
-    A2ARequest,
-    Role,
-    TaskQueryParams,
-    TaskIdParams,
-    GetTaskRequest,
-    GetTaskResponse,
-    SendMessageRequest,
-    MessageSendParams,
-    SendMessageResponse,
-    SendMessageSuccessResponse,
-    JSONRPCErrorResponse,
-    InvalidParamsError,
     CancelTaskRequest,
     CancelTaskResponse,
     CancelTaskSuccessResponse,
+    GetTaskRequest,
+    GetTaskResponse,
+    InvalidParamsError,
+    JSONRPCErrorResponse,
+    MessageSendParams,
+    Role,
+    SendMessageRequest,
+    SendMessageResponse,
+    SendMessageSuccessResponse,
     SendStreamingMessageRequest,
     SendStreamingMessageResponse,
+    TaskIdParams,
     TaskNotCancelableError,
+    TaskQueryParams,
 )
-from typing import Any
-from httpx_sse import ServerSentEvent, EventSource
 
 
 AGENT_CARD = AgentCard(
@@ -56,7 +58,6 @@ AGENT_CARD = AgentCard(
             examples=['hi', 'hello world'],
         )
     ],
-    authentication=AgentAuthentication(schemes=['public']),
 )
 
 MINIMAL_TASK: dict[str, Any] = {
@@ -86,7 +87,7 @@ def mock_agent_card() -> MagicMock:
 
 async def async_iterable_from_list(
     items: list[ServerSentEvent],
-) -> AsyncGenerator[ServerSentEvent, None]:
+) -> AsyncGenerator[ServerSentEvent]:
     """Helper to create an async iterable from a list."""
     for item in items:
         yield item

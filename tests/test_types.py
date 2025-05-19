@@ -7,7 +7,7 @@ from pydantic import ValidationError
 from a2a.types import (
     A2AError,
     A2ARequest,
-    AgentAuthentication,
+    APIKeySecurityScheme,
     AgentCapabilities,
     AgentCard,
     AgentProvider,
@@ -15,6 +15,7 @@ from a2a.types import (
     Artifact,
     CancelTaskRequest,
     CancelTaskResponse,
+    CancelTaskSuccessResponse,
     ContentTypeNotSupportedError,
     DataPart,
     FileBase,
@@ -23,8 +24,11 @@ from a2a.types import (
     FileWithUri,
     GetTaskPushNotificationConfigRequest,
     GetTaskPushNotificationConfigResponse,
+    GetTaskPushNotificationConfigSuccessResponse,
     GetTaskRequest,
     GetTaskResponse,
+    GetTaskSuccessResponse,
+    In,
     InternalError,
     InvalidParamsError,
     InvalidRequestError,
@@ -35,18 +39,25 @@ from a2a.types import (
     JSONRPCRequest,
     JSONRPCResponse,
     Message,
+    MessageSendParams,
     MethodNotFoundError,
+    OAuth2SecurityScheme,
     Part,
     PartBase,
     PushNotificationAuthenticationInfo,
     PushNotificationConfig,
     PushNotificationNotSupportedError,
+    Role,
+    SecurityScheme,
     SendMessageRequest,
     SendMessageResponse,
+    SendMessageSuccessResponse,
     SendStreamingMessageRequest,
     SendStreamingMessageResponse,
+    SendStreamingMessageSuccessResponse,
     SetTaskPushNotificationConfigRequest,
     SetTaskPushNotificationConfigResponse,
+    SetTaskPushNotificationConfigSuccessResponse,
     Task,
     TaskArtifactUpdateEvent,
     TaskIdParams,
@@ -55,27 +66,20 @@ from a2a.types import (
     TaskPushNotificationConfig,
     TaskQueryParams,
     TaskResubscriptionRequest,
-    MessageSendParams,
     TaskState,
     TaskStatus,
     TaskStatusUpdateEvent,
     TextPart,
     UnsupportedOperationError,
-    GetTaskSuccessResponse,
-    SendStreamingMessageSuccessResponse,
-    SendMessageSuccessResponse,
-    CancelTaskSuccessResponse,
-    Role,
-    SetTaskPushNotificationConfigSuccessResponse,
-    GetTaskPushNotificationConfigSuccessResponse,
 )
+
 
 # --- Helper Data ---
 
-MINIMAL_AGENT_AUTH: dict[str, Any] = {'schemes': ['Bearer']}
-FULL_AGENT_AUTH: dict[str, Any] = {
-    'schemes': ['Bearer', 'Basic'],
-    'credentials': 'user:pass',
+MINIMAL_AGENT_SECURITY_SCHEME: dict[str, Any] = {
+    'type': 'apiKey',
+    'in': 'header',
+    'name': 'X-API-KEY',
 }
 
 MINIMAL_AGENT_SKILL: dict[str, Any] = {
@@ -95,7 +99,6 @@ FULL_AGENT_SKILL: dict[str, Any] = {
 }
 
 MINIMAL_AGENT_CARD: dict[str, Any] = {
-    'authentication': MINIMAL_AGENT_AUTH,
     'capabilities': {},  # AgentCapabilities is required but can be empty
     'defaultInputModes': ['text/plain'],
     'defaultOutputModes': ['application/json'],
@@ -175,26 +178,23 @@ JSONRPC_SUCCESS_RESULT: dict[str, Any] = {'status': 'ok', 'data': [1, 2, 3]}
 # --- Test Functions ---
 
 
-def test_agent_authentication_valid():
-    auth = AgentAuthentication(**MINIMAL_AGENT_AUTH)
-    assert auth.schemes == ['Bearer']
-    assert auth.credentials is None
-
-    auth_full = AgentAuthentication(**FULL_AGENT_AUTH)
-    assert auth_full.schemes == ['Bearer', 'Basic']
-    assert auth_full.credentials == 'user:pass'
+def test_security_scheme_valid():
+    scheme = SecurityScheme.model_validate(MINIMAL_AGENT_SECURITY_SCHEME)
+    assert isinstance(scheme.root, APIKeySecurityScheme)
+    assert scheme.root.type == 'apiKey'
+    assert scheme.root.in_ == In.header
+    assert scheme.root.name == 'X-API-KEY'
 
 
-def test_agent_authentication_invalid():
+def test_security_scheme_invalid():
     with pytest.raises(ValidationError):
-        AgentAuthentication(
-            credentials='only_creds'
-        )  # Missing schemes  # type: ignore
+        APIKeySecurityScheme(
+            name='my_api_key',
+        )  # Missing "in"  # type: ignore
 
-        AgentAuthentication(
-            schemes=['Bearer'],
-            extra_field='extra',  # type: ignore
-        )  # Extra field
+        OAuth2SecurityScheme(
+            description='OAuth2 scheme missing flows',
+        )  # Missing "flows"
 
 
 def test_agent_capabilities():
@@ -251,7 +251,6 @@ def test_agent_card_valid():
     card = AgentCard(**MINIMAL_AGENT_CARD)
     assert card.name == 'TestAgent'
     assert card.version == '1.0'
-    assert card.authentication.schemes == ['Bearer']
     assert len(card.skills) == 1
     assert card.skills[0].id == 'skill-123'
     assert card.provider is None  # Optional

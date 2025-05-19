@@ -64,7 +64,6 @@ def main(host: str, port: int):
         defaultOutputModes=['text'],
         capabilities=AgentCapabilities(streaming=True),
         skills=[skill],
-        authentication=AgentAuthentication(schemes=['public']),
     )
 
     adk_agent = create_agent(
