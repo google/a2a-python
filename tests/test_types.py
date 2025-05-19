@@ -7,7 +7,7 @@ from pydantic import ValidationError
 from a2a.types import (
     A2AError,
     A2ARequest,
-    AgentAuthentication,
+    APIKeySecurityScheme,
     AgentCapabilities,
     AgentCard,
     AgentProvider,
@@ -15,6 +15,7 @@ from a2a.types import (
     Artifact,
     CancelTaskRequest,
     CancelTaskResponse,
+    CancelTaskSuccessResponse,
     ContentTypeNotSupportedError,
     DataPart,
     FileBase,
@@ -23,8 +24,11 @@ from a2a.types import (
     FileWithUri,
     GetTaskPushNotificationConfigRequest,
     GetTaskPushNotificationConfigResponse,
+    GetTaskPushNotificationConfigSuccessResponse,
     GetTaskRequest,
     GetTaskResponse,
+    GetTaskSuccessResponse,
+    In,
     InternalError,
     InvalidParamsError,
     InvalidRequestError,
@@ -35,18 +39,25 @@ from a2a.types import (
     JSONRPCRequest,
     JSONRPCResponse,
     Message,
+    MessageSendParams,
     MethodNotFoundError,
+    OAuth2SecurityScheme,
     Part,
     PartBase,
     PushNotificationAuthenticationInfo,
     PushNotificationConfig,
     PushNotificationNotSupportedError,
+    Role,
+    SecurityScheme,
     SendMessageRequest,
     SendMessageResponse,
+    SendMessageSuccessResponse,
     SendStreamingMessageRequest,
     SendStreamingMessageResponse,
+    SendStreamingMessageSuccessResponse,
     SetTaskPushNotificationConfigRequest,
     SetTaskPushNotificationConfigResponse,
+    SetTaskPushNotificationConfigSuccessResponse,
     Task,
     TaskArtifactUpdateEvent,
     TaskIdParams,
@@ -55,27 +66,20 @@ from a2a.types import (
     TaskPushNotificationConfig,
     TaskQueryParams,
     TaskResubscriptionRequest,
-    MessageSendParams,
     TaskState,
     TaskStatus,
     TaskStatusUpdateEvent,
     TextPart,
     UnsupportedOperationError,
-    GetTaskSuccessResponse,
-    SendStreamingMessageSuccessResponse,
-    SendMessageSuccessResponse,
-    CancelTaskSuccessResponse,
-    Role,
-    SetTaskPushNotificationConfigSuccessResponse,
-    GetTaskPushNotificationConfigSuccessResponse,
 )
+
 
 # --- Helper Data ---
 
-MINIMAL_AGENT_AUTH: dict[str, Any] = {'schemes': ['Bearer']}
-FULL_AGENT_AUTH: dict[str, Any] = {
-    'schemes': ['Bearer', 'Basic'],
-    'credentials': 'user:pass',
+MINIMAL_AGENT_SECURITY_SCHEME: dict[str, Any] = {
+    'type': 'apiKey',
+    'in': 'header',
+    'name': 'X-API-KEY',
 }
 
 MINIMAL_AGENT_SKILL: dict[str, Any] = {
@@ -95,7 +99,6 @@ FULL_AGENT_SKILL: dict[str, Any] = {
 }
 
 MINIMAL_AGENT_CARD: dict[str, Any] = {
-    'authentication': MINIMAL_AGENT_AUTH,
     'capabilities': {},  # AgentCapabilities is required but can be empty
     'defaultInputModes': ['text/plain'],
     'defaultOutputModes': ['application/json'],
@@ -106,22 +109,22 @@ MINIMAL_AGENT_CARD: dict[str, Any] = {
     'version': '1.0',
 }
 
-TEXT_PART_DATA: dict[str, Any] = {'type': 'text', 'text': 'Hello'}
+TEXT_PART_DATA: dict[str, Any] = {'kind': 'text', 'text': 'Hello'}
 FILE_URI_PART_DATA: dict[str, Any] = {
-    'type': 'file',
+    'kind': 'file',
     'file': {'uri': 'file:///path/to/file.txt', 'mimeType': 'text/plain'},
 }
 FILE_BYTES_PART_DATA: dict[str, Any] = {
-    'type': 'file',
+    'kind': 'file',
     'file': {'bytes': 'aGVsbG8=', 'name': 'hello.txt'},  # base64 for "hello"
 }
-DATA_PART_DATA: dict[str, Any] = {'type': 'data', 'data': {'key': 'value'}}
+DATA_PART_DATA: dict[str, Any] = {'kind': 'data', 'data': {'key': 'value'}}
 
 MINIMAL_MESSAGE_USER: dict[str, Any] = {
     'role': 'user',
     'parts': [TEXT_PART_DATA],
     'messageId': 'msg-123',
-    'type': 'message',
+    'kind': 'message',
 }
 
 AGENT_MESSAGE_WITH_FILE: dict[str, Any] = {
@@ -142,7 +145,7 @@ MINIMAL_TASK: dict[str, Any] = {
     'id': 'task-abc',
     'contextId': 'session-xyz',
     'status': MINIMAL_TASK_STATUS,
-    'type': 'task',
+    'kind': 'task',
 }
 FULL_TASK: dict[str, Any] = {
     'id': 'task-abc',
@@ -157,7 +160,7 @@ FULL_TASK: dict[str, Any] = {
         }
     ],
     'metadata': {'priority': 'high'},
-    'type': 'task',
+    'kind': 'task',
 }
 
 MINIMAL_TASK_ID_PARAMS: dict[str, Any] = {'id': 'task-123'}
@@ -175,26 +178,23 @@ JSONRPC_SUCCESS_RESULT: dict[str, Any] = {'status': 'ok', 'data': [1, 2, 3]}
 # --- Test Functions ---
 
 
-def test_agent_authentication_valid():
-    auth = AgentAuthentication(**MINIMAL_AGENT_AUTH)
-    assert auth.schemes == ['Bearer']
-    assert auth.credentials is None
-
-    auth_full = AgentAuthentication(**FULL_AGENT_AUTH)
-    assert auth_full.schemes == ['Bearer', 'Basic']
-    assert auth_full.credentials == 'user:pass'
+def test_security_scheme_valid():
+    scheme = SecurityScheme.model_validate(MINIMAL_AGENT_SECURITY_SCHEME)
+    assert isinstance(scheme.root, APIKeySecurityScheme)
+    assert scheme.root.type == 'apiKey'
+    assert scheme.root.in_ == In.header
+    assert scheme.root.name == 'X-API-KEY'
 
 
-def test_agent_authentication_invalid():
+def test_security_scheme_invalid():
     with pytest.raises(ValidationError):
-        AgentAuthentication(
-            credentials='only_creds'
-        )  # Missing schemes  # type: ignore
+        APIKeySecurityScheme(
+            name='my_api_key',
+        )  # Missing "in"  # type: ignore
 
-        AgentAuthentication(
-            schemes=['Bearer'],
-            extra_field='extra',  # type: ignore
-        )  # Extra field
+        OAuth2SecurityScheme(
+            description='OAuth2 scheme missing flows',
+        )  # Missing "flows"
 
 
 def test_agent_capabilities():
@@ -251,7 +251,6 @@ def test_agent_card_valid():
     card = AgentCard(**MINIMAL_AGENT_CARD)
     assert card.name == 'TestAgent'
     assert card.version == '1.0'
-    assert card.authentication.schemes == ['Bearer']
     assert len(card.skills) == 1
     assert card.skills[0].id == 'skill-123'
     assert card.provider is None  # Optional
@@ -269,7 +268,7 @@ def test_agent_card_invalid():
 
 def test_text_part():
     part = TextPart(**TEXT_PART_DATA)
-    assert part.type == 'text'
+    assert part.kind == 'text'
     assert part.text == 'Hello'
     assert part.metadata is None
 
@@ -277,7 +276,7 @@ def test_text_part():
         TextPart(type='text')  # Missing text # type: ignore
     with pytest.raises(ValidationError):
         TextPart(
-            type='file',  # type: ignore
+            kind='file',  # type: ignore
             text='hello',
         )  # Wrong type literal
 
@@ -287,7 +286,7 @@ def test_file_part_variants():
     file_uri = FileWithUri(
         uri='file:///path/to/file.txt', mimeType='text/plain'
     )
-    part_uri = FilePart(type='file', file=file_uri)
+    part_uri = FilePart(kind='file', file=file_uri)
     assert isinstance(part_uri.file, FileWithUri)
     assert part_uri.file.uri == 'file:///path/to/file.txt'
     assert part_uri.file.mimeType == 'text/plain'
@@ -295,7 +294,7 @@ def test_file_part_variants():
 
     # Bytes variant
     file_bytes = FileWithBytes(bytes='aGVsbG8=', name='hello.txt')
-    part_bytes = FilePart(type='file', file=file_bytes)
+    part_bytes = FilePart(kind='file', file=file_bytes)
     assert isinstance(part_bytes.file, FileWithBytes)
     assert part_bytes.file.bytes == 'aGVsbG8='
     assert part_bytes.file.name == 'hello.txt'
@@ -312,14 +311,14 @@ def test_file_part_variants():
 
     # Invalid - wrong type literal
     with pytest.raises(ValidationError):
-        FilePart(type='text', file=file_uri)  # type: ignore
+        FilePart(kind='text', file=file_uri)  # type: ignore
 
     FilePart(**FILE_URI_PART_DATA, extra='extra')  # type: ignore
 
 
 def test_data_part():
     part = DataPart(**DATA_PART_DATA)
-    assert part.type == 'data'
+    assert part.kind == 'data'
     assert part.data == {'key': 'value'}
 
     with pytest.raises(ValidationError):
@@ -656,7 +655,7 @@ def test_send_message_streaming_status_update_response() -> None:
         'taskId': '1',
         'contextId': '2',
         'final': False,
-        'type': 'status-update',
+        'kind': 'status-update',
     }
 
     event_data: dict[str, Any] = {
@@ -716,7 +715,7 @@ def test_send_message_streaming_artifact_update_response() -> None:
         'contextId': '2',
         'append': False,
         'lastChunk': True,
-        'type': 'artifact-update',
+        'kind': 'artifact-update',
     }
     event_data: dict[str, Any] = {
         'jsonrpc': '2.0',

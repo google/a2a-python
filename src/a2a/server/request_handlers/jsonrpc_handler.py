@@ -36,13 +36,15 @@ from a2a.types import (
 )
 from a2a.utils.errors import ServerError
 from a2a.utils.helpers import validate
+from a2a.utils.telemetry import SpanKind, trace_class
 
 
 logger = logging.getLogger(__name__)
 
 
+@trace_class(kind=SpanKind.SERVER)
 class JSONRPCHandler:
-    """A handler that maps the JSONRPC Objects to the request handler and back."""
+    """Maps the JSONRPC Objects to the request handler and back."""
 
     def __init__(
         self,
@@ -53,7 +55,7 @@ class JSONRPCHandler:
 
         Args:
             agent_card: The AgentCard describing the agent's capabilities.
-            request_handler: The handler instance responsible for processing A2A requests.
+            request_handler: The handler instance to process A2A requests.
         """
         self.agent_card = agent_card
         self.request_handler = request_handler

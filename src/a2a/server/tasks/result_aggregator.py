@@ -1,11 +1,12 @@
 import asyncio
 import logging
+
 from collections.abc import AsyncGenerator, AsyncIterator
-from typing import Tuple
 
 from a2a.server.events import Event, EventConsumer
 from a2a.server.tasks.task_manager import TaskManager
 from a2a.types import Message, Task, TaskState, TaskStatusUpdateEvent
+
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,7 @@ class ResultAggregator:
 
     async def consume_and_emit(
         self, consumer: EventConsumer
-    ) -> AsyncGenerator[Event, None]:
+    ) -> AsyncGenerator[Event]:
         """Processes the event stream and emits the same event stream out."""
         async for event in consumer.consume_all():
             await self.task_manager.process(event)
@@ -54,7 +55,7 @@ class ResultAggregator:
 
     async def consume_and_break_on_interrupt(
         self, consumer: EventConsumer
-    ) -> Tuple[Task | Message | None, bool]:
+    ) -> tuple[Task | Message | None, bool]:
         """Process the event stream until completion or an interruptable state is encountered."""
         event_stream = consumer.consume_all()
         interrupted = False
@@ -64,7 +65,7 @@ class ResultAggregator:
                 return event, False
             await self.task_manager.process(event)
             if (
-                isinstance(event, (Task, TaskStatusUpdateEvent))
+                isinstance(event, Task | TaskStatusUpdateEvent)
                 and event.status.state == TaskState.auth_required
             ):
                 # auth-required is a special state: the message should be
@@ -82,16 +83,8 @@ class ResultAggregator:
                 break
         return await self.task_manager.get_task(), interrupted
 
-    async def _continue_consuming(self, event_stream: AsyncIterator[Event]):
+    async def _continue_consuming(
+        self, event_stream: AsyncIterator[Event]
+    ) -> None:
         async for event in event_stream:
             await self.task_manager.process(event)
-
-    # async def consume_and_emit_task(
-    #     self, consumer: EventConsumer
-    # ) -> AsyncGenerator[Event, None]:
-    #     """Processes the event stream and emits the current state of the task."""
-    #     async for event in consumer.consume_all():
-    #         if isinstance(event, Message):
-    #             self._current_task_or_message = event
-    #             break
-    #         yield await self.task_manager.process(event)

@@ -5,18 +5,15 @@ import os
 
 import click
 import uvicorn
-from adk_agent_executor import ADKAgentExecutor
+
+from adk_agent_executor import ADKAgentExecutor  # type: ignore[import-untyped]
 from dotenv import load_dotenv
 
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore
-from a2a.types import (
-    AgentAuthentication,
-    AgentCapabilities,
-    AgentCard,
-    AgentSkill,
-)
+from a2a.types import AgentCapabilities, AgentCard, AgentSkill
+
 
 load_dotenv()
 
@@ -39,11 +36,12 @@ def make_sync(func):
 )
 def main(host: str, port: int, calendar_agent: str):
     # Verify an API key is set. Not required if using Vertex AI APIs, since those can use gcloud credentials.
-    if not os.getenv('GOOGLE_GENAI_USE_VERTEXAI') == 'TRUE':
-        if not os.getenv('GOOGLE_API_KEY'):
-            raise Exception(
-                'GOOGLE_API_KEY environment variable not set and GOOGLE_GENAI_USE_VERTEXAI is not TRUE.'
-            )
+    if os.getenv('GOOGLE_GENAI_USE_VERTEXAI') != 'TRUE' and not os.getenv(
+        'GOOGLE_API_KEY'
+    ):
+        raise ValueError(
+            'GOOGLE_API_KEY environment variable not set and GOOGLE_GENAI_USE_VERTEXAI is not TRUE.'
+        )
 
     skill = AgentSkill(
         id='plan_parties',
@@ -66,7 +64,6 @@ def main(host: str, port: int, calendar_agent: str):
         defaultOutputModes=['text'],
         capabilities=AgentCapabilities(streaming=True),
         skills=[skill],
-        authentication=AgentAuthentication(schemes=['public']),
     )
     request_handler = DefaultRequestHandler(
         agent_executor=agent_executor, task_store=InMemoryTaskStore()
