@@ -15,7 +15,6 @@ from a2a.types import (
     AgentCard,
     Artifact,
     DataPart,
-    GetTaskPushNotificationConfigSuccessResponse,
     InternalError,
     InvalidRequestError,
     JSONParseError,
@@ -337,13 +336,6 @@ def test_get_push_notification_config(
         ),
     )
 
-    # Wrap the response in GetTaskPushNotificationConfigSuccessResponse
-    mock_response = GetTaskPushNotificationConfigSuccessResponse(
-        id='123',  # Match the request ID
-        jsonrpc='2.0',
-        result=task_push_config,
-    )
-
     handler.on_get_task_push_notification_config.return_value = task_push_config
 
     # Send request
@@ -393,11 +385,6 @@ async def test_message_send_stream(
                 'append': False,
                 'lastChunk': last[i],
                 'kind': 'artifact-update',
-            }
-            event_data: dict[str, Any] = {
-                'jsonrpc': '2.0',
-                'id': 123,
-                'result': task_artifact_update_event_data,
             }
 
             yield TaskArtifactUpdateEvent.model_validate(
