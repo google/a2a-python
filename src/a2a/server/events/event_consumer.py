@@ -79,6 +79,8 @@ class EventConsumer:
                             TaskState.completed,
                             TaskState.canceled,
                             TaskState.failed,
+                            TaskState.rejected,
+                            TaskState.unknown,
                         )
                     )
                 )

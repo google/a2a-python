@@ -1,4 +1,4 @@
-from agent_executor import HelloWorldAgentExecutor
+from agent_executor import HelloWorldAgentExecutor # type: ignore[import-untyped]
 
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler

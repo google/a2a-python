@@ -1,7 +1,7 @@
 import datetime
 
-from google.adk.agents import LlmAgent
-from google.adk.tools.google_api_tool import calendar_tool_set
+from google.adk.agents import LlmAgent # type: ignore[import-untyped]
+from google.adk.tools.google_api_tool import calendar_tool_set # type: ignore[import-untyped]
 
 
 def create_agent(client_id, client_secret) -> LlmAgent:
