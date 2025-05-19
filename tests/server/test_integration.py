@@ -55,15 +55,15 @@ MINIMAL_AGENT_CARD: dict[str, Any] = {
     'version': '1.0',
 }
 
-TEXT_PART_DATA: dict[str, Any] = {'type': 'text', 'text': 'Hello'}
+TEXT_PART_DATA: dict[str, Any] = {'kind': 'text', 'text': 'Hello'}
 
-DATA_PART_DATA: dict[str, Any] = {'type': 'data', 'data': {'key': 'value'}}
+DATA_PART_DATA: dict[str, Any] = {'kind': 'data', 'data': {'key': 'value'}}
 
 MINIMAL_MESSAGE_USER: dict[str, Any] = {
     'role': 'user',
     'parts': [TEXT_PART_DATA],
     'messageId': 'msg-123',
-    'type': 'message',
+    'kind': 'message',
 }
 
 MINIMAL_TASK_STATUS: dict[str, Any] = {'state': 'submitted'}
@@ -174,12 +174,12 @@ def test_send_message(client: TestClient, handler: mock.AsyncMock):
                 "role": "agent",
                 "parts": [
                     {
-                        "type": "text",
+                        "kind": "text",
                         "text": "Hello"
                     }
                 ],
                 "messageId": "111",
-                "type": "message",
+                "kind": "message",
                 "taskId": "task1",
                 "contextId": "session-xyz",
             }
@@ -334,7 +334,7 @@ async def test_message_send_stream(app: A2AStarletteApplication, handler: mock.A
                 'contextId': 'session-xyz',
                 'append': False,
                 'lastChunk': last[i],
-                'type': 'artifact-update',
+                'kind': 'artifact-update',
             }
             event_data: dict[str, Any] = {
                 'jsonrpc': '2.0',
@@ -360,12 +360,12 @@ async def test_message_send_stream(app: A2AStarletteApplication, handler: mock.A
                     "role": "agent",
                     "parts": [
                         {
-                            "type": "text",
+                            "kind": "text",
                             "text": "Hello"
                         }
                     ],
                     "messageId": "111",
-                    "type": "message",
+                    "kind": "message",
                     "taskId": "taskId",
                     "contextId": "session-xyz",
                 }
@@ -416,7 +416,7 @@ async def test_task_resubscription(app: A2AStarletteApplication, handler: mock.A
                 'contextId': 'session-xyz',
                 'append': False,
                 'lastChunk': last[i],
-                'type': 'artifact-update',
+                'kind': 'artifact-update',
             }
             yield TaskArtifactUpdateEvent.model_validate(task_artifact_update_event_data)
 
