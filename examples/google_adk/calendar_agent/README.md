@@ -4,7 +4,7 @@ This example shows how to create an A2A Server that uses an ADK-based Agent that
 
 ## Prerequisites
 
-- Python 3.9 or higher
+- Python 3.13 or higher
 - [UV](https://docs.astral.sh/uv/)
 - A Gemini API Key
 - A [Google OAuth Client](https://developers.google.com/identity/openid-connect/openid-connect#getcredentials)

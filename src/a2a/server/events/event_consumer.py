@@ -12,11 +12,13 @@ from a2a.types import (
     TaskStatusUpdateEvent,
 )
 from a2a.utils.errors import ServerError
+from a2a.utils.telemetry import SpanKind, trace_class
 
 
 logger = logging.getLogger(__name__)
 
 
+@trace_class(kind=SpanKind.SERVER)
 class EventConsumer:
     """Consumer to read events from the agent event queue."""
 
@@ -77,6 +79,8 @@ class EventConsumer:
                             TaskState.completed,
                             TaskState.canceled,
                             TaskState.failed,
+                            TaskState.rejected,
+                            TaskState.unknown,
                         )
                     )
                 )

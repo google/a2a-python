@@ -6,7 +6,7 @@ This agent helps plan birthday parties. It has access to a Calendar Agent that i
 
 ## Prerequisites
 
-- Python 3.9 or higher
+- Python 3.13 or higher
 - [UV](https://docs.astral.sh/uv/)
 - A Gemini API Key
 

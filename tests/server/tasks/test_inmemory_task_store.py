@@ -10,7 +10,7 @@ MINIMAL_TASK: dict[str, Any] = {
     'id': 'task-abc',
     'contextId': 'session-xyz',
     'status': {'state': 'submitted'},
-    'type': 'task',
+    'kind': 'task',
 }
 
 

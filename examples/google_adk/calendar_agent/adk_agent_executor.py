@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 import asyncio
 import logging
 
@@ -53,7 +54,7 @@ class ADKAgentExecutor(AgentExecutor):
 
     def _run_agent(
         self, session_id, new_message: types.Content
-    ) -> AsyncGenerator[Event, None]:
+    ) -> AsyncGenerator[Event]:
         return self.runner.run_async(
             session_id=session_id, user_id='self', new_message=new_message
         )

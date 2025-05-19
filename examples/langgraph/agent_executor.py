@@ -1,6 +1,5 @@
-from agent import CurrencyAgent
+from agent import CurrencyAgent # type: ignore[import-untyped]
 from typing_extensions import override
-
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events.event_queue import EventQueue
 from a2a.types import (
