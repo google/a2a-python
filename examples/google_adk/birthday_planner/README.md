@@ -6,22 +6,22 @@ This agent helps plan birthday parties. It has access to a Calendar Agent that i
 
 ## Prerequisites
 
-- Python 3.9 or higher
+- Python 3.13 or higher
 - [UV](https://docs.astral.sh/uv/)
 - A Gemini API Key
 
 ## Running the example
 
-1. Create the .env file with your API Key
+1. Create the `.env` file with your API Key
 
-```bash
-echo "GOOGLE_API_KEY=your_api_key_here" > .env
-```
+   ```bash
+   echo "GOOGLE_API_KEY=your_api_key_here" > .env
+   ```
 
 2. Run the Calendar Agent. See examples/google_adk/calendar_agent.
 
 3. Run the example
 
-```
-uv run .
-```
+   ```sh
+   uv run .
+   ```

@@ -7,4 +7,5 @@ __pycache__
 .ruff_cache
 .venv
 coverage.xml
+.nox
 spec.json

@@ -1,4 +1,3 @@
-# type: ignore
 """OpenTelemetry Tracing Utilities for A2A Python SDK.
 
 This module provides decorators to simplify the integration of OpenTelemetry
@@ -59,9 +58,12 @@ import inspect
 import logging
 
 from opentelemetry import trace
-from opentelemetry.trace import SpanKind, StatusCode
+from opentelemetry.trace import SpanKind as _SpanKind
+from opentelemetry.trace import StatusCode
 
 
+SpanKind = _SpanKind
+__all__ = ['SpanKind']
 INSTRUMENTING_MODULE_NAME = 'a2a-python-sdk'
 INSTRUMENTING_MODULE_VERSION = '1.0.0'
 
@@ -210,7 +212,11 @@ def trace_function(
     return async_wrapper if is_async_func else sync_wrapper
 
 
-def trace_class(include_list: list[str] = None, exclude_list: list[str] = None):
+def trace_class(
+    include_list: list[str] | None = None,
+    exclude_list: list[str] | None = None,
+    kind=SpanKind.INTERNAL,
+):
     """A class decorator to automatically trace specified methods of a class.
 
     This decorator iterates over the methods of a class and applies the
@@ -278,7 +284,11 @@ def trace_class(include_list: list[str] = None, exclude_list: list[str] = None):
             all_methods[name] = method
             span_name = f'{cls.__module__}.{cls.__name__}.{name}'
             # Set the decorator on the method.
-            setattr(cls, name, trace_function(span_name=span_name)(method))
+            setattr(
+                cls,
+                name,
+                trace_function(span_name=span_name, kind=kind)(method),
+            )
         return cls
 
     return decorator

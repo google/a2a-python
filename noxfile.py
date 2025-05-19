@@ -114,14 +114,20 @@ def format(session):
         'pyupgrade',
         'autoflake',
         'ruff',
+        'no_implicit_optional',
     )
 
     if lint_paths_py:
+        session.run(
+            'no_implicit_optional',
+            '--use-union-or',
+            *lint_paths_py,
+        )
         if not format_all:
             session.run(
                 'pyupgrade',
                 '--exit-zero-even-if-changed',
-                '--py311-plus',
+                '--py313-plus',
                 *lint_paths_py,
             )
         session.run(

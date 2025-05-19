@@ -6,8 +6,10 @@ from a2a.server.events.queue_manager import (
     QueueManager,
     TaskQueueExists,
 )
+from a2a.utils.telemetry import SpanKind, trace_class
 
 
+@trace_class(kind=SpanKind.SERVER)
 class InMemoryQueueManager(QueueManager):
     """InMemoryQueueManager is used for a single binary management.
 
@@ -18,7 +20,7 @@ class InMemoryQueueManager(QueueManager):
     true scalable deployment.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._task_queue: dict[str, EventQueue] = {}
         self._lock = asyncio.Lock()
 

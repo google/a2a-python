@@ -28,7 +28,7 @@ MINIMAL_TASK: dict[str, Any] = {
     'id': '123',
     'contextId': 'session-xyz',
     'status': {'state': 'submitted'},
-    'type': 'task',
+    'kind': 'task',
 }
 
 MESSAGE_PAYLOAD: dict[str, Any] = {

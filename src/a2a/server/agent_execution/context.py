@@ -3,6 +3,7 @@ import uuid
 from a2a.types import (
     InvalidParamsError,
     Message,
+    MessageSendConfiguration,
     MessageSendParams,
     Task,
 )
@@ -19,7 +20,7 @@ class RequestContext:
         task_id: str | None = None,
         context_id: str | None = None,
         task: Task | None = None,
-        related_tasks: list[Task] = None,
+        related_tasks: list[Task] | None = None,
     ):
         if related_tasks is None:
             related_tasks = []
@@ -78,6 +79,12 @@ class RequestContext:
     @property
     def context_id(self) -> str | None:
         return self._context_id
+
+    @property
+    def configuration(self) -> MessageSendConfiguration | None:
+        if not self._params:
+            return None
+        return self._params.configuration
 
     def _check_or_generate_task_id(self) -> None:
         if not self._params:
