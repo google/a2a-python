@@ -1082,7 +1082,9 @@ class Artifact(BaseModel):
 
 
 class GetTaskPushNotificationConfigResponse(
-    RootModel[JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse]
+    RootModel[
+        JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse
+    ]
 ):
     root: JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse
     """
@@ -1229,7 +1231,9 @@ class SendStreamingMessageRequest(BaseModel):
 
 
 class SetTaskPushNotificationConfigResponse(
-    RootModel[JSONRPCErrorResponse | SetTaskPushNotificationConfigSuccessResponse]
+    RootModel[
+        JSONRPCErrorResponse | SetTaskPushNotificationConfigSuccessResponse
+    ]
 ):
     root: JSONRPCErrorResponse | SetTaskPushNotificationConfigSuccessResponse
     """
@@ -1514,7 +1518,9 @@ class SendStreamingMessageSuccessResponse(BaseModel):
     """
 
 
-class CancelTaskResponse(RootModel[JSONRPCErrorResponse | CancelTaskSuccessResponse]):
+class CancelTaskResponse(
+    RootModel[JSONRPCErrorResponse | CancelTaskSuccessResponse]
+):
     root: JSONRPCErrorResponse | CancelTaskSuccessResponse
     """
     JSON-RPC response for the 'tasks/cancel' method.
@@ -1553,7 +1559,9 @@ class JSONRPCResponse(
     """
 
 
-class SendMessageResponse(RootModel[JSONRPCErrorResponse | SendMessageSuccessResponse]):
+class SendMessageResponse(
+    RootModel[JSONRPCErrorResponse | SendMessageSuccessResponse]
+):
     root: JSONRPCErrorResponse | SendMessageSuccessResponse
     """
     JSON-RPC response model for the 'message/send' method.
