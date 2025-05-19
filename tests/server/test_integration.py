@@ -23,6 +23,7 @@ from a2a.types import (
     Task,
     TaskArtifactUpdateEvent,
     TaskPushNotificationConfig,
+    TaskState,
     TaskStatus,
     TextPart,
     UnsupportedOperationError,
@@ -229,11 +230,11 @@ def test_cancel_task(client: TestClient, handler: mock.AsyncMock):
     """Test cancelling a task."""
     # Setup mock response
     task_status = TaskStatus(**MINIMAL_TASK_STATUS)
-    task_status.state = 'cancelled'
+    task_status.state =  TaskState.canceled  # 'cancelled' #
     task = Task(
         id='task1', contextId='ctx1', state='cancelled', status=task_status
     )
-    handler.on_cancel_task.return_value = task  # JSONRPCResponse(root=task)
+    handler.on_cancel_task.return_value = task
 
     # Send request
     response = client.post(
@@ -250,7 +251,7 @@ def test_cancel_task(client: TestClient, handler: mock.AsyncMock):
     assert response.status_code == 200
     data = response.json()
     assert data['result']['id'] == 'task1'
-    assert data['result']['status']['state'] == 'cancelled'
+    assert data['result']['status']['state'] == 'canceled'
 
     # Verify handler was called
     handler.on_cancel_task.assert_awaited_once()
@@ -364,7 +365,7 @@ def test_get_push_notification_config(
 @pytest.mark.asyncio
 async def test_message_send_stream(
     app: A2AStarletteApplication, handler: mock.AsyncMock
-):
+) -> None:
     """Test streaming message sending."""
 
     # Setup mock streaming response
@@ -454,7 +455,7 @@ async def test_message_send_stream(
 @pytest.mark.asyncio
 async def test_task_resubscription(
     app: A2AStarletteApplication, handler: mock.AsyncMock
-):
+) -> None:
     """Test task resubscription streaming."""
 
     # Setup mock streaming response
