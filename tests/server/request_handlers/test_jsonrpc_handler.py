@@ -1,55 +1,68 @@
 import unittest
 import unittest.async_case
-from unittest.mock import AsyncMock, patch, MagicMock
+
+from collections.abc import AsyncGenerator
+from typing import Any
+from unittest.mock import AsyncMock, MagicMock, patch, call
+
 import pytest
-from a2a.server.events.event_queue import EventQueue
+import httpx
+
 from a2a.server.agent_execution import AgentExecutor
-from a2a.utils.errors import ServerError
+from a2a.server.events import (
+    QueueManager,
+)
+from a2a.server.events.event_queue import EventQueue
 from a2a.server.request_handlers import (
     DefaultRequestHandler,
     JSONRPCHandler,
 )
-from a2a.server.events import (
-    QueueManager,
-)
-from a2a.server.tasks import TaskStore
+from a2a.server.tasks import InMemoryPushNotifier, PushNotifier, TaskStore
 from a2a.types import (
-    AgentCard,
     AgentCapabilities,
+    AgentCard,
+    Artifact,
+    CancelTaskRequest,
+    CancelTaskSuccessResponse,
+    GetTaskPushNotificationConfigRequest,
+    GetTaskPushNotificationConfigResponse,
+    GetTaskPushNotificationConfigSuccessResponse,
     GetTaskRequest,
     GetTaskResponse,
     GetTaskSuccessResponse,
-    Task,
-    TaskQueryParams,
     JSONRPCErrorResponse,
-    TaskNotFoundError,
-    TaskIdParams,
-    CancelTaskRequest,
-    CancelTaskSuccessResponse,
-    UnsupportedOperationError,
-    SendMessageRequest,
     Message,
+    MessageSendConfiguration,
     MessageSendParams,
+    Part,
+    SendMessageRequest,
     SendMessageSuccessResponse,
+    PushNotificationConfig,
     SendStreamingMessageRequest,
     SendStreamingMessageSuccessResponse,
+    SetTaskPushNotificationConfigRequest,
+    SetTaskPushNotificationConfigResponse,
+    SetTaskPushNotificationConfigSuccessResponse,
+    Task,
     TaskArtifactUpdateEvent,
-    TaskStatusUpdateEvent,
-    Artifact,
-    Part,
-    TextPart,
-    TaskStatus,
-    TaskState,
+    TaskIdParams,
+    TaskNotFoundError,
+    TaskPushNotificationConfig,
+    TaskQueryParams,
     TaskResubscriptionRequest,
+    TaskState,
+    TaskStatus,
+    TaskStatusUpdateEvent,
+    TextPart,
+    UnsupportedOperationError,
 )
-from collections.abc import AsyncGenerator
-from typing import Any
+from a2a.utils.errors import ServerError
 
 MINIMAL_TASK: dict[str, Any] = {
     'id': 'task_123',
     'contextId': 'session-xyz',
     'status': {'state': 'submitted'},
-    'type': 'task',
+    'kind': 'task',
 }
 MESSAGE_PAYLOAD: dict[str, Any] = {
     'role': 'agent',
@@ -316,7 +329,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
                 assert isinstance(
                     event.root, SendStreamingMessageSuccessResponse
                 )
-                assert collected_events[i].root.result == events[i]
+                assert event.root.result == events[i]
             mock_agent_executor.execute.assert_called_once()
 
     async def test_on_message_stream_new_message_existing_task_success(
@@ -371,12 +384,195 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
             )
             response = handler.on_message_send_stream(request)
             assert isinstance(response, AsyncGenerator)
-            collected_events: list[Any] = []
-            async for event in response:
-                collected_events.append(event)
+            collected_events = [item async for item in response]
             assert len(collected_events) == len(events)
             mock_agent_executor.execute.assert_called_once()
             assert mock_task.history is not None and len(mock_task.history) == 1
+
+    async def test_set_push_notification_success(self) -> None:
+        mock_agent_executor = AsyncMock(spec=AgentExecutor)
+        mock_task_store = AsyncMock(spec=TaskStore)
+        mock_push_notifier = AsyncMock(spec=PushNotifier)
+        request_handler = DefaultRequestHandler(
+            mock_agent_executor,
+            mock_task_store,
+            push_notifier=mock_push_notifier,
+        )
+        self.mock_agent_card.capabilities = AgentCapabilities(
+            streaming=True, pushNotifications=True
+        )
+        handler = JSONRPCHandler(self.mock_agent_card, request_handler)
+        mock_task = Task(**MINIMAL_TASK)
+        mock_task_store.get.return_value = mock_task
+        task_push_config = TaskPushNotificationConfig(
+            taskId=mock_task.id,
+            pushNotificationConfig=PushNotificationConfig(
+                url='http://example.com'
+            ),
+        )
+        request = SetTaskPushNotificationConfigRequest(
+            id='1', params=task_push_config
+        )
+        response: SetTaskPushNotificationConfigResponse = (
+            await handler.set_push_notification(request)
+        )
+        self.assertIsInstance(
+            response.root, SetTaskPushNotificationConfigSuccessResponse
+        )
+        assert response.root.result == task_push_config  # type: ignore
+        mock_push_notifier.set_info.assert_called_once_with(
+            mock_task.id, task_push_config.pushNotificationConfig
+        )
+
+    async def test_get_push_notification_success(self) -> None:
+        mock_agent_executor = AsyncMock(spec=AgentExecutor)
+        mock_task_store = AsyncMock(spec=TaskStore)
+        mock_httpx_client = AsyncMock(spec=httpx.AsyncClient)
+        push_notifier = InMemoryPushNotifier(httpx_client=mock_httpx_client)
+        request_handler = DefaultRequestHandler(
+            mock_agent_executor, mock_task_store, push_notifier=push_notifier
+        )
+        self.mock_agent_card.capabilities = AgentCapabilities(
+            streaming=True, pushNotifications=True
+        )
+        handler = JSONRPCHandler(self.mock_agent_card, request_handler)
+        mock_task = Task(**MINIMAL_TASK)
+        mock_task_store.get.return_value = mock_task
+        task_push_config = TaskPushNotificationConfig(
+            taskId=mock_task.id,
+            pushNotificationConfig=PushNotificationConfig(
+                url='http://example.com'
+            ),
+        )
+        request = SetTaskPushNotificationConfigRequest(
+            id='1', params=task_push_config
+        )
+        await handler.set_push_notification(request)
+
+        get_request: GetTaskPushNotificationConfigRequest = (
+            GetTaskPushNotificationConfigRequest(
+                id='1', params=TaskIdParams(id=mock_task.id)
+            )
+        )
+        get_response: GetTaskPushNotificationConfigResponse = (
+            await handler.get_push_notification(get_request)
+        )
+        self.assertIsInstance(
+            get_response.root, GetTaskPushNotificationConfigSuccessResponse
+        )
+        assert get_response.root.result == task_push_config  # type: ignore
+
+    async def test_on_message_stream_new_message_send_push_notification_success(
+        self,
+    ) -> None:
+        mock_agent_executor = AsyncMock(spec=AgentExecutor)
+        mock_task_store = AsyncMock(spec=TaskStore)
+        mock_httpx_client = AsyncMock(spec=httpx.AsyncClient)
+        push_notifier = InMemoryPushNotifier(httpx_client=mock_httpx_client)
+        request_handler = DefaultRequestHandler(
+            mock_agent_executor, mock_task_store, push_notifier=push_notifier
+        )
+        self.mock_agent_card.capabilities = AgentCapabilities(
+            streaming=True, pushNotifications=True
+        )
+
+        handler = JSONRPCHandler(self.mock_agent_card, request_handler)
+        events: list[Any] = [
+            Task(**MINIMAL_TASK),
+            TaskArtifactUpdateEvent(
+                taskId='task_123',
+                contextId='session-xyz',
+                artifact=Artifact(
+                    artifactId='11', parts=[Part(TextPart(text='text'))]
+                ),
+            ),
+            TaskStatusUpdateEvent(
+                taskId='task_123',
+                contextId='session-xyz',
+                status=TaskStatus(state=TaskState.completed),
+                final=True,
+            ),
+        ]
+
+        async def streaming_coro():
+            for event in events:
+                yield event
+
+        with patch(
+            'a2a.server.request_handlers.default_request_handler.EventConsumer.consume_all',
+            return_value=streaming_coro(),
+        ):
+            mock_task_store.get.return_value = None
+            mock_agent_executor.execute.return_value = None
+            mock_httpx_client.post.return_value = httpx.Response(200)
+            request = SendStreamingMessageRequest(
+                id='1',
+                params=MessageSendParams(message=Message(**MESSAGE_PAYLOAD)),
+            )
+            request.params.configuration = MessageSendConfiguration(
+                acceptedOutputModes=['text'],
+                pushNotificationConfig=PushNotificationConfig(
+                    url='http://example.com'
+                ),
+            )
+            response = handler.on_message_send_stream(request)
+            assert isinstance(response, AsyncGenerator)
+
+            collected_events = [item async for item in response]
+            assert len(collected_events) == len(events)
+
+            calls = [
+                call(
+                    'http://example.com',
+                    json={
+                        'contextId': 'session-xyz',
+                        'id': 'task_123',
+                        'kind': 'task',
+                        'status': {'state': 'submitted'},
+                    },
+                ),
+                call(
+                    'http://example.com',
+                    json={
+                        'artifacts': [
+                            {
+                                'artifactId': '11',
+                                'parts': [
+                                    {
+                                        'kind': 'text',
+                                        'text': 'text',
+                                    }
+                                ],
+                            }
+                        ],
+                        'contextId': 'session-xyz',
+                        'id': 'task_123',
+                        'kind': 'task',
+                        'status': {'state': 'submitted'},
+                    },
+                ),
+                call(
+                    'http://example.com',
+                    json={
+                        'artifacts': [
+                            {
+                                'artifactId': '11',
+                                'parts': [
+                                    {
+                                        'kind': 'text',
+                                        'text': 'text',
+                                    }
+                                ],
+                            }
+                        ],
+                        'contextId': 'session-xyz',
+                        'id': 'task_123',
+                        'kind': 'task',
+                        'status': {'state': 'completed'},
+                    },
+                ),
+            ]
+            mock_httpx_client.post.assert_has_calls(calls)
 
     async def test_on_resubscribe_existing_task_success(
         self,
@@ -387,7 +583,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         request_handler = DefaultRequestHandler(
             mock_agent_executor, mock_task_store, mock_queue_manager
         )
-        mock_agent_card = MagicMock(spec=AgentCard)
+        self.mock_agent_card = MagicMock(spec=AgentCard)
         handler = JSONRPCHandler(self.mock_agent_card, request_handler)
         mock_task = Task(**MINIMAL_TASK, history=[])
         events: list[Any] = [

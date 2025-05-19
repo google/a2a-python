@@ -12,16 +12,20 @@ from a2a.types import (
     TaskStatusUpdateEvent,
 )
 from a2a.utils.errors import ServerError
+from a2a.utils.telemetry import SpanKind, trace_class
 
 
 logger = logging.getLogger(__name__)
 
 
+@trace_class(kind=SpanKind.SERVER)
 class EventConsumer:
     """Consumer to read events from the agent event queue."""
 
     def __init__(self, queue: EventQueue):
         self.queue = queue
+        self._timeout = 0.5
+        self._exception: BaseException | None = None
         logger.debug('EventConsumer initialized')
 
     async def consume_one(self) -> Event:
@@ -45,8 +49,17 @@ class EventConsumer:
         """Consume all the generated streaming events from the agent."""
         logger.debug('Starting to consume all events from the queue.')
         while True:
+            if self._exception:
+                raise self._exception
             try:
-                event = await self.queue.dequeue_event()
+                # We use a timeout when waiting for an event from the queue.
+                # This is required because it allows the loop to check if
+                # `self._exception` has been set by the `agent_task_callback`.
+                # Without the timeout, loop might hang indefinitely if no events are
+                # enqueued by the agent and the agent simply threw an exception
+                event = await asyncio.wait_for(
+                    self.queue.dequeue_event(), timeout=self._timeout
+                )
                 logger.debug(
                     f'Dequeued event of type: {type(event)} in consume_all.'
                 )
@@ -66,6 +79,8 @@ class EventConsumer:
                             TaskState.completed,
                             TaskState.canceled,
                             TaskState.failed,
+                            TaskState.rejected,
+                            TaskState.unknown,
                         )
                     )
                 )
@@ -74,5 +89,12 @@ class EventConsumer:
                     logger.debug('Stopping event consumption in consume_all.')
                     self.queue.close()
                     break
+            except TimeoutError:
+                # continue polling until there is a final event
+                continue
             except asyncio.QueueShutDown:
                 break
+
+    def agent_task_callback(self, agent_task: asyncio.Task[None]):
+        if agent_task.exception() is not None:
+            self._exception = agent_task.exception()
