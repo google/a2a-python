@@ -106,22 +106,22 @@ MINIMAL_AGENT_CARD: dict[str, Any] = {
     'version': '1.0',
 }
 
-TEXT_PART_DATA: dict[str, Any] = {'itemType': 'text', 'text': 'Hello'}
+TEXT_PART_DATA: dict[str, Any] = {'kind': 'text', 'text': 'Hello'}
 FILE_URI_PART_DATA: dict[str, Any] = {
-    'itemType': 'file',
+    'kind': 'file',
     'file': {'uri': 'file:///path/to/file.txt', 'mimeType': 'text/plain'},
 }
 FILE_BYTES_PART_DATA: dict[str, Any] = {
-    'itemType': 'file',
+    'kind': 'file',
     'file': {'bytes': 'aGVsbG8=', 'name': 'hello.txt'},  # base64 for "hello"
 }
-DATA_PART_DATA: dict[str, Any] = {'itemType': 'data', 'data': {'key': 'value'}}
+DATA_PART_DATA: dict[str, Any] = {'kind': 'data', 'data': {'key': 'value'}}
 
 MINIMAL_MESSAGE_USER: dict[str, Any] = {
     'role': 'user',
     'parts': [TEXT_PART_DATA],
     'messageId': 'msg-123',
-    'itemType': 'message',
+    'kind': 'message',
 }
 
 AGENT_MESSAGE_WITH_FILE: dict[str, Any] = {
@@ -142,7 +142,7 @@ MINIMAL_TASK: dict[str, Any] = {
     'id': 'task-abc',
     'contextId': 'session-xyz',
     'status': MINIMAL_TASK_STATUS,
-    'itemType': 'task',
+    'kind': 'task',
 }
 FULL_TASK: dict[str, Any] = {
     'id': 'task-abc',
@@ -157,7 +157,7 @@ FULL_TASK: dict[str, Any] = {
         }
     ],
     'metadata': {'priority': 'high'},
-    'itemType': 'task',
+    'kind': 'task',
 }
 
 MINIMAL_TASK_ID_PARAMS: dict[str, Any] = {'id': 'task-123'}
@@ -269,7 +269,7 @@ def test_agent_card_invalid():
 
 def test_text_part():
     part = TextPart(**TEXT_PART_DATA)
-    assert part.itemType == 'text'
+    assert part.kind == 'text'
     assert part.text == 'Hello'
     assert part.metadata is None
 
@@ -277,7 +277,7 @@ def test_text_part():
         TextPart(type='text')  # Missing text # type: ignore
     with pytest.raises(ValidationError):
         TextPart(
-            itemType='file',  # type: ignore
+            kind='file',  # type: ignore
             text='hello',
         )  # Wrong type literal
 
@@ -287,7 +287,7 @@ def test_file_part_variants():
     file_uri = FileWithUri(
         uri='file:///path/to/file.txt', mimeType='text/plain'
     )
-    part_uri = FilePart(itemType='file', file=file_uri)
+    part_uri = FilePart(kind='file', file=file_uri)
     assert isinstance(part_uri.file, FileWithUri)
     assert part_uri.file.uri == 'file:///path/to/file.txt'
     assert part_uri.file.mimeType == 'text/plain'
@@ -295,7 +295,7 @@ def test_file_part_variants():
 
     # Bytes variant
     file_bytes = FileWithBytes(bytes='aGVsbG8=', name='hello.txt')
-    part_bytes = FilePart(itemType='file', file=file_bytes)
+    part_bytes = FilePart(kind='file', file=file_bytes)
     assert isinstance(part_bytes.file, FileWithBytes)
     assert part_bytes.file.bytes == 'aGVsbG8='
     assert part_bytes.file.name == 'hello.txt'
@@ -312,14 +312,14 @@ def test_file_part_variants():
 
     # Invalid - wrong type literal
     with pytest.raises(ValidationError):
-        FilePart(itemType='text', file=file_uri)  # type: ignore
+        FilePart(kind='text', file=file_uri)  # type: ignore
 
     FilePart(**FILE_URI_PART_DATA, extra='extra')  # type: ignore
 
 
 def test_data_part():
     part = DataPart(**DATA_PART_DATA)
-    assert part.itemType == 'data'
+    assert part.kind == 'data'
     assert part.data == {'key': 'value'}
 
     with pytest.raises(ValidationError):
@@ -656,7 +656,7 @@ def test_send_message_streaming_status_update_response() -> None:
         'taskId': '1',
         'contextId': '2',
         'final': False,
-        'itemType': 'status-update',
+        'kind': 'status-update',
     }
 
     event_data: dict[str, Any] = {
@@ -716,7 +716,7 @@ def test_send_message_streaming_artifact_update_response() -> None:
         'contextId': '2',
         'append': False,
         'lastChunk': True,
-        'itemType': 'artifact-update',
+        'kind': 'artifact-update',
     }
     event_data: dict[str, Any] = {
         'jsonrpc': '2.0',

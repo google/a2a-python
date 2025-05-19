@@ -26,7 +26,7 @@ def create_send_message_payload(
     payload: dict[str, Any] = {
         'message': {
             'role': 'user',
-            'parts': [{'itemType': 'text', 'text': text}],
+            'parts': [{'kind': 'text', 'text': text}],
             'messageId': uuid4().hex,
         },
     }

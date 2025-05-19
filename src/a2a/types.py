@@ -133,7 +133,7 @@ class DataPart(BaseModel):
     """
     Structured data content
     """
-    itemType: Literal['data'] = 'data'
+    kind: Literal['data'] = 'data'
     """
     Part type - data for DataParts
     """
@@ -590,7 +590,7 @@ class TextPart(BaseModel):
     Represents a text segment within parts.
     """
 
-    itemType: Literal['text'] = 'text'
+    kind: Literal['text'] = 'text'
     """
     Part type - text for TextParts
     """
@@ -745,7 +745,7 @@ class FilePart(BaseModel):
     """
     File content either as url or bytes
     """
-    itemType: Literal['file'] = 'file'
+    kind: Literal['file'] = 'file'
     """
     Part type - file for FileParts
     """
@@ -976,7 +976,7 @@ class Message(BaseModel):
     """
     the context the message is associated with
     """
-    itemType: Literal['message'] = 'message'
+    kind: Literal['message'] = 'message'
     """
     event type
     """
@@ -1095,7 +1095,7 @@ class TaskArtifactUpdateEvent(BaseModel):
     """
     the context the task is associated with
     """
-    itemType: Literal['artifact-update'] = 'artifact-update'
+    kind: Literal['artifact-update'] = 'artifact-update'
     """
     event type
     """
@@ -1142,7 +1142,7 @@ class TaskStatusUpdateEvent(BaseModel):
     """
     indicates the end of the event stream
     """
-    itemType: Literal['status-update'] = 'status-update'
+    kind: Literal['status-update'] = 'status-update'
     """
     event type
     """
@@ -1199,7 +1199,7 @@ class Task(BaseModel):
     """
     unique identifier for the task
     """
-    itemType: Literal['task'] = 'task'
+    kind: Literal['task'] = 'task'
     """
     event type
     """
