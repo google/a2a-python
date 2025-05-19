@@ -527,8 +527,8 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
                     json={
                         'contextId': 'session-xyz',
                         'id': 'task_123',
+                        'kind': 'task',
                         'status': {'state': 'submitted'},
-                        'type': 'task',
                     },
                 ),
                 call(
@@ -537,13 +537,18 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
                         'artifacts': [
                             {
                                 'artifactId': '11',
-                                'parts': [{'text': 'text', 'type': 'text'}],
+                                'parts': [
+                                    {
+                                        'kind': 'text',
+                                        'text': 'text',
+                                    }
+                                ],
                             }
                         ],
                         'contextId': 'session-xyz',
                         'id': 'task_123',
+                        'kind': 'task',
                         'status': {'state': 'submitted'},
-                        'type': 'task',
                     },
                 ),
                 call(
@@ -552,13 +557,18 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
                         'artifacts': [
                             {
                                 'artifactId': '11',
-                                'parts': [{'text': 'text', 'type': 'text'}],
+                                'parts': [
+                                    {
+                                        'kind': 'text',
+                                        'text': 'text',
+                                    }
+                                ],
                             }
                         ],
                         'contextId': 'session-xyz',
                         'id': 'task_123',
+                        'kind': 'task',
                         'status': {'state': 'completed'},
-                        'type': 'task',
                     },
                 ),
             ]
