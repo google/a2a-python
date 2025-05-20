@@ -15,6 +15,8 @@ Llm
 aconnect
 adk
 agentic
+ainvoke
+airbnb
 autouse
 cla
 cls
@@ -30,7 +32,10 @@ kwarg
 langgraph
 lifecycles
 linting
+mcp
+npx
 oauthoidc
+openbnb
 opensource
 socio
 sse
