@@ -1,9 +1,13 @@
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
-from a2a.types import (TaskArtifactUpdateEvent, TaskState, TaskStatus,
-                       TaskStatusUpdateEvent)
+from a2a.types import (
+    TaskArtifactUpdateEvent,
+    TaskState,
+    TaskStatus,
+    TaskStatusUpdateEvent,
+)
 from a2a.utils import new_agent_text_message, new_task, new_text_artifact
-from typing_extensions import override
+from typing import override
 
 from src.no_llm_framework.server.agent import Agent
 

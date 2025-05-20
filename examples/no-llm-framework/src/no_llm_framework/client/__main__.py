@@ -1,14 +1,20 @@
 import asyncio
-from typing import Any, Literal
+from typing import Literal
 from uuid import uuid4
 
 import asyncclick as click
 import httpx
 from a2a.client import A2ACardResolver, A2AClient
-from a2a.types import (Message, MessageSendParams, Part, Role,
-                       SendStreamingMessageRequest,
-                       SendStreamingMessageSuccessResponse,
-                       TaskStatusUpdateEvent, TextPart)
+from a2a.types import (
+    Message,
+    MessageSendParams,
+    Part,
+    Role,
+    SendStreamingMessageRequest,
+    SendStreamingMessageSuccessResponse,
+    TaskStatusUpdateEvent,
+    TextPart,
+)
 
 
 @click.command()
@@ -41,13 +47,10 @@ async def a_main(
             )
         )
 
-
         if mode == 'completion':
             raise NotImplementedError('Completion mode not implemented')
 
-        streaming_request = SendStreamingMessageRequest(
-            params=message
-        )
+        streaming_request = SendStreamingMessageRequest(params=message)
         stream_response = client.send_message_streaming(streaming_request)
         async for chunk in stream_response:
             if isinstance(
@@ -58,10 +61,8 @@ async def a_main(
                     print(message.parts[0].root.text, end='', flush=True)
 
 
-
 def main() -> None:
     """Main function to run the A2A Repo Agent client."""
-
     asyncio.run(a_main())
 
 
