@@ -1,49 +1,53 @@
 import unittest
 import unittest.async_case
-from unittest.mock import AsyncMock, patch, MagicMock
+
+from collections.abc import AsyncGenerator
+from typing import Any
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from a2a.server.events.event_queue import EventQueue
+
 from a2a.server.agent_execution import AgentExecutor
-from a2a.utils.errors import ServerError
+from a2a.server.events import (
+    QueueManager,
+)
+from a2a.server.events.event_queue import EventQueue
 from a2a.server.request_handlers import (
     DefaultRequestHandler,
     JSONRPCHandler,
 )
-from a2a.server.events import (
-    QueueManager,
-)
 from a2a.server.tasks import TaskStore
 from a2a.types import (
-    AgentCard,
     AgentCapabilities,
+    AgentCard,
+    Artifact,
+    CancelTaskRequest,
+    CancelTaskSuccessResponse,
     GetTaskRequest,
     GetTaskResponse,
     GetTaskSuccessResponse,
-    Task,
-    TaskQueryParams,
     JSONRPCErrorResponse,
-    TaskNotFoundError,
-    TaskIdParams,
-    CancelTaskRequest,
-    CancelTaskSuccessResponse,
-    UnsupportedOperationError,
-    SendMessageRequest,
     Message,
     MessageSendParams,
+    Part,
+    SendMessageRequest,
     SendMessageSuccessResponse,
     SendStreamingMessageRequest,
     SendStreamingMessageSuccessResponse,
+    Task,
     TaskArtifactUpdateEvent,
-    TaskStatusUpdateEvent,
-    Artifact,
-    Part,
-    TextPart,
-    TaskStatus,
-    TaskState,
+    TaskIdParams,
+    TaskNotFoundError,
+    TaskQueryParams,
     TaskResubscriptionRequest,
+    TaskState,
+    TaskStatus,
+    TaskStatusUpdateEvent,
+    TextPart,
+    UnsupportedOperationError,
 )
-from collections.abc import AsyncGenerator
-from typing import Any
+from a2a.utils.errors import ServerError
+
 
 MINIMAL_TASK: dict[str, Any] = {
     'id': 'task_123',
@@ -316,7 +320,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
                 assert isinstance(
                     event.root, SendStreamingMessageSuccessResponse
                 )
-                assert collected_events[i].root.result == events[i]
+                assert event.root.result == events[i]
             mock_agent_executor.execute.assert_called_once()
 
     async def test_on_message_stream_new_message_existing_task_success(
@@ -387,7 +391,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         request_handler = DefaultRequestHandler(
             mock_agent_executor, mock_task_store, mock_queue_manager
         )
-        mock_agent_card = MagicMock(spec=AgentCard)
+        self.mock_agent_card = MagicMock(spec=AgentCard)
         handler = JSONRPCHandler(self.mock_agent_card, request_handler)
         mock_task = Task(**MINIMAL_TASK, history=[])
         events: list[Any] = [

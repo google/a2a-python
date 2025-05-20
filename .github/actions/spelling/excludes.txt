@@ -85,3 +85,5 @@
 ^\Q.github/workflows/linter.yaml\E$
 \.gitignore\E$
 \.vscode/
+noxfile.py
+\.ruff.toml$

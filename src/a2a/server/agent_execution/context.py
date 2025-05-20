@@ -4,6 +4,7 @@ from a2a.types import (
     InvalidParamsError,
     Message,
     MessageSendParams,
+    MessageSendConfiguration,
     Task,
 )
 from a2a.utils import get_message_text
@@ -78,6 +79,10 @@ class RequestContext:
     @property
     def context_id(self) -> str | None:
         return self._context_id
+
+    @property
+    def configuration(self) -> MessageSendConfiguration | None:
+        return self._params.configuration
 
     def _check_or_generate_task_id(self) -> None:
         if not self._params:
