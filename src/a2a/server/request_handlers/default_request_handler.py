@@ -42,7 +42,12 @@ logger = logging.getLogger(__name__)
 
 @trace_class(kind=SpanKind.SERVER)
 class DefaultRequestHandler(RequestHandler):
-    """Default request handler for all incoming requests."""
+    """Default request handler for all incoming requests.
+
+    This handler provides default implementations for all A2A JSON-RPC methods,
+    coordinating between the `AgentExecutor`, `TaskStore`, `QueueManager`,
+    and optional `PushNotifier`.
+    """
 
     _running_agents: dict[str, asyncio.Task]
 
@@ -53,6 +58,14 @@ class DefaultRequestHandler(RequestHandler):
         queue_manager: QueueManager | None = None,
         push_notifier: PushNotifier | None = None,
     ) -> None:
+        """Initializes the DefaultRequestHandler.
+
+        Args:
+            agent_executor: The `AgentExecutor` instance to run agent logic.
+            task_store: The `TaskStore` instance to manage task persistence.
+            queue_manager: The `QueueManager` instance to manage event queues. Defaults to `InMemoryQueueManager`.
+            push_notifier: The `PushNotifier` instance for sending push notifications. Defaults to None.
+        """
         self.agent_executor = agent_executor
         self.task_store = task_store
         self._queue_manager = queue_manager or InMemoryQueueManager()
@@ -69,7 +82,10 @@ class DefaultRequestHandler(RequestHandler):
         return task
 
     async def on_cancel_task(self, params: TaskIdParams) -> Task | None:
-        """Default handler for 'tasks/cancel'."""
+        """Default handler for 'tasks/cancel'.
+
+        Attempts to cancel the task managed by the `AgentExecutor`.
+        """
         task: Task | None = await self.task_store.get(params.id)
         if not task:
             raise ServerError(error=TaskNotFoundError())
@@ -105,19 +121,31 @@ class DefaultRequestHandler(RequestHandler):
             return result
 
         raise ServerError(
-            error=InternalError(message='Agent did not result valid response')
+            error=InternalError(
+                message='Agent did not return valid response for cancel'
+            )
         )
 
     async def _run_event_stream(
         self, request: RequestContext, queue: EventQueue
     ) -> None:
+        """Runs the agent's `execute` method and closes the queue afterwards.
+
+        Args:
+            request: The request context for the agent.
+            queue: The event queue for the agent to publish to.
+        """
         await self.agent_executor.execute(request, queue)
         queue.close()
 
     async def on_message_send(
         self, params: MessageSendParams
     ) -> Message | Task:
-        """Default handler for 'message/send' interface."""
+        """Default handler for 'message/send' interface (non-streaming).
+
+        Starts the agent execution for the message and waits for the final
+        result (Task or Message).
+        """
         task_manager = TaskManager(
             task_id=params.message.taskId,
             context_id=params.message.contextId,
@@ -185,7 +213,11 @@ class DefaultRequestHandler(RequestHandler):
     async def on_message_send_stream(
         self, params: MessageSendParams
     ) -> AsyncGenerator[Event]:
-        """Default handler for 'message/stream'."""
+        """Default handler for 'message/stream' (streaming).
+
+        Starts the agent execution and yields events as they are produced
+        by the agent.
+        """
         task_manager = TaskManager(
             task_id=params.message.taskId,
             context_id=params.message.contextId,
@@ -261,11 +293,19 @@ class DefaultRequestHandler(RequestHandler):
         finally:
             await self._cleanup_producer(producer_task, task_id)
 
-    async def _register_producer(self, task_id, producer_task) -> None:
+    async def _register_producer(
+        self, task_id: str, producer_task: asyncio.Task
+    ) -> None:
+        """Registers the agent execution task with the handler."""
         async with self._running_agents_lock:
             self._running_agents[task_id] = producer_task
 
-    async def _cleanup_producer(self, producer_task, task_id) -> None:
+    async def _cleanup_producer(
+        self,
+        producer_task: asyncio.Task,
+        task_id: str,
+    ) -> None:
+        """Cleans up the agent execution task and queue manager entry."""
         await producer_task
         await self._queue_manager.close(task_id)
         async with self._running_agents_lock:
@@ -274,7 +314,10 @@ class DefaultRequestHandler(RequestHandler):
     async def on_set_task_push_notification_config(
         self, params: TaskPushNotificationConfig
     ) -> TaskPushNotificationConfig:
-        """Default handler for 'tasks/pushNotificationConfig/set'."""
+        """Default handler for 'tasks/pushNotificationConfig/set'.
+
+        Requires a `PushNotifier` to be configured.
+        """
         if not self._push_notifier:
             raise ServerError(error=UnsupportedOperationError())
 
@@ -292,7 +335,10 @@ class DefaultRequestHandler(RequestHandler):
     async def on_get_task_push_notification_config(
         self, params: TaskIdParams
     ) -> TaskPushNotificationConfig:
-        """Default handler for 'tasks/pushNotificationConfig/get'."""
+        """Default handler for 'tasks/pushNotificationConfig/get'.
+
+        Requires a `PushNotifier` to be configured.
+        """
         if not self._push_notifier:
             raise ServerError(error=UnsupportedOperationError())
 
@@ -311,7 +357,11 @@ class DefaultRequestHandler(RequestHandler):
     async def on_resubscribe_to_task(
         self, params: TaskIdParams
     ) -> AsyncGenerator[Event]:
-        """Default handler for 'tasks/resubscribe'."""
+        """Default handler for 'tasks/resubscribe'.
+
+        Allows a client to re-attach to a running streaming task's event stream.
+        Requires the task and its queue to still be active.
+        """
         task: Task | None = await self.task_store.get(params.id)
         if not task:
             raise ServerError(error=TaskNotFoundError())

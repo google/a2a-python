@@ -4,16 +4,19 @@ from a2a.types import Task
 
 
 class TaskStore(ABC):
-    """Agent Task Store interface."""
+    """Agent Task Store interface.
+
+    Defines the methods for persisting and retrieving `Task` objects.
+    """
 
     @abstractmethod
     async def save(self, task: Task):
-        pass
+        """Saves or updates a task in the store."""
 
     @abstractmethod
     async def get(self, task_id: str) -> Task | None:
-        pass
+        """Retrieves a task from the store by ID."""
 
     @abstractmethod
     async def delete(self, task_id: str):
-        pass
+        """Deletes a task from the store by ID."""

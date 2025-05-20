@@ -1,5 +1,9 @@
+"""General utility functions for the A2A Python SDK."""
+
 import logging
 
+from collections.abc import Callable
+from typing import Any
 from uuid import uuid4
 
 from a2a.types import (
@@ -21,7 +25,16 @@ logger = logging.getLogger(__name__)
 
 @trace_function()
 def create_task_obj(message_send_params: MessageSendParams) -> Task:
-    """Create a new task object from message send params."""
+    """Create a new task object from message send params.
+
+    Generates UUIDs for task and context IDs if they are not already present in the message.
+
+    Args:
+        message_send_params: The `MessageSendParams` object containing the initial message.
+
+    Returns:
+        A new `Task` object initialized with 'submitted' status and the input message in history.
+    """
     if not message_send_params.message.contextId:
         message_send_params.message.contextId = str(uuid4())
 
@@ -35,7 +48,15 @@ def create_task_obj(message_send_params: MessageSendParams) -> Task:
 
 @trace_function()
 def append_artifact_to_task(task: Task, event: TaskArtifactUpdateEvent) -> None:
-    """Helper method for updating Task with new artifact data."""
+    """Helper method for updating a Task object with new artifact data from an event.
+
+    Handles creating the artifacts list if it doesn't exist, adding new artifacts,
+    and appending parts to existing artifacts based on the `append` flag in the event.
+
+    Args:
+        task: The `Task` object to modify.
+        event: The `TaskArtifactUpdateEvent` containing the artifact data.
+    """
     if not task.artifacts:
         task.artifacts = []
 
@@ -82,14 +103,35 @@ def append_artifact_to_task(task: Task, event: TaskArtifactUpdateEvent) -> None:
 
 
 def build_text_artifact(text: str, artifact_id: str) -> Artifact:
-    """Helper to convert agent text to artifact."""
+    """Helper to create a text artifact.
+
+    Args:
+        text: The text content for the artifact.
+        artifact_id: The ID for the artifact.
+
+    Returns:
+        An `Artifact` object containing a single `TextPart`.
+    """
     text_part = TextPart(text=text)
     part = Part(root=text_part)
     return Artifact(parts=[part], artifactId=artifact_id)
 
 
-def validate(expression, error_message=None):
-    """Decorator that validates if the given expression evaluates to True."""
+def validate(
+    expression: Callable[[Any], bool], error_message: str | None = None
+):
+    """Decorator that validates if a given expression evaluates to True.
+
+    Typically used on class methods to check capabilities or configuration
+    before executing the method's logic. If the expression is False,
+    a `ServerError` with an `UnsupportedOperationError` is raised.
+
+    Args:
+        expression: A callable that takes the instance (`self`) as its argument
+                    and returns a boolean.
+        error_message: An optional custom error message for the `UnsupportedOperationError`.
+                       If None, the string representation of the expression will be used.
+    """
 
     def decorator(function):
         def wrapper(self, *args, **kwargs):
@@ -107,10 +149,23 @@ def validate(expression, error_message=None):
 
 
 def are_modalities_compatible(
-    server_output_modes: list[str], client_output_modes: list[str]
-):
-    """Modalities are compatible if they are both non-empty
-    and there is at least one common element.
+    server_output_modes: list[str] | None, client_output_modes: list[str] | None
+) -> bool:
+    """Checks if server and client output modalities (MIME types) are compatible.
+
+    Modalities are compatible if:
+    1. The client specifies no preferred output modes (client_output_modes is None or empty).
+    2. The server specifies no supported output modes (server_output_modes is None or empty).
+    3. There is at least one common modality between the server's supported list and the client's preferred list.
+
+    Args:
+        server_output_modes: A list of MIME types supported by the server/agent for output.
+                             Can be None or empty if the server doesn't specify.
+        client_output_modes: A list of MIME types preferred by the client for output.
+                             Can be None or empty if the client accepts any.
+
+    Returns:
+        True if the modalities are compatible, False otherwise.
     """
     if client_output_modes is None or len(client_output_modes) == 0:
         return True

@@ -15,26 +15,72 @@ from a2a.utils.errors import ServerError
 
 
 class RequestHandler(ABC):
-    """A2A request handler interface."""
+    """A2A request handler interface.
+
+    This interface defines the methods that an A2A server implementation must
+    provide to handle incoming JSON-RPC requests.
+    """
 
     @abstractmethod
     async def on_get_task(self, params: TaskQueryParams) -> Task | None:
-        pass
+        """Handles the 'tasks/get' method.
+
+        Retrieves the state and history of a specific task.
+
+        Args:
+            params: Parameters specifying the task ID and optionally history length.
+
+        Returns:
+            The `Task` object if found, otherwise `None`.
+        """
 
     @abstractmethod
     async def on_cancel_task(self, params: TaskIdParams) -> Task | None:
-        pass
+        """Handles the 'tasks/cancel' method.
+
+        Requests the agent to cancel an ongoing task.
+
+        Args:
+            params: Parameters specifying the task ID.
+
+        Returns:
+            The `Task` object with its status updated to canceled, or `None` if the task was not found.
+        """
 
     @abstractmethod
     async def on_message_send(
         self, params: MessageSendParams
     ) -> Task | Message:
-        pass
+        """Handles the 'message/send' method (non-streaming).
+
+        Sends a message to the agent to create, continue, or restart a task,
+        and waits for the final result (Task or Message).
+
+        Args:
+            params: Parameters including the message and configuration.
+
+        Returns:
+            The final `Task` object or a final `Message` object.
+        """
 
     @abstractmethod
     async def on_message_send_stream(
         self, params: MessageSendParams
-    ) -> AsyncGenerator[Event, None]:
+    ) -> AsyncGenerator[Event]:
+        """Handles the 'message/stream' method (streaming).
+
+        Sends a message to the agent and yields stream events as they are
+        produced (Task updates, Message chunks, Artifact updates).
+
+        Args:
+            params: Parameters including the message and configuration.
+
+        Yields:
+            `Event` objects from the agent's execution.
+
+        Raises:
+             ServerError(UnsupportedOperationError): By default, if not implemented.
+        """
         raise ServerError(error=UnsupportedOperationError())
         yield
 
@@ -42,17 +88,48 @@ class RequestHandler(ABC):
     async def on_set_task_push_notification_config(
         self, params: TaskPushNotificationConfig
     ) -> TaskPushNotificationConfig:
-        pass
+        """Handles the 'tasks/pushNotificationConfig/set' method.
+
+        Sets or updates the push notification configuration for a task.
+
+        Args:
+            params: Parameters including the task ID and push notification configuration.
+
+        Returns:
+            The provided `TaskPushNotificationConfig` upon success.
+        """
 
     @abstractmethod
     async def on_get_task_push_notification_config(
         self, params: TaskIdParams
     ) -> TaskPushNotificationConfig:
-        pass
+        """Handles the 'tasks/pushNotificationConfig/get' method.
+
+        Retrieves the current push notification configuration for a task.
+
+        Args:
+            params: Parameters including the task ID.
+
+        Returns:
+            The `TaskPushNotificationConfig` for the task.
+        """
 
     @abstractmethod
     async def on_resubscribe_to_task(
         self, params: TaskIdParams
-    ) -> AsyncGenerator[Event, None]:
+    ) -> AsyncGenerator[Event]:
+        """Handles the 'tasks/resubscribe' method.
+
+        Allows a client to re-subscribe to a running streaming task's event stream.
+
+        Args:
+            params: Parameters including the task ID.
+
+        Yields:
+             `Event` objects from the agent's ongoing execution for the specified task.
+
+        Raises:
+             ServerError(UnsupportedOperationError): By default, if not implemented.
+        """
         raise ServerError(error=UnsupportedOperationError())
         yield

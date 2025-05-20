@@ -86,9 +86,9 @@ def trace_function(
     exceptions that occur.
 
     It can be used in two ways:
+
     1. As a direct decorator: `@trace_function`
-    2. As a decorator factory to provide arguments:
-    `@trace_function(span_name="custom.name")`
+    2. As a decorator factory to provide arguments: `@trace_function(span_name="custom.name")`
 
     Args:
         func (callable, optional): The function to be decorated. If None,
@@ -215,24 +215,26 @@ def trace_function(
 def trace_class(
     include_list: list[str] | None = None,
     exclude_list: list[str] | None = None,
-    kind=SpanKind.INTERNAL,
+    kind: SpanKind = SpanKind.INTERNAL,
 ):
     """A class decorator to automatically trace specified methods of a class.
 
     This decorator iterates over the methods of a class and applies the
     `trace_function` decorator to them, based on the `include_list` and
-    `exclude_list` criteria. Dunder methods (e.g., `__init__`, `__call__`)
-    are always excluded.
+    `exclude_list` criteria. Methods starting or ending with double underscores
+    (dunder methods, e.g., `__init__`, `__call__`) are always excluded by default.
 
     Args:
         include_list (list[str], optional): A list of method names to
             explicitly include for tracing. If provided, only methods in this
             list (that are not dunder methods) will be traced.
-            Defaults to None.
+            Defaults to None (trace all non-dunder methods).
         exclude_list (list[str], optional): A list of method names to exclude
             from tracing. This is only considered if `include_list` is not
             provided. Dunder methods are implicitly excluded.
             Defaults to an empty list.
+        kind (SpanKind, optional): The `opentelemetry.trace.SpanKind` for the
+            created spans on the methods. Defaults to `SpanKind.INTERNAL`.
 
     Returns:
         callable: A decorator function that, when applied to a class,
@@ -274,21 +276,37 @@ def trace_class(
             if name.startswith('__') and name.endswith('__'):
                 continue
 
-            # Skip if include list is defined but the method not included.
-            if include_list and name not in include_list:
-                continue
-            # Skip if include list is not defined but the method is in excludes.
-            if not include_list and name in exclude_list:
-                continue
+            # Apply inclusion/exclusion rules
+            if include_list is not None:
+                # If include_list is specified, only trace methods in it
+                if name not in include_list:
+                    logger.debug(
+                        f'Skipping method not in include_list: {cls.__name__}.{name}'
+                    )
+                    continue
+            elif exclude_list is not None:
+                # If include_list is not specified, exclude methods in exclude_list
+                if name in exclude_list:
+                    logger.debug(
+                        f'Skipping method in exclude_list: {cls.__name__}.{name}'
+                    )
+                    continue
+            # If neither list is specified, all non-dunder methods are traced by default
 
-            all_methods[name] = method
-            span_name = f'{cls.__module__}.{cls.__name__}.{name}'
-            # Set the decorator on the method.
-            setattr(
-                cls,
-                name,
-                trace_function(span_name=span_name, kind=kind)(method),
+            # Construct default span name including class name
+            default_span_name = f'{cls.__module__}.{cls.__name__}.{name}'
+
+            # Apply the trace_function decorator to the method
+            logger.debug(
+                f'Applying trace_function to method: {default_span_name}'
             )
+            traced_method = trace_function(
+                span_name=default_span_name, kind=kind
+            )(method)
+
+            # Replace the original method with the traced version
+            setattr(cls, name, traced_method)
+
         return cls
 
     return decorator

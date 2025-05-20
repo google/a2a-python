@@ -23,13 +23,26 @@ class EventConsumer:
     """Consumer to read events from the agent event queue."""
 
     def __init__(self, queue: EventQueue):
+        """Initializes the EventConsumer.
+
+        Args:
+            queue: The `EventQueue` instance to consume events from.
+        """
         self.queue = queue
         self._timeout = 0.5
         self._exception: BaseException | None = None
         logger.debug('EventConsumer initialized')
 
     async def consume_one(self) -> Event:
-        """Consume one event from the agent event queue."""
+        """Consume one event from the agent event queue non-blocking.
+
+        Returns:
+            The next event from the queue.
+
+        Raises:
+            ServerError: If the queue is empty when attempting to dequeue
+                immediately.
+        """
         logger.debug('Attempting to consume one event.')
         try:
             event = await self.queue.dequeue_event(no_wait=True)
@@ -46,7 +59,18 @@ class EventConsumer:
         return event
 
     async def consume_all(self) -> AsyncGenerator[Event]:
-        """Consume all the generated streaming events from the agent."""
+        """Consume all the generated streaming events from the agent.
+
+        This method yields events as they become available from the queue
+        until a final event is received or the queue is closed. It also
+        monitors for exceptions set by the `agent_task_callback`.
+
+        Yields:
+            Events dequeued from the queue.
+
+        Raises:
+            BaseException: If an exception was set by the `agent_task_callback`.
+        """
         logger.debug('Starting to consume all events from the queue.')
         while True:
             if self._exception:
@@ -96,5 +120,14 @@ class EventConsumer:
                 break
 
     def agent_task_callback(self, agent_task: asyncio.Task[None]):
+        """Callback to handle exceptions from the agent's execution task.
+
+        If the agent's asyncio task raises an exception, this callback is
+        invoked, and the exception is stored to be re-raised by the consumer loop.
+
+        Args:
+            agent_task: The asyncio.Task that completed.
+        """
+        logger.debug('Agent task callback triggered.')
         if agent_task.exception() is not None:
             self._exception = agent_task.exception()
