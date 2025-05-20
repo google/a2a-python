@@ -19,7 +19,11 @@ logger = logging.getLogger(__name__)
 
 
 class TaskManager:
-    """Helps manage a task's lifecycle during execution of a request."""
+    """Helps manage a task's lifecycle during execution of a request.
+
+    Responsible for retrieving, saving, and updating the `Task` object based on
+    events received from the agent.
+    """
 
     def __init__(
         self,
@@ -28,6 +32,15 @@ class TaskManager:
         task_store: TaskStore,
         initial_message: Message | None,
     ):
+        """Initializes the TaskManager.
+
+        Args:
+            task_id: The ID of the task, if known from the request.
+            context_id: The ID of the context, if known from the request.
+            task_store: The `TaskStore` instance for persistence.
+            initial_message: The `Message` that initiated the task, if any.
+                             Used when creating a new task object.
+        """
         self.task_id = task_id
         self.context_id = context_id
         self.task_store = task_store
@@ -40,6 +53,14 @@ class TaskManager:
         )
 
     async def get_task(self) -> Task | None:
+        """Retrieves the current task object, either from memory or the store.
+
+        If `task_id` is set, it first checks the in-memory `_current_task`,
+        then attempts to load it from the `task_store`.
+
+        Returns:
+            The `Task` object if found, otherwise `None`.
+        """
         if not self.task_id:
             logger.debug('task_id is not set, cannot get task.')
             return None
@@ -60,6 +81,20 @@ class TaskManager:
     async def save_task_event(
         self, event: Task | TaskStatusUpdateEvent | TaskArtifactUpdateEvent
     ) -> Task | None:
+        """Processes a task-related event (Task, Status, Artifact) and saves the updated task state.
+
+        Ensures task and context IDs match or are set from the event.
+
+        Args:
+            event: The task-related event (`Task`, `TaskStatusUpdateEvent`, or `TaskArtifactUpdateEvent`).
+
+        Returns:
+            The updated `Task` object after processing the event.
+
+        Raises:
+            ServerError: If the task ID in the event conflicts with the TaskManager's ID
+                         when the TaskManager's ID is already set.
+        """
         task_id_from_event = (
             event.id if isinstance(event, Task) else event.taskId
         )
@@ -107,6 +142,14 @@ class TaskManager:
     async def ensure_task(
         self, event: TaskStatusUpdateEvent | TaskArtifactUpdateEvent
     ) -> Task:
+        """Ensures a Task object exists in memory, loading from store or creating new if needed.
+
+        Args:
+            event: The task-related event triggering the need for a Task object.
+
+        Returns:
+            An existing or newly created `Task` object.
+        """
         task: Task | None = self._current_task
         if not task and self.task_id:
             logger.debug(
@@ -128,9 +171,16 @@ class TaskManager:
         return task
 
     async def process(self, event: Event) -> Event:
-        """Processes an event, store the task state and return the task or message.
+        """Processes an event, updates the task state if applicable, stores it, and returns the event.
 
-        The returned Task or Message represent the current status of the result.
+        If the event is task-related (`Task`, `TaskStatusUpdateEvent`, `TaskArtifactUpdateEvent`),
+        the internal task state is updated and persisted.
+
+        Args:
+            event: The event object received from the agent.
+
+        Returns:
+            The same event object that was processed.
         """
         if isinstance(
             event, Task | TaskStatusUpdateEvent | TaskArtifactUpdateEvent
@@ -140,7 +190,15 @@ class TaskManager:
         return event
 
     def _init_task_obj(self, task_id: str, context_id: str) -> Task:
-        """Initializes a new task object."""
+        """Initializes a new task object in memory.
+
+        Args:
+            task_id: The ID for the new task.
+            context_id: The context ID for the new task.
+
+        Returns:
+            A new `Task` object with initial status and potentially the initial message in history.
+        """
         logger.debug(
             'Initializing new Task object with task_id: %s, context_id: %s',
             task_id,
@@ -155,6 +213,11 @@ class TaskManager:
         )
 
     async def _save_task(self, task: Task) -> None:
+        """Saves the given task to the task store and updates the in-memory `_current_task`.
+
+        Args:
+            task: The `Task` object to save.
+        """
         logger.debug('Saving task with id: %s', task.id)
         await self.task_store.save(task)
         self._current_task = task
@@ -164,10 +227,17 @@ class TaskManager:
             self.context_id = task.contextId
 
     def update_with_message(self, message: Message, task: Task) -> Task:
-        """Update the prior status to history, and add the incoming message to history.
+        """Updates a task object in memory by adding a new message to its history.
 
-        This updates the object in memory, and the _current_task, but does not
-        persist it. This is the job of the processor after this step.
+        If the task has a message in its current status, that message is moved
+        to the history first.
+
+        Args:
+            message: The new `Message` to add to the history.
+            task: The `Task` object to update.
+
+        Returns:
+            The updated `Task` object (updated in-place).
         """
         if task.status.message:
             if task.history:

@@ -36,6 +36,13 @@ class A2ACardResolver:
         base_url: str,
         agent_card_path: str = '/.well-known/agent.json',
     ):
+        """Initializes the A2ACardResolver.
+
+        Args:
+            httpx_client: An async HTTP client instance (e.g., httpx.AsyncClient).
+            base_url: The base URL of the agent's host.
+            agent_card_path: The path to the agent card endpoint, relative to the base URL.
+        """
         self.base_url = base_url.rstrip('/')
         self.agent_card_path = agent_card_path.lstrip('/')
         self.httpx_client = httpx_client
@@ -43,6 +50,20 @@ class A2ACardResolver:
     async def get_agent_card(
         self, http_kwargs: dict[str, Any] | None = None
     ) -> AgentCard:
+        """Fetches the agent card from the specified URL.
+
+        Args:
+            http_kwargs: Optional dictionary of keyword arguments to pass to the
+                underlying httpx.get request.
+
+        Returns:
+            An `AgentCard` object representing the agent's capabilities.
+
+        Raises:
+            A2AClientHTTPError: If an HTTP error occurs during the request.
+            A2AClientJSONError: If the response body cannot be decoded as JSON
+                or validated against the AgentCard schema.
+        """
         try:
             response = await self.httpx_client.get(
                 f'{self.base_url}/{self.agent_card_path}',
@@ -62,7 +83,7 @@ class A2ACardResolver:
 
 @trace_class(kind=SpanKind.CLIENT)
 class A2AClient:
-    """A2A Client."""
+    """A2A Client for interacting with an A2A agent."""
 
     def __init__(
         self,
@@ -70,6 +91,18 @@ class A2AClient:
         agent_card: AgentCard | None = None,
         url: str | None = None,
     ):
+        """Initializes the A2AClient.
+
+        Requires either an `AgentCard` or a direct `url` to the agent's RPC endpoint.
+
+        Args:
+            httpx_client: An async HTTP client instance (e.g., httpx.AsyncClient).
+            agent_card: The agent card object. If provided, `url` is taken from `agent_card.url`.
+            url: The direct URL to the agent's A2A RPC endpoint. Required if `agent_card` is None.
+
+        Raises:
+            ValueError: If neither `agent_card` nor `url` is provided.
+        """
         if agent_card:
             self.url = agent_card.url
         elif url:
@@ -86,7 +119,22 @@ class A2AClient:
         agent_card_path: str = '/.well-known/agent.json',
         http_kwargs: dict[str, Any] | None = None,
     ) -> 'A2AClient':
-        """Get a A2A client for provided agent card URL."""
+        """Fetches the AgentCard and initializes an A2A client.
+
+        Args:
+            httpx_client: An async HTTP client instance (e.g., httpx.AsyncClient).
+            base_url: The base URL of the agent's host.
+            agent_card_path: The path to the agent card endpoint, relative to the base URL.
+            http_kwargs: Optional dictionary of keyword arguments to pass to the
+                underlying httpx.get request when fetching the agent card.
+
+        Returns:
+            An initialized `A2AClient` instance.
+
+        Raises:
+            A2AClientHTTPError: If an HTTP error occurs fetching the agent card.
+            A2AClientJSONError: If the agent card response is invalid.
+        """
         agent_card: AgentCard = await A2ACardResolver(
             httpx_client, base_url=base_url, agent_card_path=agent_card_path
         ).get_agent_card(http_kwargs=http_kwargs)
@@ -98,6 +146,20 @@ class A2AClient:
         *,
         http_kwargs: dict[str, Any] | None = None,
     ) -> SendMessageResponse:
+        """Sends a non-streaming message request to the agent.
+
+        Args:
+            request: The `SendMessageRequest` object containing the message and configuration.
+            http_kwargs: Optional dictionary of keyword arguments to pass to the
+                underlying httpx.post request.
+
+        Returns:
+            A `SendMessageResponse` object containing the agent's response (Task or Message) or an error.
+
+        Raises:
+            A2AClientHTTPError: If an HTTP error occurs during the request.
+            A2AClientJSONError: If the response body cannot be decoded as JSON or validated.
+        """
         if not request.id:
             request.id = str(uuid4())
 
@@ -114,6 +176,23 @@ class A2AClient:
         *,
         http_kwargs: dict[str, Any] | None = None,
     ) -> AsyncGenerator[SendStreamingMessageResponse]:
+        """Sends a streaming message request to the agent and yields responses as they arrive.
+
+        This method uses Server-Sent Events (SSE) to receive a stream of updates from the agent.
+
+        Args:
+            request: The `SendStreamingMessageRequest` object containing the message and configuration.
+            http_kwargs: Optional dictionary of keyword arguments to pass to the
+                underlying httpx.post request. A default `timeout=None` is set but can be overridden.
+
+        Yields:
+            `SendStreamingMessageResponse` objects as they are received in the SSE stream.
+            These can be Task, Message, TaskStatusUpdateEvent, or TaskArtifactUpdateEvent.
+
+        Raises:
+            A2AClientHTTPError: If an HTTP or SSE protocol error occurs during the request.
+            A2AClientJSONError: If an SSE event data cannot be decoded as JSON or validated.
+        """
         if not request.id:
             request.id = str(uuid4())
 
@@ -153,8 +232,16 @@ class A2AClient:
         """Sends a non-streaming JSON-RPC request to the agent.
 
         Args:
-            rpc_request_payload: JSON RPC payload for sending the request
-            **kwargs: Additional keyword arguments to pass to the httpx client.
+            rpc_request_payload: JSON RPC payload for sending the request.
+            http_kwargs: Optional dictionary of keyword arguments to pass to the
+                underlying httpx.post request.
+
+        Returns:
+            The JSON response payload as a dictionary.
+
+        Raises:
+            A2AClientHTTPError: If an HTTP error occurs during the request.
+            A2AClientJSONError: If the response body cannot be decoded as JSON.
         """
         try:
             response = await self.httpx_client.post(
@@ -177,6 +264,20 @@ class A2AClient:
         *,
         http_kwargs: dict[str, Any] | None = None,
     ) -> GetTaskResponse:
+        """Retrieves the current state and history of a specific task.
+
+        Args:
+            request: The `GetTaskRequest` object specifying the task ID and history length.
+            http_kwargs: Optional dictionary of keyword arguments to pass to the
+                underlying httpx.post request.
+
+        Returns:
+            A `GetTaskResponse` object containing the Task or an error.
+
+        Raises:
+            A2AClientHTTPError: If an HTTP error occurs during the request.
+            A2AClientJSONError: If the response body cannot be decoded as JSON or validated.
+        """
         if not request.id:
             request.id = str(uuid4())
 
@@ -193,6 +294,20 @@ class A2AClient:
         *,
         http_kwargs: dict[str, Any] | None = None,
     ) -> CancelTaskResponse:
+        """Requests the agent to cancel a specific task.
+
+        Args:
+            request: The `CancelTaskRequest` object specifying the task ID.
+            http_kwargs: Optional dictionary of keyword arguments to pass to the
+                underlying httpx.post request.
+
+        Returns:
+            A `CancelTaskResponse` object containing the updated Task with canceled status or an error.
+
+        Raises:
+            A2AClientHTTPError: If an HTTP error occurs during the request.
+            A2AClientJSONError: If the response body cannot be decoded as JSON or validated.
+        """
         if not request.id:
             request.id = str(uuid4())
 
@@ -209,6 +324,20 @@ class A2AClient:
         *,
         http_kwargs: dict[str, Any] | None = None,
     ) -> SetTaskPushNotificationConfigResponse:
+        """Sets or updates the push notification configuration for a specific task.
+
+        Args:
+            request: The `SetTaskPushNotificationConfigRequest` object specifying the task ID and configuration.
+            http_kwargs: Optional dictionary of keyword arguments to pass to the
+                underlying httpx.post request.
+
+        Returns:
+            A `SetTaskPushNotificationConfigResponse` object containing the confirmation or an error.
+
+        Raises:
+            A2AClientHTTPError: If an HTTP error occurs during the request.
+            A2AClientJSONError: If the response body cannot be decoded as JSON or validated.
+        """
         if not request.id:
             request.id = str(uuid4())
 
@@ -225,6 +354,20 @@ class A2AClient:
         *,
         http_kwargs: dict[str, Any] | None = None,
     ) -> GetTaskPushNotificationConfigResponse:
+        """Retrieves the push notification configuration for a specific task.
+
+        Args:
+            request: The `GetTaskPushNotificationConfigRequest` object specifying the task ID.
+            http_kwargs: Optional dictionary of keyword arguments to pass to the
+                underlying httpx.post request.
+
+        Returns:
+            A `GetTaskPushNotificationConfigResponse` object containing the configuration or an error.
+
+        Raises:
+            A2AClientHTTPError: If an HTTP error occurs during the request.
+            A2AClientJSONError: If the response body cannot be decoded as JSON or validated.
+        """
         if not request.id:
             request.id = str(uuid4())
 

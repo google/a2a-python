@@ -1,3 +1,5 @@
+"""Utility functions for the A2A Python SDK."""
+
 from a2a.utils.artifact import (
     new_artifact,
     new_data_artifact,

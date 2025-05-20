@@ -1,3 +1,5 @@
+"""Components for managing tasks within the A2A server."""
+
 from a2a.server.tasks.inmemory_push_notifier import InMemoryPushNotifier
 from a2a.server.tasks.inmemory_task_store import InMemoryTaskStore
 from a2a.server.tasks.push_notifier import PushNotifier
