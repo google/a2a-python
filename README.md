@@ -1,33 +1,39 @@
-# A2A SDK (Prototype)
+# A2A Python SDK
 
-Early version of the A2A Python SDK.
+A python library that helps run agentic applications as A2AServers.
 
-## Install SDK
+## Installation
 
-```bash
-pip install .
-```
+You can install the a2a-sdk using either `uv` or `pip`.
 
-## Verify install
+## Prerequisites
+* Python 3.13+
+* `uv` (optional, but recommended) or `pip`
 
-```py
-import a2a
-```
+### using `uv`
 
-## Run Helloworld
-
-Run Remote Agent
+When you're working within a uv project or a virtual environment managed by uv, the preferred way to add packages is using uv add. 
 
 ```bash
-cd examples/helloworld
-python __main__.py
+uv add a2a-sdk
 ```
 
-In another terminal, run the client
+### using `pip`
+
+If you prefer to use pip, the standard Python package installer, you can install a2a-sdk as follows
 
 ```bash
-python test_client.py
+pip install a2a-sdk
 ```
+
+## Examples
+
+A simple hello world example agent is available here:
+
+* [Hello World example](https://github.com/google/a2a-python/tree/main/examples/helloworld)
+
+You can also find more examples [here](https://github.com/google/A2A/tree/main/samples/python/agents)
+
 
 ## License
 
