@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, call, patch
 import httpx
 import pytest
 
+
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.agent_execution.request_context_builder import (
     RequestContextBuilder,
@@ -777,6 +778,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         self.assertIsInstance(response.root, JSONRPCErrorResponse)
         self.assertEqual(response.root.error, UnsupportedOperationError())  # type: ignore
 
+
     async def test_on_set_push_notification_no_push_notifier(self) -> None:
         """Test set_push_notification with no push notifier configured."""
         # Arrange
@@ -810,6 +812,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         self.assertIsInstance(response.root, JSONRPCErrorResponse)
         self.assertEqual(response.root.error, UnsupportedOperationError())  # type: ignore
 
+
     async def test_on_message_send_internal_error(self) -> None:
         """Test on_message_send with an internal error."""
         # Arrange
@@ -838,6 +841,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
             # Assert
             self.assertIsInstance(response.root, JSONRPCErrorResponse)
             self.assertIsInstance(response.root.error, InternalError)  # type: ignore
+
 
     async def test_on_message_stream_internal_error(self) -> None:
         """Test on_message_send_stream with an internal error."""
