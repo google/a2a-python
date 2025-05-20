@@ -79,7 +79,7 @@ uv run app.py
 
 ## 4. Test at the UI
 
-Here're example questions:
+Here are example questions:
 
 - "Tell me about weather in LA, CA"  
 

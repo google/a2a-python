@@ -27,10 +27,11 @@ cla
 cls
 coc
 codegen
-codelab
+codelabs
 coro
 datamodel
 dunders
+fastmcp
 genai
 geolocator
 gle
