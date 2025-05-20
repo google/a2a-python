@@ -6,5 +6,3 @@
 ### Documentation
 
 * Write/Update Docstrings for Classes/Methods ([#59](https://github.com/google/a2a-python/issues/59)) ([9f773ef](https://github.com/google/a2a-python/commit/9f773eff4dddc4eec723d519d0050f21b9ccc042))
-
-## Changelog

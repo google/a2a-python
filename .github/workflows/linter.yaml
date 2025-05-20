@@ -64,4 +64,4 @@ jobs:
           VALIDATE_GIT_COMMITLINT: false
           MARKDOWN_CONFIG_FILE: .markdownlint.json
           PYTHON_MYPY_CONFIG_FILE: .mypy.ini
-          FILTER_REGEX_EXCLUDE: "^examples/.*"
+          FILTER_REGEX_EXCLUDE: "^(examples/.*|CHANGELOG.md)$"
