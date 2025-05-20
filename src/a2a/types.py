@@ -613,6 +613,10 @@ class Message(BaseModel):
     """Extension metadata."""
     parts: list[Part]
     """Message content."""
+    referenceTaskIds: list[str] | None = None
+    """
+    list of tasks referenced as context by this message.
+    """
     role: Role
     """Message sender's role."""
     taskId: str | None = None

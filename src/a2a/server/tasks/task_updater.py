@@ -114,7 +114,6 @@ class TaskUpdater:
     def new_agent_message(
         self,
         parts: list[Part],
-        final: bool | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> Message:
         """Creates a new message object sent by the agent for this task/context.
@@ -136,6 +135,5 @@ class TaskUpdater:
             contextId=self.context_id,
             messageId=str(uuid.uuid4()),
             metadata=metadata,
-            final=final,
             parts=parts,
         )
