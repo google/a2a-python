@@ -215,7 +215,7 @@ def trace_function(
 def trace_class(
     include_list: list[str] | None = None,
     exclude_list: list[str] | None = None,
-    kind: SpanKind = SpanKind.INTERNAL,
+    kind=SpanKind.INTERNAL,
 ):
     """A class decorator to automatically trace specified methods of a class.
 
@@ -276,37 +276,21 @@ def trace_class(
             if name.startswith('__') and name.endswith('__'):
                 continue
 
-            # Apply inclusion/exclusion rules
-            if include_list is not None:
-                # If include_list is specified, only trace methods in it
-                if name not in include_list:
-                    logger.debug(
-                        f'Skipping method not in include_list: {cls.__name__}.{name}'
-                    )
-                    continue
-            elif exclude_list is not None:
-                # If include_list is not specified, exclude methods in exclude_list
-                if name in exclude_list:
-                    logger.debug(
-                        f'Skipping method in exclude_list: {cls.__name__}.{name}'
-                    )
-                    continue
-            # If neither list is specified, all non-dunder methods are traced by default
+            # Skip if include list is defined but the method not included.
+            if include_list and name not in include_list:
+                continue
+            # Skip if include list is not defined but the method is in excludes.
+            if not include_list and name in exclude_list:
+                continue
 
-            # Construct default span name including class name
-            default_span_name = f'{cls.__module__}.{cls.__name__}.{name}'
-
-            # Apply the trace_function decorator to the method
-            logger.debug(
-                f'Applying trace_function to method: {default_span_name}'
+            all_methods[name] = method
+            span_name = f'{cls.__module__}.{cls.__name__}.{name}'
+            # Set the decorator on the method.
+            setattr(
+                cls,
+                name,
+                trace_function(span_name=span_name, kind=kind)(method),
             )
-            traced_method = trace_function(
-                span_name=default_span_name, kind=kind
-            )(method)
-
-            # Replace the original method with the traced version
-            setattr(cls, name, traced_method)
-
         return cls
 
     return decorator
