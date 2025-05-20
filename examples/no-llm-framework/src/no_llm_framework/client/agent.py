@@ -187,7 +187,7 @@ if __name__ == '__main__':
             agent_urls=['http://localhost:9999/'],
         )
         agents_registry, agent_prompt = await agent.get_agents()
-        agent_card = agents_registry['A2A Protocol Agent']
+        # agent_card = agents_registry['A2A Protocol Agent']
         async for chunk in agent.stream('What is A2A protocol?'):
             if chunk.startswith('<Agent name="'):
                 print(colorama.Fore.CYAN + chunk, end='', flush=True)
