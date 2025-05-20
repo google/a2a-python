@@ -86,3 +86,4 @@
 \.vscode/
 noxfile.py
 \.ruff.toml$
+CHANGELOG.md
