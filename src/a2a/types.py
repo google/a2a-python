@@ -1117,6 +1117,10 @@ class Message(BaseModel):
     """
     message content
     """
+    referenceTaskIds: list[str] | None = None
+    """
+    list of tasks referenced as context by this message.
+    """
     role: Role
     """
     message sender's role

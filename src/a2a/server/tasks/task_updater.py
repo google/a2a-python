@@ -96,6 +96,5 @@ class TaskUpdater:
             contextId=self.context_id,
             messageId=str(uuid.uuid4()),
             metadata=metadata,
-            final=final,
             parts=parts,
         )
