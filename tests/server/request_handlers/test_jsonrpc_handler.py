@@ -648,8 +648,6 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         self.assertIsInstance(collected_events[0].root, JSONRPCErrorResponse)
         assert collected_events[0].root.error == TaskNotFoundError()
 
-    # Additional tests to add to your TestJSONRPCtHandler class in test_jsonrpc_handler.py
-
     async def test_streaming_not_supported_error(
         self,
     ) -> None:
