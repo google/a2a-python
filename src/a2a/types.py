@@ -893,6 +893,3 @@ class SendStreamingMessageResponse(
     """JSON-RPC response model for the 'message/stream' method."""
 
     root: JSONRPCErrorResponse | SendStreamingMessageSuccessResponse
-
-
-# Add module docstring. Existing class/enum docstrings are good.
