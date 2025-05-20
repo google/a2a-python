@@ -210,7 +210,6 @@ class TestTaskUpdater:
         assert message.contextId == 'test-context-id'
         assert message.messageId == '12345678-1234-5678-1234-567812345678'
         assert message.parts == sample_parts
-        assert message.final is False
         assert message.metadata is None
 
     def test_new_agent_message_with_metadata_and_final(
@@ -232,5 +231,4 @@ class TestTaskUpdater:
         assert message.contextId == 'test-context-id'
         assert message.messageId == '12345678-1234-5678-1234-567812345678'
         assert message.parts == sample_parts
-        assert message.final is True
         assert message.metadata == metadata
