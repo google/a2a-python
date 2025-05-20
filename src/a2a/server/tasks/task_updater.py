@@ -87,7 +87,7 @@ class TaskUpdater:
         )
 
     def new_agent_message(
-        self, parts: list[Part], final=False, metadata=None
+        self, parts: list[Part], metadata=None
     ) -> Message:
         """Create a new message for the task."""
         return Message(
