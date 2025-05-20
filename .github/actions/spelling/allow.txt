@@ -26,6 +26,7 @@ dunders
 genai
 gle
 inmemory
+kwarg
 langgraph
 lifecycles
 linting
