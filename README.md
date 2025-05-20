@@ -1,6 +1,6 @@
 # A2A Python SDK
 
-A python library that helps run agentic applications as A2AServers.
+A Python library that helps run agentic applications as A2AServers.
 
 ## Installation
 
