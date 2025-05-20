@@ -775,7 +775,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
 
         # Assert
         self.assertIsInstance(response.root, JSONRPCErrorResponse)
-        self.assertEqual(response.root.error, UnsupportedOperationError())
+        self.assertEqual(response.root.error, UnsupportedOperationError())  # type: ignore
 
     async def test_on_set_push_notification_no_push_notifier(self) -> None:
         """Test set_push_notification with no push notifier configured."""
@@ -808,7 +808,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
 
         # Assert
         self.assertIsInstance(response.root, JSONRPCErrorResponse)
-        self.assertEqual(response.root.error, UnsupportedOperationError())
+        self.assertEqual(response.root.error, UnsupportedOperationError())  # type: ignore
 
     async def test_on_message_send_internal_error(self) -> None:
         """Test on_message_send with an internal error."""
@@ -837,7 +837,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
 
             # Assert
             self.assertIsInstance(response.root, JSONRPCErrorResponse)
-            self.assertIsInstance(response.root.error, InternalError)
+            self.assertIsInstance(response.root.error, InternalError)  # type: ignore
 
     async def test_on_message_stream_internal_error(self) -> None:
         """Test on_message_send_stream with an internal error."""
