@@ -45,7 +45,7 @@ WEA_AGENT_URL=http://localhost:10001
 ```
 
 ## Install SDK
-Go to `a2a-mcp-app` folder in terminal:
+Go to `a2a-adk-app` folder in terminal:
 ```bash
 uv sync
 ```
@@ -61,7 +61,7 @@ uv run .
 ```
 
 ## 2. Run Weather server
-Open a new terminal, go to `a2a-mcp-app` folder run the server
+Open a new terminal, go to `a2a-adk-app` folder run the server
 
 ```bash
 cd weather_agent
@@ -69,7 +69,7 @@ uv run .
 ```
 
 ## 3. Run Host Agent
-Open a new terminal, go to `a2a-mcp-app` folder run the server
+Open a new terminal, go to `a2a-adk-app` folder run the server
 
 ```bash
 cd host_agent
