@@ -1,8 +1,8 @@
-from contextlib import asynccontextmanager
+
 
 import pytest
 import asyncio
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from a2a.server.events import InMemoryQueueManager
 from a2a.server.events.event_queue import EventQueue
