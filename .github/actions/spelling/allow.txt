@@ -13,6 +13,7 @@ INR
 JPY
 JSONRPCt
 Llm
+Nominatim
 WEA
 aconnect
 adk
@@ -26,11 +27,14 @@ cla
 cls
 coc
 codegen
+codelab
 coro
 datamodel
 dunders
 genai
+geolocator
 gle
+gridpoint
 htmlcov
 inmemory
 ipynb
@@ -38,7 +42,9 @@ kwarg
 langgraph
 lifecycles
 linting
+llm
 mcp
+nominatim
 nosetests
 npx
 oauthoidc
@@ -50,5 +56,6 @@ pytype
 socio
 sse
 tagwords
+uvx
 vulnz
 webassets

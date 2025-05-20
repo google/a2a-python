@@ -29,7 +29,7 @@ Before running the application locally, ensure you have the following installed:
 4. **set up .env** 
 
 
-- create .env file in `airbnb_agent` and `weater_agent`folder with the following content
+- create .env file in `airbnb_agent` and `weather_agent`folder with the following content
 ```bash
 GOOGLE_API_KEY="your_api_key_here" 
 ```
@@ -88,5 +88,4 @@ Here're example questions:
 ## References
 - https://github.com/google/a2a-python
 - https://codelabs.developers.google.com/intro-a2a-purchasing-concierge#1
-- https://github.com/alphinside/purchasing-concierge-intro-a2a-codelab-starter
 - https://google.github.io/adk-docs/
