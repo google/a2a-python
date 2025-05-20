@@ -4,13 +4,19 @@ import os
 import click
 import uvicorn
 
-from adk_agent import create_agent
-from adk_agent_executor import ADKAgentExecutor
+from adk_agent import create_agent  # type: ignore[import-not-found]
+from adk_agent_executor import ADKAgentExecutor  # type: ignore[import-untyped]
 from dotenv import load_dotenv
-from google.adk.artifacts import InMemoryArtifactService
-from google.adk.memory.in_memory_memory_service import InMemoryMemoryService
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
+from google.adk.artifacts import (
+    InMemoryArtifactService,  # type: ignore[import-untyped]
+)
+from google.adk.memory.in_memory_memory_service import (
+    InMemoryMemoryService,  # type: ignore[import-untyped]
+)
+from google.adk.runners import Runner  # type: ignore[import-untyped]
+from google.adk.sessions import (
+    InMemorySessionService,  # type: ignore[import-untyped]
+)
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
@@ -19,12 +25,7 @@ from starlette.routing import Route
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore
-from a2a.types import (
-    AgentAuthentication,
-    AgentCapabilities,
-    AgentCard,
-    AgentSkill,
-)
+from a2a.types import AgentCapabilities, AgentCard, AgentSkill
 
 
 load_dotenv()
@@ -63,7 +64,6 @@ def main(host: str, port: int):
         defaultOutputModes=['text'],
         capabilities=AgentCapabilities(streaming=True),
         skills=[skill],
-        authentication=AgentAuthentication(schemes=['public']),
     )
 
     adk_agent = create_agent(
@@ -81,7 +81,7 @@ def main(host: str, port: int):
 
     async def handle_auth(request: Request) -> PlainTextResponse:
         await agent_executor.on_auth_callback(
-            request.query_params.get('state'), str(request.url)
+            str(request.query_params.get('state')), str(request.url)
         )
         return PlainTextResponse('Authentication successful.')
 

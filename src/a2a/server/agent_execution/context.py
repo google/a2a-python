@@ -3,8 +3,8 @@ import uuid
 from a2a.types import (
     InvalidParamsError,
     Message,
-    MessageSendParams,
     MessageSendConfiguration,
+    MessageSendParams,
     Task,
 )
 from a2a.utils import get_message_text
@@ -82,6 +82,8 @@ class RequestContext:
 
     @property
     def configuration(self) -> MessageSendConfiguration | None:
+        if not self._params:
+            return None
         return self._params.configuration
 
     def _check_or_generate_task_id(self) -> None:

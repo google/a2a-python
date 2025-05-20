@@ -42,6 +42,7 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_functions = "test_*"
 addopts = "--cov=src --cov-config=.coveragerc --cov-report term --cov-report xml:coverage.xml --cov-branch"
+asyncio_mode = "strict"
 
 [build-system]
 requires = ["hatchling", "uv-dynamic-versioning"]
