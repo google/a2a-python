@@ -59,6 +59,7 @@ jobs:
           echo "Codegen finished."
 
       - name: Commit and push if generated file changed
+        if: github.ref == 'refs/heads/main'
         run: |
           set -euo pipefail
 
@@ -70,8 +71,8 @@ jobs:
           else
             echo "Changes detected in $GENERATED_FILE. Committing..."
             # Configure git user for the commit
-            git config user.name github-actions[bot]
-            git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
 
             # Add the generated file
             git add "$GENERATED_FILE"
