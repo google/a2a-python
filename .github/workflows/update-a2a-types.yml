@@ -1,0 +1,86 @@
+name: Update A2A Schema from Specification
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  check_and_update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Configure uv shell
+        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies (datamodel-code-generator)
+        run: uv sync
+
+      - name: Define output file variable
+        id: vars
+        run: |
+          GENERATED_FILE="./src/a2a/types.py"
+          echo "GENERATED_FILE=$GENERATED_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Run datamodel-codegen
+        run: |
+          set -euo pipefail # Exit immediately if a command exits with a non-zero status
+
+          REMOTE_URL="https://raw.githubusercontent.com/google/A2A/refs/heads/main/specification/json/a2a.json"
+          GENERATED_FILE="${{ steps.vars.outputs.GENERATED_FILE }}"
+
+          echo "Running datamodel-codegen..."
+          uv run datamodel-codegen \
+            --url "$REMOTE_URL" \
+            --input-file-type jsonschema \
+            --output "$GENERATED_FILE" \
+            --target-python-version 3.10 \
+            --output-model-type pydantic_v2.BaseModel \
+            --disable-timestamp \
+            --use-schema-description \
+            --use-union-operator \
+            --use-field-description \
+            --use-default \
+            --use-default-kwarg \
+            --use-one-literal-as-default \
+            --class-name A2A \
+            --use-standard-collections
+          echo "Codegen finished."
+
+      - name: Commit and push if generated file changed
+        if: github.ref == 'refs/heads/main' # Or your default branch name
+        run: |
+          set -euo pipefail
+
+          GENERATED_FILE="${{ steps.vars.outputs.GENERATED_FILE }}"
+
+          # Check if the generated file has any changes compared to HEAD
+          if git diff --quiet "$GENERATED_FILE"; then
+            echo "$GENERATED_FILE has no changes after codegen. Nothing to commit."
+          else
+            echo "Changes detected in $GENERATED_FILE. Committing..."
+            # Configure git user for the commit
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
+
+            # Add the generated file
+            git add "$GENERATED_FILE"
+
+            # Commit changes
+            git commit -m "🤖 chore: Auto-update A2A schema from specification"
+
+            # Push changes
+            git push
+            echo "Changes committed and pushed."
+          fi
