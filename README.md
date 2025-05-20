@@ -28,9 +28,20 @@ pip install a2a-sdk
 
 ## Examples
 
-A simple hello world example agent is available here:
+### [Helloworld Example](https://github.com/google/a2a-python/tree/main/examples/helloworld)
 
-* [Hello World example](https://github.com/google/a2a-python/tree/main/examples/helloworld)
+1. Run Remote Agent
+
+```bash
+cd examples/helloworld
+uv run .
+```
+
+2. In another terminal, run the client
+
+```bash
+uv run test_client.py
+```
 
 You can also find more examples [here](https://github.com/google/A2A/tree/main/samples/python/agents)
 
