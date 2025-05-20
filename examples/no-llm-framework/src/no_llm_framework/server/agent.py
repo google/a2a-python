@@ -106,7 +106,7 @@ class Agent:
             ]
         )
 
-    async def stream(self, question: str) -> AsyncGenerator[str, None]:
+    async def stream(self, question: str) -> AsyncGenerator[str]:
         called_tools = []
         for i in range(10):
             yield {

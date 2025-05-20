@@ -37,7 +37,7 @@ with Path(dir_path / 'agent_answer.jinja').open('r') as f:
     agent_answer_template = Template(f.read())
 
 
-def stream_llm(prompt: str) -> Generator[str, None, None]:
+def stream_llm(prompt: str) -> Generator[str]:
     """Stream LLM response.
 
     Args:
@@ -174,7 +174,6 @@ class Agent:
             else:
                 print('<Answer> tag not found')
         print(agent_answers)
-        return
 
 
 if __name__ == '__main__':
