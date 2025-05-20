@@ -212,7 +212,7 @@ class TestTaskUpdater:
         assert message.parts == sample_parts
         assert message.metadata is None
 
-    def test_new_agent_message_with_metadata_and_final(
+    def test_new_agent_message_with_metadata(
         self, task_updater, sample_parts
     ):
         """Test creating a new agent message with metadata and final=True."""
@@ -223,7 +223,7 @@ class TestTaskUpdater:
             return_value=uuid.UUID('12345678-1234-5678-1234-567812345678'),
         ):
             message = task_updater.new_agent_message(
-                parts=sample_parts, final=True, metadata=metadata
+                parts=sample_parts, metadata=metadata
             )
 
         assert message.role == Role.agent
