@@ -2,7 +2,7 @@ name: Update A2A Schema from Specification
 
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: '3.13'
 
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -71,8 +71,8 @@ jobs:
           else
             echo "Changes detected in $GENERATED_FILE. Committing..."
             # Configure git user for the commit
-            git config user.name "github-actions"
-            git config user.email "github-actions@github.com"
+            git config user.name github-actions[bot]
+            git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
             # Add the generated file
             git add "$GENERATED_FILE"
