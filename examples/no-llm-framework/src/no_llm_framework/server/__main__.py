@@ -2,12 +2,20 @@ import click
 import uvicorn
 from a2a.server.agent_execution import AgentExecutor
 from a2a.server.apps.starlette_app import A2AStarletteApplication
-from a2a.server.request_handlers.default_request_handler import \
-    DefaultRequestHandler
+from a2a.server.request_handlers.default_request_handler import (
+    DefaultRequestHandler,
+)
 from a2a.server.tasks import InMemoryTaskStore
-from a2a.types import (AgentAuthentication, AgentCapabilities, AgentCard,
-                       AgentSkill, GetTaskRequest, GetTaskResponse,
-                       SendMessageRequest, SendMessageResponse)
+from a2a.types import (
+    AgentAuthentication,
+    AgentCapabilities,
+    AgentCard,
+    AgentSkill,
+    GetTaskRequest,
+    GetTaskResponse,
+    SendMessageRequest,
+    SendMessageResponse,
+)
 
 from no_llm_framework.server.agent_executor import HelloWorldAgentExecutor
 
