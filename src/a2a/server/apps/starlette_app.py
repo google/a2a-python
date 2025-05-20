@@ -51,7 +51,7 @@ class A2AStarletteApplication:
     """
 
     def __init__(self, agent_card: AgentCard, http_handler: RequestHandler):
-        """Initializes the A2AApplication.
+        """Initializes the A2AStarletteApplication.
 
         Args:
             agent_card: The AgentCard describing the agent's capabilities.
@@ -66,7 +66,17 @@ class A2AStarletteApplication:
     def _generate_error_response(
         self, request_id: str | int | None, error: JSONRPCError | A2AError
     ) -> JSONResponse:
-        """Creates a JSONResponse for a JSON-RPC error."""
+        """Creates a Starlette JSONResponse for a JSON-RPC error.
+
+        Logs the error based on its type.
+
+        Args:
+            request_id: The ID of the request that caused the error.
+            error: The `JSONRPCError` or `A2AError` object.
+
+        Returns:
+            A `JSONResponse` object formatted as a JSON-RPC error response.
+        """
         error_resp = JSONRPCErrorResponse(
             id=request_id,
             error=error if isinstance(error, JSONRPCError) else error.root,
@@ -80,7 +90,7 @@ class A2AStarletteApplication:
         )
         logger.log(
             log_level,
-            f'Request Error (ID: {request_id}: '
+            f'Request Error (ID: {request_id}): '
             f"Code={error_resp.error.code}, Message='{error_resp.error.message}'"
             f'{", Data=" + str(error_resp.error.data) if hasattr(error, "data") and error_resp.error.data else ""}',
         )
@@ -96,6 +106,16 @@ class A2AStarletteApplication:
         dispatches it to the appropriate handler method, and returns the response.
         Handles JSON parsing errors, validation errors, and other exceptions,
         returning appropriate JSON-RPC error responses.
+
+        Args:
+            request: The incoming Starlette Request object.
+
+        Returns:
+            A Starlette Response object (JSONResponse or EventSourceResponse).
+
+        Raises:
+            (Implicitly handled): Various exceptions are caught and converted
+            into JSON-RPC error responses by this method.
         """
         request_id = None
         body = None
@@ -144,11 +164,14 @@ class A2AStarletteApplication:
     async def _process_streaming_request(
         self, request_id: str | int | None, a2a_request: A2ARequest
     ) -> Response:
-        """Processes streaming requests.
+        """Processes streaming requests (message/stream or tasks/resubscribe).
 
         Args:
             request_id: The ID of the request.
             a2a_request: The validated A2ARequest object.
+
+        Returns:
+            An `EventSourceResponse` object to stream results to the client.
         """
         request_obj = a2a_request.root
         handler_result: Any = None
@@ -165,11 +188,14 @@ class A2AStarletteApplication:
     async def _process_non_streaming_request(
         self, request_id: str | int | None, a2a_request: A2ARequest
     ) -> Response:
-        """Processes non-streaming requests.
+        """Processes non-streaming requests (message/send, tasks/get, tasks/cancel, tasks/pushNotificationConfig/*).
 
         Args:
             request_id: The ID of the request.
             a2a_request: The validated A2ARequest object.
+
+        Returns:
+            A `JSONResponse` object containing the result or error.
         """
         request_obj = a2a_request.root
         handler_result: Any = None
@@ -204,7 +230,7 @@ class A2AStarletteApplication:
     def _create_response(
         self,
         handler_result: (
-            AsyncGenerator[SendStreamingMessageResponse, None]
+            AsyncGenerator[SendStreamingMessageResponse]
             | JSONRPCErrorResponse
             | JSONRPCResponse
         ),
@@ -216,10 +242,10 @@ class A2AStarletteApplication:
         - JSONRPCErrorResponse for explicit errors returned by handlers.
         - Pydantic RootModels (like GetTaskResponse) containing success or error
         payloads.
-        - Unexpected types by returning an InternalError.
 
         Args:
-            handler_result: AsyncGenerator of SendStreamingMessageResponse
+            handler_result: The result from a request handler method. Can be an
+                async generator for streaming or a Pydantic model for non-streaming.
 
         Returns:
             A Starlette JSONResponse or EventSourceResponse.
@@ -227,8 +253,8 @@ class A2AStarletteApplication:
         if isinstance(handler_result, AsyncGenerator):
             # Result is a stream of SendStreamingMessageResponse objects
             async def event_generator(
-                stream: AsyncGenerator[SendStreamingMessageResponse, None],
-            ) -> AsyncGenerator[dict[str, str], None]:
+                stream: AsyncGenerator[SendStreamingMessageResponse],
+            ) -> AsyncGenerator[dict[str, str]]:
                 async for item in stream:
                     yield {'data': item.root.model_dump_json(exclude_none=True)}
 
@@ -246,7 +272,14 @@ class A2AStarletteApplication:
         )
 
     async def _handle_get_agent_card(self, request: Request) -> JSONResponse:
-        """Handles GET requests for the agent card."""
+        """Handles GET requests for the agent card endpoint.
+
+        Args:
+            request: The incoming Starlette Request object.
+
+        Returns:
+            A JSONResponse containing the agent card data.
+        """
         return JSONResponse(
             self.agent_card.model_dump(mode='json', exclude_none=True)
         )
@@ -259,11 +292,11 @@ class A2AStarletteApplication:
         """Returns the Starlette Routes for handling A2A requests.
 
         Args:
-            agent_card_url: The URL for the agent card endpoint.
-            rpc_url: The URL for the A2A JSON-RPC endpoint
+            agent_card_url: The URL path for the agent card endpoint.
+            rpc_url: The URL path for the A2A JSON-RPC endpoint (POST requests).
 
         Returns:
-            The Starlette Routes serving A2A requests.
+            A list of Starlette Route objects.
         """
         return [
             Route(
@@ -289,8 +322,8 @@ class A2AStarletteApplication:
         """Builds and returns the Starlette application instance.
 
         Args:
-            agent_card_url: The URL for the agent card endpoint.
-            rpc_url: The URL for the A2A JSON-RPC endpoint
+            agent_card_url: The URL path for the agent card endpoint.
+            rpc_url: The URL path for the A2A JSON-RPC endpoint (POST requests).
             **kwargs: Additional keyword arguments to pass to the Starlette
               constructor.
 

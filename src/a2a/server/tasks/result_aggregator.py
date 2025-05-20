@@ -25,11 +25,25 @@ class ResultAggregator:
     """
 
     def __init__(self, task_manager: TaskManager):
+        """Initializes the ResultAggregator.
+
+        Args:
+            task_manager: The `TaskManager` instance to use for processing events
+                          and managing the task state.
+        """
         self.task_manager = task_manager
         self._message: Message | None = None
 
     @property
     async def current_result(self) -> Task | Message | None:
+        """Returns the current aggregated result (Task or Message).
+
+        This is the latest state processed from the event stream.
+
+        Returns:
+            The current `Task` object managed by the `TaskManager`, or the final
+            `Message` if one was received, or `None` if no result has been produced yet.
+        """
         if self._message:
             return self._message
         return await self.task_manager.get_task()
@@ -37,7 +51,18 @@ class ResultAggregator:
     async def consume_and_emit(
         self, consumer: EventConsumer
     ) -> AsyncGenerator[Event]:
-        """Processes the event stream and emits the same event stream out."""
+        """Processes the event stream from the consumer, updates the task state, and re-emits the same events.
+
+        Useful for streaming scenarios where the server needs to observe and
+        process events (e.g., save task state, send push notifications) while
+        forwarding them to the client.
+
+        Args:
+            consumer: The `EventConsumer` to read events from.
+
+        Yields:
+            The `Event` objects consumed from the `EventConsumer`.
+        """
         async for event in consumer.consume_all():
             await self.task_manager.process(event)
             yield event
@@ -45,7 +70,20 @@ class ResultAggregator:
     async def consume_all(
         self, consumer: EventConsumer
     ) -> Task | Message | None:
-        """Processes the entire event stream and returns the final result."""
+        """Processes the entire event stream from the consumer and returns the final result.
+
+        Blocks until the event stream ends (queue is closed after final event or exception).
+
+        Args:
+            consumer: The `EventConsumer` to read events from.
+
+        Returns:
+            The final `Task` object or `Message` object after the stream is exhausted.
+            Returns `None` if the stream ends without producing a final result.
+
+        Raises:
+            BaseException: If the `EventConsumer` raises an exception during consumption.
+        """
         async for event in consumer.consume_all():
             if isinstance(event, Message):
                 self._message = event
@@ -56,7 +94,23 @@ class ResultAggregator:
     async def consume_and_break_on_interrupt(
         self, consumer: EventConsumer
     ) -> tuple[Task | Message | None, bool]:
-        """Process the event stream until completion or an interruptable state is encountered."""
+        """Processes the event stream until completion or an interruptable state is encountered.
+
+        Interruptable states currently include `TaskState.auth_required`.
+        If interrupted, consumption continues in a background task.
+
+        Args:
+            consumer: The `EventConsumer` to read events from.
+
+        Returns:
+            A tuple containing:
+            - The current aggregated result (`Task` or `Message`) at the point of completion or interruption.
+            - A boolean indicating whether the consumption was interrupted (`True`)
+              or completed naturally (`False`).
+
+        Raises:
+            BaseException: If the `EventConsumer` raises an exception during consumption.
+        """
         event_stream = consumer.consume_all()
         interrupted = False
         async for event in event_stream:
@@ -86,5 +140,13 @@ class ResultAggregator:
     async def _continue_consuming(
         self, event_stream: AsyncIterator[Event]
     ) -> None:
+        """Continues processing an event stream in a background task.
+
+        Used after an interruptable state (like auth_required) is encountered
+        in the synchronous consumption flow.
+
+        Args:
+            event_stream: The remaining `AsyncIterator` of events from the consumer.
+        """
         async for event in event_stream:
             await self.task_manager.process(event)

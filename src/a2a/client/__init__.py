@@ -1,3 +1,5 @@
+"""Client-side components for interacting with an A2A agent."""
+
 from a2a.client.client import A2ACardResolver, A2AClient
 from a2a.client.errors import (
     A2AClientError,

@@ -44,26 +44,34 @@ logger = logging.getLogger(__name__)
 
 @trace_class(kind=SpanKind.SERVER)
 class JSONRPCHandler:
-    """Maps the JSONRPC Objects to the request handler and back."""
+    """Maps incoming JSON-RPC requests to the appropriate request handler method and formats responses."""
 
     def __init__(
         self,
         agent_card: AgentCard,
         request_handler: RequestHandler,
     ):
-        """Initializes the HttpProducer.
+        """Initializes the JSONRPCHandler.
 
         Args:
             agent_card: The AgentCard describing the agent's capabilities.
-            request_handler: The handler instance to process A2A requests.
+            request_handler: The underlying `RequestHandler` instance to delegate requests to.
         """
         self.agent_card = agent_card
         self.request_handler = request_handler
 
-    # message/send
     async def on_message_send(
         self, request: SendMessageRequest
     ) -> SendMessageResponse:
+        """Handles the 'message/send' JSON-RPC method.
+
+        Args:
+            request: The incoming `SendMessageRequest` object.
+
+        Returns:
+            A `SendMessageResponse` object containing the result (Task or Message)
+            or a JSON-RPC error response if a `ServerError` is raised by the handler.
+        """
         # TODO: Wrap in error handler to return error states
         try:
             task_or_message = await self.request_handler.on_message_send(
@@ -83,7 +91,6 @@ class JSONRPCHandler:
                 )
             )
 
-    # message/stream
     @validate(
         lambda self: self.agent_card.capabilities.streaming,
         'Streaming is not supported by the agent',
@@ -91,6 +98,18 @@ class JSONRPCHandler:
     async def on_message_send_stream(
         self, request: SendStreamingMessageRequest
     ) -> AsyncIterable[SendStreamingMessageResponse]:
+        """Handles the 'message/stream' JSON-RPC method.
+
+        Yields response objects as they are produced by the underlying handler's stream.
+
+        Args:
+            request: The incoming `SendStreamingMessageRequest` object.
+
+        Yields:
+            `SendStreamingMessageResponse` objects containing streaming events
+            (Task, Message, TaskStatusUpdateEvent, TaskArtifactUpdateEvent)
+            or JSON-RPC error responses if a `ServerError` is raised.
+        """
         try:
             async for event in self.request_handler.on_message_send_stream(
                 request.params
@@ -114,10 +133,17 @@ class JSONRPCHandler:
                 )
             )
 
-    # tasks/cancel
     async def on_cancel_task(
         self, request: CancelTaskRequest
     ) -> CancelTaskResponse:
+        """Handles the 'tasks/cancel' JSON-RPC method.
+
+        Args:
+            request: The incoming `CancelTaskRequest` object.
+
+        Returns:
+            A `CancelTaskResponse` object containing the updated Task or a JSON-RPC error.
+        """
         try:
             task = await self.request_handler.on_cancel_task(request.params)
             if task:
@@ -136,10 +162,20 @@ class JSONRPCHandler:
                 )
             )
 
-    # tasks/resubscribe
     async def on_resubscribe_to_task(
         self, request: TaskResubscriptionRequest
     ) -> AsyncIterable[SendStreamingMessageResponse]:
+        """Handles the 'tasks/resubscribe' JSON-RPC method.
+
+        Yields response objects as they are produced by the underlying handler's stream.
+
+        Args:
+            request: The incoming `TaskResubscriptionRequest` object.
+
+        Yields:
+            `SendStreamingMessageResponse` objects containing streaming events
+            or JSON-RPC error responses if a `ServerError` is raised.
+        """
         try:
             async for event in self.request_handler.on_resubscribe_to_task(
                 request.params
@@ -163,10 +199,17 @@ class JSONRPCHandler:
                 )
             )
 
-    # tasks/pushNotification/get
     async def get_push_notification(
         self, request: GetTaskPushNotificationConfigRequest
     ) -> GetTaskPushNotificationConfigResponse:
+        """Handles the 'tasks/pushNotificationConfig/get' JSON-RPC method.
+
+        Args:
+            request: The incoming `GetTaskPushNotificationConfigRequest` object.
+
+        Returns:
+            A `GetTaskPushNotificationConfigResponse` object containing the config or a JSON-RPC error.
+        """
         try:
             config = (
                 await self.request_handler.on_get_task_push_notification_config(
@@ -187,7 +230,6 @@ class JSONRPCHandler:
                 )
             )
 
-    # tasks/pushNotification/set
     @validate(
         lambda self: self.agent_card.capabilities.pushNotifications,
         'Push notifications are not supported by the agent',
@@ -195,6 +237,20 @@ class JSONRPCHandler:
     async def set_push_notification(
         self, request: SetTaskPushNotificationConfigRequest
     ) -> SetTaskPushNotificationConfigResponse:
+        """Handles the 'tasks/pushNotificationConfig/set' JSON-RPC method.
+
+        Requires the agent to support push notifications.
+
+        Args:
+            request: The incoming `SetTaskPushNotificationConfigRequest` object.
+
+        Returns:
+            A `SetTaskPushNotificationConfigResponse` object containing the config or a JSON-RPC error.
+
+        Raises:
+            ServerError: If push notifications are not supported by the agent
+                (due to the `@validate` decorator).
+        """
         try:
             config = (
                 await self.request_handler.on_set_task_push_notification_config(
@@ -215,8 +271,15 @@ class JSONRPCHandler:
                 )
             )
 
-    # tasks/get
     async def on_get_task(self, request: GetTaskRequest) -> GetTaskResponse:
+        """Handles the 'tasks/get' JSON-RPC method.
+
+        Args:
+            request: The incoming `GetTaskRequest` object.
+
+        Returns:
+            A `GetTaskResponse` object containing the Task or a JSON-RPC error.
+        """
         try:
             task = await self.request_handler.on_get_task(request.params)
             if task:

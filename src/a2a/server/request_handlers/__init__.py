@@ -1,3 +1,5 @@
+"""Request handler components for the A2A server."""
+
 from a2a.server.request_handlers.default_request_handler import (
     DefaultRequestHandler,
 )

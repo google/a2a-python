@@ -12,7 +12,12 @@ from a2a.utils.errors import ServerError
 
 
 class RequestContext:
-    """Request Context."""
+    """Request Context.
+
+    Holds information about the current request being processed by the server,
+    including the incoming message, task and context identifiers, and related
+    tasks.
+    """
 
     def __init__(
         self,
@@ -22,6 +27,15 @@ class RequestContext:
         task: Task | None = None,
         related_tasks: list[Task] | None = None,
     ):
+        """Initializes the RequestContext.
+
+        Args:
+            request: The incoming `MessageSendParams` request payload.
+            task_id: The ID of the task explicitly provided in the request or path.
+            context_id: The ID of the context explicitly provided in the request or path.
+            task: The existing `Task` object retrieved from the store, if any.
+            related_tasks: A list of other tasks related to the current request (e.g., for tool use).
+        """
         if related_tasks is None:
             related_tasks = []
         self._params = request
@@ -48,45 +62,71 @@ class RequestContext:
                 self._check_or_generate_context_id()
 
     def get_user_input(self, delimiter='\n') -> str:
+        """Extracts text content from the user's message parts.
+
+        Args:
+            delimiter: The string to use when joining multiple text parts.
+
+        Returns:
+            A single string containing all text content from the user message,
+            joined by the specified delimiter. Returns an empty string if no
+            user message is present or if it contains no text parts.
+        """
         if not self._params:
             return ''
 
         return get_message_text(self._params.message, delimiter)
 
     def attach_related_task(self, task: Task):
+        """Attaches a related task to the context.
+
+        This is useful for scenarios like tool execution where a new task
+        might be spawned.
+
+        Args:
+            task: The `Task` object to attach.
+        """
         self._related_tasks.append(task)
 
     @property
     def message(self) -> Message | None:
+        """The incoming `Message` object from the request, if available."""
         return self._params.message if self._params else None
 
     @property
     def related_tasks(self) -> list[Task]:
+        """A list of tasks related to the current request."""
         return self._related_tasks
 
     @property
     def current_task(self) -> Task | None:
+        """The current `Task` object being processed."""
         return self._current_task
 
     @current_task.setter
     def current_task(self, task: Task) -> None:
+        """Sets the current task object."""
         self._current_task = task
 
     @property
     def task_id(self) -> str | None:
+        """The ID of the task associated with this context."""
         return self._task_id
 
     @property
     def context_id(self) -> str | None:
+        """The ID of the conversation context associated with this task."""
         return self._context_id
 
     @property
     def configuration(self) -> MessageSendConfiguration | None:
+        """The `MessageSendConfiguration` from the request, if available."""
         if not self._params:
             return None
         return self._params.configuration
 
     def _check_or_generate_task_id(self) -> None:
+        """Ensures a task ID is present, generating one if necessary."""
         if not self._params:
             return
 
@@ -96,6 +136,7 @@ class RequestContext:
             self._task_id = self._params.message.taskId
 
     def _check_or_generate_context_id(self) -> None:
+        """Ensures a context ID is present, generating one if necessary."""
         if not self._params:
             return
 

@@ -1,3 +1,5 @@
+"""Event handling components for the A2A server."""
+
 from a2a.server.events.event_consumer import EventConsumer
 from a2a.server.events.event_queue import Event, EventQueue
 from a2a.server.events.in_memory_queue_manager import InMemoryQueueManager

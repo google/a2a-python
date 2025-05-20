@@ -86,9 +86,9 @@ def trace_function(
     exceptions that occur.
 
     It can be used in two ways:
+
     1. As a direct decorator: `@trace_function`
-    2. As a decorator factory to provide arguments:
-    `@trace_function(span_name="custom.name")`
+    2. As a decorator factory to provide arguments: `@trace_function(span_name="custom.name")`
 
     Args:
         func (callable, optional): The function to be decorated. If None,
@@ -221,18 +221,20 @@ def trace_class(
 
     This decorator iterates over the methods of a class and applies the
     `trace_function` decorator to them, based on the `include_list` and
-    `exclude_list` criteria. Dunder methods (e.g., `__init__`, `__call__`)
-    are always excluded.
+    `exclude_list` criteria. Methods starting or ending with double underscores
+    (dunder methods, e.g., `__init__`, `__call__`) are always excluded by default.
 
     Args:
         include_list (list[str], optional): A list of method names to
             explicitly include for tracing. If provided, only methods in this
             list (that are not dunder methods) will be traced.
-            Defaults to None.
+            Defaults to None (trace all non-dunder methods).
         exclude_list (list[str], optional): A list of method names to exclude
             from tracing. This is only considered if `include_list` is not
             provided. Dunder methods are implicitly excluded.
             Defaults to an empty list.
+        kind (SpanKind, optional): The `opentelemetry.trace.SpanKind` for the
+            created spans on the methods. Defaults to `SpanKind.INTERNAL`.
 
     Returns:
         callable: A decorator function that, when applied to a class,
