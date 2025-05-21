@@ -16,7 +16,6 @@ from a2a.server.events import (
     EventQueue,
     InMemoryQueueManager,
     QueueManager,
-    TaskQueueExists,
 )
 from a2a.server.request_handlers.request_handler import RequestHandler
 from a2a.server.tasks import (
@@ -212,6 +211,15 @@ class DefaultRequestHandler(RequestHandler):
             ) = await result_aggregator.consume_and_break_on_interrupt(consumer)
             if not result:
                 raise ServerError(error=InternalError())
+
+            if isinstance(result, Task) and task_id != result.id:
+                logger.error(
+                    f'Agent generated task_id={result.id} does not match the RequestContext task_id={task_id}.'
+                )
+                raise ServerError(
+                    InternalError(message='Task ID mismatch in agent response')
+                )
+
         finally:
             if interrupted:
                 # TODO: Track this disconnected cleanup task.
@@ -278,27 +286,27 @@ class DefaultRequestHandler(RequestHandler):
             consumer = EventConsumer(queue)
             producer_task.add_done_callback(consumer.agent_task_callback)
             async for event in result_aggregator.consume_and_emit(consumer):
-                if isinstance(event, Task) and task_id != event.id:
-                    logger.warning(
-                        f'Agent generated task_id={event.id} does not match the RequestContext task_id={task_id}.'
-                    )
-                    try:
-                        created_task: Task = event
-                        await self._queue_manager.add(created_task.id, queue)
-                        task_id = created_task.id
-                    except TaskQueueExists:
-                        logging.info(
-                            'Multiple Task objects created in event stream.'
+                if isinstance(event, Task):
+                    if task_id != event.id:
+                        logger.error(
+                            f'Agent generated task_id={event.id} does not match the RequestContext task_id={task_id}.'
                         )
+                        raise ServerError(
+                            InternalError(
+                                message='Task ID mismatch in agent response'
+                            )
+                        )
+
                     if (
                         self._push_notifier
                         and params.configuration
                         and params.configuration.pushNotificationConfig
                     ):
                         await self._push_notifier.set_info(
-                            created_task.id,
+                            task_id,
                             params.configuration.pushNotificationConfig,
                         )
+
                 if self._push_notifier and task_id:
                     latest_task = await result_aggregator.current_result
                     if isinstance(latest_task, Task):
