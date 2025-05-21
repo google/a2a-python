@@ -3,8 +3,8 @@ requires-python = ">=3.13"
 
 [[package]]
 name = "a2a-sdk"
-version = "0.2.1a1.post9.dev0+2993c0b"
-source = { git = "https://github.com/google/a2a-python#2993c0bf5a2f90c5e2a39fce7362993d6da10d9b" }
+version = "0.2.3"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "httpx-sse" },
@@ -14,6 +14,10 @@ dependencies = [
     { name = "sse-starlette" },
     { name = "starlette" },
     { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a8/76/20db99e84c65c8eb70564f08f180670ead73f59563156964f5c8d5d773b0/a2a_sdk-0.2.3.tar.gz", hash = "sha256:b38db75f94d2ad407933a039b5fd20b9ec7945b72eb59fd0cc393a3166984261", size = 126005 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4f/45/5cf11f778f2c2f6348a74fa274c0c36643aed984b944322e9d16f5f07ddb/a2a_sdk-0.2.3-py3-none-any.whl", hash = "sha256:5fae5c5a51928d2bf1775ad520e2706988055b5b09949c7049cad7af0351be9e", size = 58647 },
 ]
 
 [[package]]
@@ -471,7 +475,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "a2a-sdk", git = "https://github.com/google/a2a-python" },
+    { name = "a2a-sdk", specifier = ">=0.2.3" },
     { name = "asyncclick", specifier = ">=8.1.8" },
     { name = "colorama", specifier = ">=0.4.6" },
     { name = "fastmcp", specifier = ">=2.3.4" },

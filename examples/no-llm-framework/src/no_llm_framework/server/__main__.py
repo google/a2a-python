@@ -5,9 +5,8 @@ from a2a.server.apps.starlette_app import A2AStarletteApplication
 from a2a.server.request_handlers.default_request_handler import (
     DefaultRequestHandler,
 )
-from a2a.server.tasks import InMemoryTaskStore
+from a2a.server.tasks.inmemory_task_store import InMemoryTaskStore
 from a2a.types import (
-    AgentAuthentication,
     AgentCapabilities,
     AgentCard,
     AgentSkill,
@@ -71,7 +70,7 @@ def main(host: str, port: int):
             streaming=True,
         ),
         skills=[skill],
-        authentication=AgentAuthentication(schemes=['public']),
+        # authentication=AgentAuthentication(schemes=['public']),
         examples=['What is A2A protocol?', 'What is Google A2A?'],
     )
 
