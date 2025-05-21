@@ -64,6 +64,7 @@ jobs:
       - name: Create Pull Request if generated file changed
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           committer: a2a-bot <a2a-bot@google.com>
           author: a2a-bot <a2a-bot@google.com>
           commit-message: "chore: 🤖 Auto-update A2A schema from specification"
