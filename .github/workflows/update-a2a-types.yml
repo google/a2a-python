@@ -2,12 +2,15 @@ name: Update A2A Schema from Specification
 
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "0 0 * * *" # Runs daily at 00:00 UTC
   workflow_dispatch:
 
 jobs:
   check_and_update:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout code
@@ -58,29 +61,22 @@ jobs:
             --use-standard-collections
           echo "Codegen finished."
 
-      - name: Commit and push if generated file changed
-        if: github.ref == 'refs/heads/main' # Or your default branch name
-        run: |
-          set -euo pipefail
+      - name: Create Pull Request if generated file changed
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          committer: a2a-bot <a2a-bot@google.com>
+          author: a2a-bot <a2a-bot@google.com>
+          commit-message: "chore: 🤖 Auto-update A2A schema from specification"
+          title: "chore: 🤖 Auto-update A2A Schema from Specification"
+          body: |
+            This PR automatically updates the A2A schema types based on the latest specification.
 
-          GENERATED_FILE="${{ steps.vars.outputs.GENERATED_FILE }}"
-
-          # Check if the generated file has any changes compared to HEAD
-          if git diff --quiet "$GENERATED_FILE"; then
-            echo "$GENERATED_FILE has no changes after codegen. Nothing to commit."
-          else
-            echo "Changes detected in $GENERATED_FILE. Committing..."
-            # Configure git user for the commit
-            git config user.name "a2a-bot"
-            git config user.email "a2a-bot@google.com"
-
-            # Add the generated file
-            git add "$GENERATED_FILE"
-
-            # Commit changes
-            git commit -m "🤖 chore: Auto-update A2A schema from specification"
-
-            # Push changes
-            git push
-            echo "Changes committed and pushed."
-          fi
+            This update was triggered by the scheduled workflow run.
+            See the workflow run details: [${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          branch: "a2a-schema-update"
+          base: main
+          labels: |
+            automated
+            dependencies
+          add-paths: ${{ steps.vars.outputs.GENERATED_FILE }}
