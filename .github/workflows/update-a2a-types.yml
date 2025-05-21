@@ -71,8 +71,8 @@ jobs:
           else
             echo "Changes detected in $GENERATED_FILE. Committing..."
             # Configure git user for the commit
-            git config user.name "github-actions"
-            git config user.email "github-actions@github.com"
+            git config user.name "a2a-bot"
+            git config user.email "a2a-bot@google.com"
 
             # Add the generated file
             git add "$GENERATED_FILE"
