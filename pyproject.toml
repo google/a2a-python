@@ -66,6 +66,7 @@ members = [
     "examples/helloworld",
     "examples/google_adk/birthday_planner",
     "examples/google_adk/calendar_agent",
+    "examples/dify"
 ]
 
 [dependency-groups]
