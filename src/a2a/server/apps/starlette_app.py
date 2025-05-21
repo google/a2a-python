@@ -12,10 +12,9 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
 
-from a2a.server.request_handlers.jsonrpc_handler import (
-    JSONRPCHandler,
-    RequestHandler,
-)
+from a2a.server.request_handlers.request_handler import RequestHandler
+from a2a.server.request_handlers.jsonrpc_handler import JSONRPCHandler
+
 from a2a.types import (
     A2AError,
     A2ARequest,
