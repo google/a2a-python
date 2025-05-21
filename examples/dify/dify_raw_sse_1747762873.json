@@ -1,0 +1,1202 @@
+[
+  {
+    "event": "workflow_started",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+      "workflow_id": "cb6661b3-f65c-46d7-8d2b-0ff695b29376",
+      "sequence_number": 39,
+      "inputs": {
+        "city": "深圳",
+        "sys.files": [],
+        "sys.user_id": "kingstonwen104@gmail.com",
+        "sys.app_id": "c01efd1a-4bc0-4030-86d6-9a51e722cb7e",
+        "sys.workflow_id": "cb6661b3-f65c-46d7-8d2b-0ff695b29376",
+        "sys.workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1"
+      },
+      "created_at": 1747744887
+    }
+  },
+  {
+    "event": "node_started",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "id": "ac2689e4-3359-474f-aac5-c77d685b5eaa",
+      "node_id": "1747534958400",
+      "node_type": "start",
+      "title": "Start",
+      "index": 1,
+      "predecessor_node_id": null,
+      "inputs": null,
+      "created_at": 1747744887,
+      "extras": {},
+      "parallel_id": null,
+      "parallel_start_node_id": null,
+      "parent_parallel_id": null,
+      "parent_parallel_start_node_id": null,
+      "iteration_id": null,
+      "loop_id": null,
+      "parallel_run_id": null,
+      "agent_strategy": null
+    }
+  },
+  {
+    "event": "node_finished",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "id": "ac2689e4-3359-474f-aac5-c77d685b5eaa",
+      "node_id": "1747534958400",
+      "node_type": "start",
+      "title": "Start",
+      "index": 1,
+      "predecessor_node_id": null,
+      "inputs": {
+        "city": "深圳",
+        "sys.files": [],
+        "sys.user_id": "kingstonwen104@gmail.com",
+        "sys.app_id": "c01efd1a-4bc0-4030-86d6-9a51e722cb7e",
+        "sys.workflow_id": "cb6661b3-f65c-46d7-8d2b-0ff695b29376",
+        "sys.workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1"
+      },
+      "process_data": null,
+      "outputs": {
+        "city": "深圳",
+        "sys.files": [],
+        "sys.user_id": "kingstonwen104@gmail.com",
+        "sys.app_id": "c01efd1a-4bc0-4030-86d6-9a51e722cb7e",
+        "sys.workflow_id": "cb6661b3-f65c-46d7-8d2b-0ff695b29376",
+        "sys.workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1"
+      },
+      "status": "succeeded",
+      "error": null,
+      "elapsed_time": 0.068067,
+      "execution_metadata": null,
+      "created_at": 1747744887,
+      "finished_at": 1747744887,
+      "files": [],
+      "parallel_id": null,
+      "parallel_start_node_id": null,
+      "parent_parallel_id": null,
+      "parent_parallel_start_node_id": null,
+      "iteration_id": null,
+      "loop_id": null
+    }
+  },
+  {
+    "event": "node_started",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "id": "20bfae8f-61f5-495e-a5cb-e0aaaa04f298",
+      "node_id": "1747537105206",
+      "node_type": "if-else",
+      "title": "IF/ELSE",
+      "index": 2,
+      "predecessor_node_id": "1747534958400",
+      "inputs": null,
+      "created_at": 1747744887,
+      "extras": {},
+      "parallel_id": null,
+      "parallel_start_node_id": null,
+      "parent_parallel_id": null,
+      "parent_parallel_start_node_id": null,
+      "iteration_id": null,
+      "loop_id": null,
+      "parallel_run_id": null,
+      "agent_strategy": null
+    }
+  },
+  {
+    "event": "node_finished",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "id": "20bfae8f-61f5-495e-a5cb-e0aaaa04f298",
+      "node_id": "1747537105206",
+      "node_type": "if-else",
+      "title": "IF/ELSE",
+      "index": 2,
+      "predecessor_node_id": "1747534958400",
+      "inputs": {
+        "conditions": [
+          {
+            "actual_value": "深圳",
+            "expected_value": "深圳",
+            "comparison_operator": "contains"
+          }
+        ]
+      },
+      "process_data": {
+        "condition_results": [
+          {
+            "group": {
+              "case_id": "true",
+              "logical_operator": "and",
+              "conditions": [
+                {
+                  "variable_selector": [
+                    "1747534958400",
+                    "city"
+                  ],
+                  "comparison_operator": "contains",
+                  "value": "珠海",
+                  "sub_variable_condition": null
+                }
+              ]
+            },
+            "results": [
+              false
+            ],
+            "final_result": false
+          },
+          {
+            "group": {
+              "case_id": "61e6d6ac-2743-456c-972e-52d877bf4c64",
+              "logical_operator": "and",
+              "conditions": [
+                {
+                  "variable_selector": [
+                    "1747534958400",
+                    "city"
+                  ],
+                  "comparison_operator": "contains",
+                  "value": "深圳",
+                  "sub_variable_condition": null
+                }
+              ]
+            },
+            "results": [
+              true
+            ],
+            "final_result": true
+          }
+        ]
+      },
+      "outputs": {
+        "result": true,
+        "selected_case_id": "61e6d6ac-2743-456c-972e-52d877bf4c64"
+      },
+      "status": "succeeded",
+      "error": null,
+      "elapsed_time": 0.089754,
+      "execution_metadata": null,
+      "created_at": 1747744887,
+      "finished_at": 1747744887,
+      "files": [],
+      "parallel_id": null,
+      "parallel_start_node_id": null,
+      "parent_parallel_id": null,
+      "parent_parallel_start_node_id": null,
+      "iteration_id": null,
+      "loop_id": null
+    }
+  },
+  {
+    "event": "node_started",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "id": "cda66d22-c81d-4fb9-b23a-63688ddca0ca",
+      "node_id": "1747535878775",
+      "node_type": "http-request",
+      "title": "GET 深圳南山天气",
+      "index": 3,
+      "predecessor_node_id": "1747537105206",
+      "inputs": null,
+      "created_at": 1747744887,
+      "extras": {},
+      "parallel_id": null,
+      "parallel_start_node_id": null,
+      "parent_parallel_id": null,
+      "parent_parallel_start_node_id": null,
+      "iteration_id": null,
+      "loop_id": null,
+      "parallel_run_id": null,
+      "agent_strategy": null
+    }
+  },
+  {
+    "event": "node_finished",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "id": "cda66d22-c81d-4fb9-b23a-63688ddca0ca",
+      "node_id": "1747535878775",
+      "node_type": "http-request",
+      "title": "GET 深圳南山天气",
+      "index": 3,
+      "predecessor_node_id": "1747537105206",
+      "inputs": null,
+      "process_data": {
+        "request": "GET /v3/weather/weatherInfo?key=5c205461d4d41894c25755b0d3384e35&city=440306 HTTP/1.1\r\nHost: restapi.amap.com\r\n\r\n"
+      },
+      "outputs": {
+        "status_code": 200,
+        "body": "{\"status\":\"1\",\"count\":\"1\",\"info\":\"OK\",\"infocode\":\"10000\",\"lives\":[{\"province\":\"广东\",\"city\":\"宝安区\",\"adcode\":\"440306\",\"weather\":\"阴\",\"temperature\":\"27\",\"winddirection\":\"东南\",\"windpower\":\"≤3\",\"humidity\":\"83\",\"reporttime\":\"2025-05-20 20:30:39\",\"temperature_float\":\"27.0\",\"humidity_float\":\"83.0\"}]}",
+        "headers": {
+          "server": "Tengine",
+          "date": "Tue, 20 May 2025 12:41:28 GMT",
+          "content-type": "application/json;charset=UTF-8",
+          "content-length": "307",
+          "connection": "close",
+          "gsid": "033005142198174774488871200059720684809",
+          "sc": "0.007",
+          "access-control-allow-origin": "*",
+          "access-control-allow-methods": "*",
+          "access-control-allow-headers": "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,key,x-biz,x-info,platinfo,encr,enginever,gzipped,poiid"
+        },
+        "files": []
+      },
+      "status": "succeeded",
+      "error": null,
+      "elapsed_time": 1.250261,
+      "execution_metadata": null,
+      "created_at": 1747744887,
+      "finished_at": 1747744888,
+      "files": [],
+      "parallel_id": null,
+      "parallel_start_node_id": null,
+      "parent_parallel_id": null,
+      "parent_parallel_start_node_id": null,
+      "iteration_id": null,
+      "loop_id": null
+    }
+  },
+  {
+    "event": "node_started",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "id": "bdf42dc5-5842-4909-9ba3-dbaa9b912722",
+      "node_id": "1747541360304",
+      "node_type": "variable-aggregator",
+      "title": "Variable Aggregator",
+      "index": 4,
+      "predecessor_node_id": "1747535878775",
+      "inputs": null,
+      "created_at": 1747744888,
+      "extras": {},
+      "parallel_id": null,
+      "parallel_start_node_id": null,
+      "parent_parallel_id": null,
+      "parent_parallel_start_node_id": null,
+      "iteration_id": null,
+      "loop_id": null,
+      "parallel_run_id": null,
+      "agent_strategy": null
+    }
+  },
+  {
+    "event": "node_finished",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "id": "bdf42dc5-5842-4909-9ba3-dbaa9b912722",
+      "node_id": "1747541360304",
+      "node_type": "variable-aggregator",
+      "title": "Variable Aggregator",
+      "index": 4,
+      "predecessor_node_id": "1747535878775",
+      "inputs": {
+        "body": "{\"status\":\"1\",\"count\":\"1\",\"info\":\"OK\",\"infocode\":\"10000\",\"lives\":[{\"province\":\"广东\",\"city\":\"宝安区\",\"adcode\":\"440306\",\"weather\":\"阴\",\"temperature\":\"27\",\"winddirection\":\"东南\",\"windpower\":\"≤3\",\"humidity\":\"83\",\"reporttime\":\"2025-05-20 20:30:39\",\"temperature_float\":\"27.0\",\"humidity_float\":\"83.0\"}]}"
+      },
+      "process_data": null,
+      "outputs": {
+        "output": "{\"status\":\"1\",\"count\":\"1\",\"info\":\"OK\",\"infocode\":\"10000\",\"lives\":[{\"province\":\"广东\",\"city\":\"宝安区\",\"adcode\":\"440306\",\"weather\":\"阴\",\"temperature\":\"27\",\"winddirection\":\"东南\",\"windpower\":\"≤3\",\"humidity\":\"83\",\"reporttime\":\"2025-05-20 20:30:39\",\"temperature_float\":\"27.0\",\"humidity_float\":\"83.0\"}]}"
+      },
+      "status": "succeeded",
+      "error": null,
+      "elapsed_time": 0.034884,
+      "execution_metadata": null,
+      "created_at": 1747744888,
+      "finished_at": 1747744888,
+      "files": [],
+      "parallel_id": null,
+      "parallel_start_node_id": null,
+      "parent_parallel_id": null,
+      "parent_parallel_start_node_id": null,
+      "iteration_id": null,
+      "loop_id": null
+    }
+  },
+  {
+    "event": "node_started",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "id": "8a145f80-be85-4900-a920-0a7c1d84ba58",
+      "node_id": "1747541577840",
+      "node_type": "llm",
+      "title": "LLM",
+      "index": 5,
+      "predecessor_node_id": "1747541360304",
+      "inputs": null,
+      "created_at": 1747744888,
+      "extras": {},
+      "parallel_id": null,
+      "parallel_start_node_id": null,
+      "parent_parallel_id": null,
+      "parent_parallel_start_node_id": null,
+      "iteration_id": null,
+      "loop_id": null,
+      "parallel_run_id": null,
+      "agent_strategy": null
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "今天",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "在",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "广东",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "省",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "宝",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "安",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "区",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "，",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "天气",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "阴",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "沉",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "，",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "气",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "温",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "为",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "27",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "摄",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "氏",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "度",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "。",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "东",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "南",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "方向",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "的",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "风",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "速",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "较",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "小",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "，不",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "超过",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "3",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "级",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "。",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "湿",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "度",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "较",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "高",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "，",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "达",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "到了",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "83",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "%。",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "以上",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "信息",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "是在",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "202",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "5",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "年",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "5",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "月",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "20",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "日",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "20",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": ":",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "30",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "报告",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "的",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "。",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "text_chunk",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "text": "",
+      "from_variable_selector": [
+        "1747541577840",
+        "text"
+      ]
+    }
+  },
+  {
+    "event": "node_finished",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "id": "8a145f80-be85-4900-a920-0a7c1d84ba58",
+      "node_id": "1747541577840",
+      "node_type": "llm",
+      "title": "LLM",
+      "index": 5,
+      "predecessor_node_id": "1747541360304",
+      "inputs": null,
+      "process_data": {
+        "model_mode": "chat",
+        "prompts": [
+          {
+            "role": "system",
+            "text": "请把JSON格式个天气预报结果总结成自然语言。\n{\"status\":\"1\",\"count\":\"1\",\"info\":\"OK\",\"infocode\":\"10000\",\"lives\":[{\"province\":\"广东\",\"city\":\"宝安区\",\"adcode\":\"440306\",\"weather\":\"阴\",\"temperature\":\"27\",\"winddirection\":\"东南\",\"windpower\":\"≤3\",\"humidity\":\"83\",\"reporttime\":\"2025-05-20 20:30:39\",\"temperature_float\":\"27.0\",\"humidity_float\":\"83.0\"}]}",
+            "files": []
+          }
+        ],
+        "model_provider": "langgenius/openai/openai",
+        "model_name": "gpt-4o-mini"
+      },
+      "outputs": {
+        "text": "今天在广东省宝安区，天气阴沉，气温为27摄氏度。东南方向的风速较小，不超过3级。湿度较高，达到了83%。以上信息是在2025年5月20日20:30报告的。",
+        "usage": {
+          "prompt_tokens": 115,
+          "prompt_unit_price": "0.15",
+          "prompt_price_unit": "0.000001",
+          "prompt_price": "0.0000173",
+          "completion_tokens": 58,
+          "completion_unit_price": "0.6",
+          "completion_price_unit": "0.000001",
+          "completion_price": "0.0000348",
+          "total_tokens": 173,
+          "total_price": "0.0000521",
+          "currency": "USD",
+          "latency": 0.14780750032514334
+        },
+        "finish_reason": "stop",
+        "files": []
+      },
+      "status": "succeeded",
+      "error": null,
+      "elapsed_time": 1.668646,
+      "execution_metadata": {
+        "total_tokens": 173,
+        "total_price": "0.0000521",
+        "currency": "USD"
+      },
+      "created_at": 1747744888,
+      "finished_at": 1747744890,
+      "files": [],
+      "parallel_id": null,
+      "parallel_start_node_id": null,
+      "parent_parallel_id": null,
+      "parent_parallel_start_node_id": null,
+      "iteration_id": null,
+      "loop_id": null
+    }
+  },
+  {
+    "event": "node_started",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "id": "b6f9096e-1dd2-4346-af25-d8693bc244a2",
+      "node_id": "1747541646567",
+      "node_type": "end",
+      "title": "End",
+      "index": 6,
+      "predecessor_node_id": "1747541577840",
+      "inputs": null,
+      "created_at": 1747744890,
+      "extras": {},
+      "parallel_id": null,
+      "parallel_start_node_id": null,
+      "parent_parallel_id": null,
+      "parent_parallel_start_node_id": null,
+      "iteration_id": null,
+      "loop_id": null,
+      "parallel_run_id": null,
+      "agent_strategy": null
+    }
+  },
+  {
+    "event": "node_finished",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "id": "b6f9096e-1dd2-4346-af25-d8693bc244a2",
+      "node_id": "1747541646567",
+      "node_type": "end",
+      "title": "End",
+      "index": 6,
+      "predecessor_node_id": "1747541577840",
+      "inputs": {
+        "text": "今天在广东省宝安区，天气阴沉，气温为27摄氏度。东南方向的风速较小，不超过3级。湿度较高，达到了83%。以上信息是在2025年5月20日20:30报告的。"
+      },
+      "process_data": null,
+      "outputs": {
+        "text": "今天在广东省宝安区，天气阴沉，气温为27摄氏度。东南方向的风速较小，不超过3级。湿度较高，达到了83%。以上信息是在2025年5月20日20:30报告的。"
+      },
+      "status": "succeeded",
+      "error": null,
+      "elapsed_time": 0.029333,
+      "execution_metadata": null,
+      "created_at": 1747744890,
+      "finished_at": 1747744890,
+      "files": [],
+      "parallel_id": null,
+      "parallel_start_node_id": null,
+      "parent_parallel_id": null,
+      "parent_parallel_start_node_id": null,
+      "iteration_id": null,
+      "loop_id": null
+    }
+  },
+  {
+    "event": "workflow_finished",
+    "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+    "task_id": "ef5491d2-52ad-42ee-93a6-d1382de4e49a",
+    "data": {
+      "id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+      "workflow_id": "cb6661b3-f65c-46d7-8d2b-0ff695b29376",
+      "sequence_number": 39,
+      "status": "succeeded",
+      "outputs": {
+        "text": "今天在广东省宝安区，天气阴沉，气温为27摄氏度。东南方向的风速较小，不超过3级。湿度较高，达到了83%。以上信息是在2025年5月20日20:30报告的。"
+      },
+      "error": null,
+      "elapsed_time": 2.9814199032261968,
+      "total_tokens": 173,
+      "total_steps": 6,
+      "created_by": {
+        "id": "82bf0bbb-0f3a-4e3e-babf-853223f25eaf",
+        "user": "kingstonwen104@gmail.com"
+      },
+      "created_at": 1747744887,
+      "finished_at": 1747744890,
+      "exceptions_count": 0,
+      "files": []
+    }
+  }
+]
