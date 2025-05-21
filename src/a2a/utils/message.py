@@ -1,7 +1,6 @@
 """Utility functions for creating and handling A2A Message objects."""
 
 import uuid
-from typing import Any
 
 from a2a.types import (
     Message,
@@ -15,8 +14,6 @@ def new_agent_text_message(
     text: str,
     context_id: str | None = None,
     task_id: str | None = None,
-    final: bool | None = None,
-    metadata: dict[str, Any] | None = None,
 ) -> Message:
     """Creates a new agent message containing a single TextPart.
 
@@ -24,8 +21,6 @@ def new_agent_text_message(
         text: The text content of the message.
         context_id: The context ID for the message.
         task_id: The task ID for the message.
-        final: Optional boolean indicating if this is the final message.
-        metadata: Optional metadata for the message.
 
     Returns:
         A new `Message` object with role 'agent'.
@@ -36,8 +31,6 @@ def new_agent_text_message(
         messageId=str(uuid.uuid4()),
         taskId=task_id,
         contextId=context_id,
-        final=final,
-        metadata=metadata,
     )
 
 
@@ -45,8 +38,6 @@ def new_agent_parts_message(
     parts: list[Part],
     context_id: str | None = None,
     task_id: str | None = None,
-    final: bool | None = None,
-    metadata: dict[str, Any] | None = None,
 ):
     """Creates a new agent message containing a list of Parts.
 
@@ -66,8 +57,6 @@ def new_agent_parts_message(
         messageId=str(uuid.uuid4()),
         taskId=task_id,
         contextId=context_id,
-        final=final,
-        metadata=metadata,
     )
 
 
