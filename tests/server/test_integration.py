@@ -230,7 +230,7 @@ def test_cancel_task(client: TestClient, handler: mock.AsyncMock):
     """Test cancelling a task."""
     # Setup mock response
     task_status = TaskStatus(**MINIMAL_TASK_STATUS)
-    task_status.state =  TaskState.canceled  # 'cancelled' #
+    task_status.state = TaskState.canceled  # 'cancelled' #
     task = Task(
         id='task1', contextId='ctx1', state='cancelled', status=task_status
     )
@@ -543,7 +543,7 @@ async def test_task_resubscription(
 
 def test_invalid_json(client: TestClient):
     """Test handling invalid JSON."""
-    response = client.post('/', data='This is not JSON')
+    response = client.post('/', content=b'This is not JSON')  # Use bytes
     assert response.status_code == 200  # JSON-RPC errors still return 200
     data = response.json()
     assert 'error' in data
