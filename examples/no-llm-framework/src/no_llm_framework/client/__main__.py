@@ -1,28 +1,22 @@
 import asyncio
 from typing import Literal
-from uuid import uuid4
+
 
 import asyncclick as click
-import httpx
-from a2a.client import A2ACardResolver, A2AClient
-from a2a.types import (
-    Message,
-    MessageSendParams,
-    Part,
-    Role,
-    SendStreamingMessageRequest,
-    SendStreamingMessageSuccessResponse,
-    TaskStatusUpdateEvent,
-    TextPart,
-)
+import colorama
+from no_llm_framework.client.agent import Agent
 
 
 @click.command()
 @click.option('--host', 'host', default='localhost')
 @click.option('--port', 'port', default=9999)
 @click.option('--mode', 'mode', default='streaming')
+@click.option('--question', 'question', required=True)
 async def a_main(
-    host: str, port: int, mode: Literal['completion', 'streaming']
+    host: str,
+    port: int,
+    mode: Literal['completion', 'streaming'],
+    question: str,
 ):
     """Main function to run the A2A Repo Agent client.
 
@@ -30,35 +24,20 @@ async def a_main(
         host (str): The host address to run the server on.
         port (int): The port number to run the server on.
         mode (Literal['completion', 'streaming']): The mode to run the server on.
+        question (str): The question to ask the Agent.
     """  # noqa: E501
-    async with httpx.AsyncClient() as httpx_client:
-        card_resolver = A2ACardResolver(httpx_client, f'http://{host}:{port}')
-        agent_card = await card_resolver.get_agent_card()
-        agent_card.url = f'http://{host}:{port}'
-
-        client = A2AClient(httpx_client, agent_card=agent_card)
-
-        message = MessageSendParams(
-            message=Message(
-                role=Role.user,
-                parts=[Part(TextPart(text='What is Google A2A?'))],
-                messageId=uuid4().hex,
-                taskId=uuid4().hex,
-            )
-        )
-
-        if mode == 'completion':
-            raise NotImplementedError('Completion mode not implemented')
-
-        streaming_request = SendStreamingMessageRequest(params=message)
-        stream_response = client.send_message_streaming(streaming_request)
-        async for chunk in stream_response:
-            if isinstance(
-                chunk.root, SendStreamingMessageSuccessResponse
-            ) and isinstance(chunk.root.result, TaskStatusUpdateEvent):
-                message = chunk.root.result.status.message
-                if message:
-                    print(message.parts[0].root.text, end='', flush=True)
+    agent = Agent(
+        mode='stream',
+        token_stream_callback=None,
+        agent_urls=[f'http://{host}:{port}/'],
+    )
+    async for chunk in agent.stream(question):
+        if chunk.startswith('<Agent name="'):
+            print(colorama.Fore.CYAN + chunk, end='', flush=True)
+        elif chunk.startswith('</Agent>'):
+            print(colorama.Fore.RESET + chunk, end='', flush=True)
+        else:
+            print(chunk, end='', flush=True)
 
 
 def main() -> None:

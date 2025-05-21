@@ -68,6 +68,11 @@ class Agent:
         self.agents_registry: dict[str, AgentCard] = {}
 
     async def get_agents(self) -> tuple[dict[str, AgentCard], str]:
+        """Retrieve agent cards from all agent URLs and render the agent prompt.
+
+        Returns:
+            tuple[dict[str, AgentCard], str]: A dictionary mapping agent names to AgentCard objects, and the rendered agent prompt string.
+        """  # noqa: E501
         async with httpx.AsyncClient() as httpx_client:
             card_resolvers = [
                 A2ACardResolver(httpx_client, url) for url in self.agent_urls
@@ -85,6 +90,14 @@ class Agent:
             return agents_registry, agent_prompt
 
     def call_llm(self, prompt: str) -> str:
+        """Call the LLM with the given prompt and return the response as a string or generator.
+
+        Args:
+            prompt (str): The prompt to send to the LLM.
+
+        Returns:
+            str or Generator[str]: The LLM response as a string or generator, depending on mode.
+        """  # noqa: E501
         if self.mode == 'complete':
             return stream_llm(prompt)
 
@@ -94,10 +107,31 @@ class Agent:
         return result
 
     async def decide(
-        self, question: str, agents_prompt: str
+        self,
+        question: str,
+        agents_prompt: str,
+        called_agents: list[dict] | None = None,
     ) -> Generator[str, None]:
+        """Decide which agent(s) to use to answer the question.
+
+        Args:
+            question (str): The question to answer.
+            agents_prompt (str): The prompt describing available agents.
+            called_agents (list[dict] | None): Previously called agents and their answers.
+
+        Returns:
+            Generator[str, None]: The LLM's response as a generator of strings.
+        """  # noqa: E501
+        if called_agents:
+            call_agent_prompt = agent_answer_template.render(
+                called_agents=called_agents
+            )
+        else:
+            call_agent_prompt = ''
         prompt = decide_template.render(
-            question=question, agent_prompt=agents_prompt
+            question=question,
+            agent_prompt=agents_prompt,
+            call_agent_prompt=call_agent_prompt,
         )
         return self.call_llm(prompt)
 
@@ -116,6 +150,15 @@ class Agent:
     async def send_message_to_an_agent(
         self, agent_card: AgentCard, message: str
     ):
+        """Send a message to a specific agent and yield the streaming response.
+
+        Args:
+            agent_card (AgentCard): The agent to send the message to.
+            message (str): The message to send.
+
+        Yields:
+            str: The streaming response from the agent.
+        """
         async with httpx.AsyncClient() as httpx_client:
             client = A2AClient(httpx_client, agent_card=agent_card)
             message = MessageSendParams(
@@ -137,43 +180,53 @@ class Agent:
                         yield message.parts[0].root.text
 
     async def stream(self, question: str):
-        agents_registry, agent_prompt = await self.get_agents()
-        response = ''
-        for chunk in await self.decide(question, agent_prompt):
-            response += chunk
-            if self.token_stream_callback:
-                self.token_stream_callback(chunk)
-            yield chunk
+        """Stream the process of answering a question, possibly involving multiple agents.
 
-        agents = self.extract_agents(response)
+        Args:
+            question (str): The question to answer.
+
+        Yields:
+            str: Streaming output, including agent responses and intermediate steps.
+        """  # noqa: E501
         agent_answers: list[dict] = []
-        for agent in agents:
-            agent_response = ''
-            agent_card = agents_registry[agent['name']]
-            yield f'<Agent name="{agent["name"]}">\n'
-            async for chunk in self.send_message_to_an_agent(
-                agent_card, agent['prompt']
+        for _ in range(3):
+            agents_registry, agent_prompt = await self.get_agents()
+            response = ''
+            for chunk in await self.decide(
+                question, agent_prompt, agent_answers
             ):
-                agent_response += chunk
+                response += chunk
                 if self.token_stream_callback:
                     self.token_stream_callback(chunk)
                 yield chunk
-            yield '</Agent>\n'
-            match = re.search(
-                r'<Answer>(.*?)</Answer>', agent_response, re.DOTALL
-            )
-            answer = match.group(1).strip() if match else agent_response
-            if answer:
-                agent_answers.append(
-                    {
-                        'name': agent['name'],
-                        'prompt': agent['prompt'],
-                        'answer': answer,
-                    }
-                )
+
+            agents = self.extract_agents(response)
+            if agents:
+                for agent in agents:
+                    agent_response = ''
+                    agent_card = agents_registry[agent['name']]
+                    yield f'<Agent name="{agent["name"]}">\n'
+                    async for chunk in self.send_message_to_an_agent(
+                        agent_card, agent['prompt']
+                    ):
+                        agent_response += chunk
+                        if self.token_stream_callback:
+                            self.token_stream_callback(chunk)
+                        yield chunk
+                    yield '</Agent>\n'
+                    match = re.search(
+                        r'<Answer>(.*?)</Answer>', agent_response, re.DOTALL
+                    )
+                    answer = match.group(1).strip() if match else agent_response
+                    agent_answers.append(
+                        {
+                            'name': agent['name'],
+                            'prompt': agent['prompt'],
+                            'answer': answer,
+                        }
+                    )
             else:
-                print('<Answer> tag not found')
-        print(agent_answers)
+                return
 
 
 if __name__ == '__main__':
@@ -181,13 +234,13 @@ if __name__ == '__main__':
     import colorama
 
     async def main():
+        """Main function to run the A2A Repo Agent client."""
         agent = Agent(
             mode='stream',
             token_stream_callback=None,
             agent_urls=['http://localhost:9999/'],
         )
-        agents_registry, agent_prompt = await agent.get_agents()
-        # agent_card = agents_registry['A2A Protocol Agent']
+
         async for chunk in agent.stream('What is A2A protocol?'):
             if chunk.startswith('<Agent name="'):
                 print(colorama.Fore.CYAN + chunk, end='', flush=True)
@@ -195,7 +248,5 @@ if __name__ == '__main__':
                 print(colorama.Fore.RESET + chunk, end='', flush=True)
             else:
                 print(chunk, end='', flush=True)
-        # async for chunk in stream_response:
-        #     print(chunk, end='', flush=True)
 
     asyncio.run(main())

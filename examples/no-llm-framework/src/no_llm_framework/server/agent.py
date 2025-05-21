@@ -53,10 +53,18 @@ class Agent:
         self.mcp_url = mcp_url
 
     def call_llm(self, prompt: str) -> Generator[str, None]:
+        """Call the LLM with the given prompt and return a generator of responses.
+
+        Args:
+            prompt (str): The prompt to send to the LLM.
+
+        Returns:
+            Generator[str, None]: A generator yielding the LLM's response.
+        """   # noqa: E501
         return stream_llm(prompt)
 
     async def decide(
-        self, question: str, called_tools: list[dict]
+        self, question: str, called_tools: list[dict] | None = None
     ) -> Generator[str, None]:
         """Decide which tool to use to answer the question.
 
@@ -107,6 +115,14 @@ class Agent:
         )
 
     async def stream(self, question: str) -> AsyncGenerator[str]:
+        """Stream the process of answering a question, possibly involving tool calls.
+
+        Args:
+            question (str): The question to answer.
+
+        Yields:
+            dict: Streaming output, including intermediate steps and final result.
+        """  # noqa: E501
         called_tools = []
         for i in range(10):
             yield {
