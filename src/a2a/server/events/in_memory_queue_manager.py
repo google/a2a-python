@@ -69,7 +69,7 @@ class InMemoryQueueManager(QueueManager):
             if task_id not in self._task_queue:
                 raise NoTaskQueue()
             queue = self._task_queue.pop(task_id)
-            queue.close()
+            await queue.close()
 
     async def create_or_tap(self, task_id: str) -> EventQueue:
         """Creates a new event queue for a task ID if one doesn't exist, otherwise taps the existing one.
