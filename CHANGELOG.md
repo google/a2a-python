@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.4](https://github.com/google/a2a-python/compare/v0.2.3...v0.2.4) (2025-05-22)
+
+
+### Features
+
+* Update to support python 3.10 ([#85](https://github.com/google/a2a-python/issues/85)) ([fd9c3b5](https://github.com/google/a2a-python/commit/fd9c3b5b0bbef509789a701171d95f690c84750b))
+
+
+### Bug Fixes
+
+* Throw exception for task_id mismatches ([#70](https://github.com/google/a2a-python/issues/70)) ([a9781b5](https://github.com/google/a2a-python/commit/a9781b589075280bfaaab5742d8b950916c9de74))
+
 ## [0.2.3](https://github.com/google/a2a-python/compare/v0.2.2...v0.2.3) (2025-05-20)
 
 
