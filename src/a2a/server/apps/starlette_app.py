@@ -71,7 +71,8 @@ class A2AStarletteApplication:
             http_handler: The handler instance responsible for processing A2A
               requests via http.
             context_builder: The CallContextBuilder used to construct the
-              ServerCallContext passed to the http_handler.
+              ServerCallContext passed to the http_handler. If None, no
+              ServerCallContext is passed.
         """
         self.agent_card = agent_card
         self.handler = JSONRPCHandler(
