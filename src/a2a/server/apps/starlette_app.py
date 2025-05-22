@@ -50,21 +50,6 @@ class CallContextBuilder(ABC):
         """Builds a ServerCallContext from a Starlette Request."""
 
 
-class DefaultCallContextBuilder(CallContextBuilder):
-    """A default implementation of StarletteCallContextBuilder.
-
-    This stores the incoming starlette request using the "starlette_request"
-    key of the context state.
-    """
-
-    def build(self, request: Request) -> ServerCallContext:
-        return ServerCallContext(
-            state={
-                'starlette_request': request,
-            }
-        )
-
-
 class A2AStarletteApplication:
     """A Starlette application implementing the A2A protocol server endpoints.
 
@@ -92,7 +77,7 @@ class A2AStarletteApplication:
         self.handler = JSONRPCHandler(
             agent_card=agent_card, request_handler=http_handler
         )
-        self._context_builder = context_builder or DefaultCallContextBuilder()
+        self._context_builder = context_builder
 
     def _generate_error_response(
         self, request_id: str | int | None, error: JSONRPCError | A2AError
@@ -154,7 +139,11 @@ class A2AStarletteApplication:
         try:
             body = await request.json()
             a2a_request = A2ARequest.model_validate(body)
-            call_context = self._context_builder.build(request)
+            call_context = (
+                self._context_builder.build(request)
+                if self._context_builder
+                else None
+            )
 
             request_id = a2a_request.root.id
             request_obj = a2a_request.root
