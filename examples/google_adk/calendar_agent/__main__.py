@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 
@@ -66,10 +67,10 @@ def main(host: str, port: int):
         skills=[skill],
     )
 
-    adk_agent = create_agent(
+    adk_agent = asyncio.run(create_agent(
         client_id=os.getenv('GOOGLE_CLIENT_ID'),
         client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
-    )
+    ))
     runner = Runner(
         app_name=agent_card.name,
         agent=adk_agent,
