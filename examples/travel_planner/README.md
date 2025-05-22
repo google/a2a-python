@@ -12,7 +12,7 @@
 {
   "model_name":"gemini-2.0-flash",
   "api_key": "API_KEY",
-  "base_url": "https://openrouter.ai/api/v1"
+  "base_url": "https://openRouter.ai/api/v1"
 }
 ```
 2. Create an environment file with your API key:
