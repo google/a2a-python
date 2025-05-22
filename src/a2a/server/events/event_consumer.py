@@ -15,13 +15,6 @@ from a2a.types import (
 from a2a.utils.errors import ServerError
 from a2a.utils.telemetry import SpanKind, trace_class
 
-# This is an alias to the execption for closed queue
-QueueClosed = asyncio.QueueEmpty
-
-# When using python 3.13 or higher, the closed queue signal is QueueShutdown
-if sys.version_info >= (3, 13):
-    QueueClosed = asyncio.QueueShutDown
-
 # This is an alias to the exception for closed queue
 QueueClosed = asyncio.QueueEmpty
 
