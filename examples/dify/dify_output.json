@@ -1,213 +1,218 @@
 [
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
       "history": [
         {
-          "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
-          "messageId": "abfe91f9f7cb47c1ad2e0fcda6d55f21",
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "19ca8ec7c3794c0083c43178effbcc47",
           "parts": [
             {
               "data": {
-                "city": "深圳"
+                "city": "深圳",
+                "api_key": "app-SXqTiCm89mGr2IJhKvwWgR7s",
+                "user_id": "kingstonwen104@gmail.com",
+                "dify_server": "cloud"
               },
-              "type": "data"
+              "kind": "data"
             }
           ],
           "role": "user",
-          "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-          "type": "message"
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
         }
       ],
-      "id": "bb029d30-2e2f-4555-889a-19a431345543",
+      "id": "c230abc1-8a34-48fe-aceb-56ae858dfa90",
+      "kind": "task",
       "status": {
         "state": "submitted"
-      },
-      "type": "task"
+      }
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
       "final": false,
+      "kind": "status-update",
       "status": {
         "message": {
-          "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
-          "messageId": "3ef146e8-6e88-4e7a-abf2-8a940f9faf46",
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "fde753c8-df9f-47df-b40b-9bd79711a455",
           "parts": [
             {
-              "text": "Processing weather request for 深圳...",
-              "type": "text"
+              "kind": "text",
+              "text": "Processing weather request for 深圳..."
             }
           ],
           "role": "agent",
-          "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-          "type": "message"
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
         },
         "state": "working"
       },
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "status-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
       "final": false,
+      "kind": "status-update",
       "status": {
         "message": {
-          "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
-          "messageId": "5829ae31-470f-4e96-a722-def681c6edc8",
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "d1635832-ac17-4250-b181-4f329245251c",
           "metadata": {
             "dify_event": "workflow_started",
-            "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1"
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be"
           },
           "parts": [
             {
-              "text": "Workflow Started",
-              "type": "text"
+              "kind": "text",
+              "text": "Workflow Started"
             }
           ],
           "role": "agent",
-          "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-          "type": "message"
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
         },
         "state": "working"
       },
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "status-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
       "final": false,
+      "kind": "status-update",
       "status": {
         "message": {
-          "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
-          "messageId": "01d6bd00-ad2d-4d20-b8f6-bd6dca041ca5",
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "18cc2b18-ffc1-44d8-9fa1-ddcf4a1887bb",
           "metadata": {
             "dify_event": "node_started",
             "node_type": "start",
             "title": "Start",
-            "node_id": "ac2689e4-3359-474f-aac5-c77d685b5eaa",
-            "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1"
+            "node_id": "85a9a738-a705-47c6-addd-19cdcb332d6e",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be"
           },
           "parts": [
             {
-              "text": "Node Started - Start (start)",
-              "type": "text"
+              "kind": "text",
+              "text": "Node Started - Start (start)"
             }
           ],
           "role": "agent",
-          "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-          "type": "message"
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
         },
         "state": "working"
       },
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "status-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
       "final": false,
+      "kind": "status-update",
       "status": {
         "message": {
-          "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
-          "messageId": "09c82aa3-7705-400f-846c-ddb8090cb772",
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "67900304-76dd-45d3-ae7b-0116533cccc2",
           "metadata": {
             "dify_event": "node_finished",
             "node_type": "start",
             "title": "Start",
-            "node_id": "ac2689e4-3359-474f-aac5-c77d685b5eaa",
-            "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+            "node_id": "85a9a738-a705-47c6-addd-19cdcb332d6e",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be",
             "outputs": {
               "city": "深圳",
               "sys.files": [],
               "sys.user_id": "kingstonwen104@gmail.com",
               "sys.app_id": "c01efd1a-4bc0-4030-86d6-9a51e722cb7e",
               "sys.workflow_id": "cb6661b3-f65c-46d7-8d2b-0ff695b29376",
-              "sys.workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1"
+              "sys.workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be"
             },
             "status": "succeeded"
           },
           "parts": [
             {
-              "text": "Node Finished - Start (start) - succeeded",
-              "type": "text"
+              "kind": "text",
+              "text": "Node Finished - Start (start) - succeeded"
             }
           ],
           "role": "agent",
-          "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-          "type": "message"
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
         },
         "state": "working"
       },
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "status-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
       "final": false,
+      "kind": "status-update",
       "status": {
         "message": {
-          "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
-          "messageId": "0ff7960d-f9ec-4688-876a-aceb998d1ae8",
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "211a22bc-29cf-48b5-8078-a6633061e986",
           "metadata": {
             "dify_event": "node_started",
             "node_type": "if-else",
             "title": "IF/ELSE",
-            "node_id": "20bfae8f-61f5-495e-a5cb-e0aaaa04f298",
-            "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1"
+            "node_id": "9da5a0bb-9b0e-4f83-acdd-8067bcf2bf7c",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be"
           },
           "parts": [
             {
-              "text": "Node Started - IF/ELSE (if-else)",
-              "type": "text"
+              "kind": "text",
+              "text": "Node Started - IF/ELSE (if-else)"
             }
           ],
           "role": "agent",
-          "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-          "type": "message"
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
         },
         "state": "working"
       },
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "status-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
       "final": false,
+      "kind": "status-update",
       "status": {
         "message": {
-          "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
-          "messageId": "fcb7b952-295c-4b87-826a-3aaae1e4dce2",
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "c40298e4-649c-47ef-9176-b3928942dbae",
           "metadata": {
             "dify_event": "node_finished",
             "node_type": "if-else",
             "title": "IF/ELSE",
-            "node_id": "20bfae8f-61f5-495e-a5cb-e0aaaa04f298",
-            "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+            "node_id": "9da5a0bb-9b0e-4f83-acdd-8067bcf2bf7c",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be",
             "outputs": {
               "result": true,
               "selected_case_id": "61e6d6ac-2743-456c-972e-52d877bf4c64"
@@ -216,102 +221,102 @@
           },
           "parts": [
             {
-              "text": "Node Finished - IF/ELSE (if-else) - succeeded",
-              "type": "text"
+              "kind": "text",
+              "text": "Node Finished - IF/ELSE (if-else) - succeeded"
             }
           ],
           "role": "agent",
-          "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-          "type": "message"
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
         },
         "state": "working"
       },
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "status-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
       "final": false,
+      "kind": "status-update",
       "status": {
         "message": {
-          "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
-          "messageId": "82e20215-2017-46a7-bafe-f1f8a9531cdd",
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "bbcaee3f-bcaa-46e6-b6b7-17cb621d4c00",
           "metadata": {
             "dify_event": "node_started",
             "node_type": "http-request",
             "title": "GET 深圳南山天气",
-            "node_id": "cda66d22-c81d-4fb9-b23a-63688ddca0ca",
-            "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1"
+            "node_id": "fb1b9dbd-775e-4c66-98f7-934a46b3ba68",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be"
           },
           "parts": [
             {
-              "text": "Node Started - GET 深圳南山天气 (http-request)",
-              "type": "text"
+              "kind": "text",
+              "text": "Node Started - GET 深圳南山天气 (http-request)"
             }
           ],
           "role": "agent",
-          "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-          "type": "message"
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
         },
         "state": "working"
       },
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "status-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
       "append": false,
       "artifact": {
-        "artifactId": "3020110e-7fad-4a46-88d4-00da3e94b631",
+        "artifactId": "471fc603-8e45-4898-b882-6a5185a5fed6",
         "description": "API response from GET 深圳南山天气",
         "name": "GET 深圳南山天气_response",
         "parts": [
           {
-            "text": "{\n  \"status\": \"1\",\n  \"count\": \"1\",\n  \"info\": \"OK\",\n  \"infocode\": \"10000\",\n  \"lives\": [\n    {\n      \"province\": \"广东\",\n      \"city\": \"宝安区\",\n      \"adcode\": \"440306\",\n      \"weather\": \"阴\",\n      \"temperature\": \"27\",\n      \"winddirection\": \"东南\",\n      \"windpower\": \"≤3\",\n      \"humidity\": \"83\",\n      \"reporttime\": \"2025-05-20 20:30:39\",\n      \"temperature_float\": \"27.0\",\n      \"humidity_float\": \"83.0\"\n    }\n  ]\n}",
-            "type": "text"
+            "kind": "text",
+            "text": "{\n  \"status\": \"1\",\n  \"count\": \"1\",\n  \"info\": \"OK\",\n  \"infocode\": \"10000\",\n  \"lives\": [\n    {\n      \"province\": \"广东\",\n      \"city\": \"宝安区\",\n      \"adcode\": \"440306\",\n      \"weather\": \"阴\",\n      \"temperature\": \"30\",\n      \"winddirection\": \"南\",\n      \"windpower\": \"≤3\",\n      \"humidity\": \"66\",\n      \"reporttime\": \"2025-05-22 16:30:41\",\n      \"temperature_float\": \"30.0\",\n      \"humidity_float\": \"66.0\"\n    }\n  ]\n}"
           }
         ]
       },
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "kind": "artifact-update",
       "lastChunk": true,
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "artifact-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
       "final": false,
+      "kind": "status-update",
       "status": {
         "message": {
-          "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
-          "messageId": "cd132f74-a2fc-4796-bf4e-c7f1ae6a0825",
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "ade4ed28-94e7-4ab8-834b-12c8a50c4e33",
           "metadata": {
             "dify_event": "node_finished",
             "node_type": "http-request",
             "title": "GET 深圳南山天气",
-            "node_id": "cda66d22-c81d-4fb9-b23a-63688ddca0ca",
-            "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+            "node_id": "fb1b9dbd-775e-4c66-98f7-934a46b3ba68",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be",
             "outputs": {
               "status_code": 200,
-              "body": "{\"status\":\"1\",\"count\":\"1\",\"info\":\"OK\",\"infocode\":\"10000\",\"lives\":[{\"province\":\"广东\",\"city\":\"宝安区\",\"adcode\":\"440306\",\"weather\":\"阴\",\"temperature\":\"27\",\"winddirection\":\"东南\",\"windpower\":\"≤3\",\"humidity\":\"83\",\"reporttime\":\"2025-05-20 20:30:39\",\"temperature_float\":\"27.0\",\"humidity_float\":\"83.0\"}]}",
+              "body": "{\"status\":\"1\",\"count\":\"1\",\"info\":\"OK\",\"infocode\":\"10000\",\"lives\":[{\"province\":\"广东\",\"city\":\"宝安区\",\"adcode\":\"440306\",\"weather\":\"阴\",\"temperature\":\"30\",\"winddirection\":\"南\",\"windpower\":\"≤3\",\"humidity\":\"66\",\"reporttime\":\"2025-05-22 16:30:41\",\"temperature_float\":\"30.0\",\"humidity_float\":\"66.0\"}]}",
               "headers": {
                 "server": "Tengine",
-                "date": "Tue, 20 May 2025 12:41:28 GMT",
+                "date": "Thu, 22 May 2025 08:36:09 GMT",
                 "content-type": "application/json;charset=UTF-8",
-                "content-length": "307",
+                "content-length": "304",
                 "connection": "close",
-                "gsid": "033005142198174774488871200059720684809",
-                "sc": "0.007",
+                "gsid": "033005149099174790296920100059380624913",
+                "sc": "0.006",
                 "access-control-allow-origin": "*",
                 "access-control-allow-methods": "*",
                 "access-control-allow-headers": "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,key,x-biz,x-info,platinfo,encr,enginever,gzipped,poiid"
@@ -322,176 +327,176 @@
           },
           "parts": [
             {
-              "text": "Node Finished - GET 深圳南山天气 (http-request) - succeeded",
-              "type": "text"
+              "kind": "text",
+              "text": "Node Finished - GET 深圳南山天气 (http-request) - succeeded"
             }
           ],
           "role": "agent",
-          "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-          "type": "message"
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
         },
         "state": "working"
       },
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "status-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
       "final": false,
+      "kind": "status-update",
       "status": {
         "message": {
-          "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
-          "messageId": "7b395753-b65d-4f36-91ee-bf940a74b151",
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "16155f29-b4b5-44ee-b218-7059772f4849",
           "metadata": {
             "dify_event": "node_started",
             "node_type": "variable-aggregator",
             "title": "Variable Aggregator",
-            "node_id": "bdf42dc5-5842-4909-9ba3-dbaa9b912722",
-            "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1"
+            "node_id": "9b2c625b-9b0f-4249-924c-828539155b73",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be"
           },
           "parts": [
             {
-              "text": "Node Started - Variable Aggregator (variable-aggregator)",
-              "type": "text"
+              "kind": "text",
+              "text": "Node Started - Variable Aggregator (variable-aggregator)"
             }
           ],
           "role": "agent",
-          "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-          "type": "message"
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
         },
         "state": "working"
       },
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "status-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
       "final": false,
+      "kind": "status-update",
       "status": {
         "message": {
-          "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
-          "messageId": "5c4094e5-202d-4bc9-a499-29c53ed3bb4c",
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "2e4fc76c-530b-41fc-b2cd-f3419ca49a14",
           "metadata": {
             "dify_event": "node_finished",
             "node_type": "variable-aggregator",
             "title": "Variable Aggregator",
-            "node_id": "bdf42dc5-5842-4909-9ba3-dbaa9b912722",
-            "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+            "node_id": "9b2c625b-9b0f-4249-924c-828539155b73",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be",
             "outputs": {
-              "output": "{\"status\":\"1\",\"count\":\"1\",\"info\":\"OK\",\"infocode\":\"10000\",\"lives\":[{\"province\":\"广东\",\"city\":\"宝安区\",\"adcode\":\"440306\",\"weather\":\"阴\",\"temperature\":\"27\",\"winddirection\":\"东南\",\"windpower\":\"≤3\",\"humidity\":\"83\",\"reporttime\":\"2025-05-20 20:30:39\",\"temperature_float\":\"27.0\",\"humidity_float\":\"83.0\"}]}"
+              "output": "{\"status\":\"1\",\"count\":\"1\",\"info\":\"OK\",\"infocode\":\"10000\",\"lives\":[{\"province\":\"广东\",\"city\":\"宝安区\",\"adcode\":\"440306\",\"weather\":\"阴\",\"temperature\":\"30\",\"winddirection\":\"南\",\"windpower\":\"≤3\",\"humidity\":\"66\",\"reporttime\":\"2025-05-22 16:30:41\",\"temperature_float\":\"30.0\",\"humidity_float\":\"66.0\"}]}"
             },
             "status": "succeeded"
           },
           "parts": [
             {
-              "text": "Node Finished - Variable Aggregator (variable-aggregator) - succeeded",
-              "type": "text"
+              "kind": "text",
+              "text": "Node Finished - Variable Aggregator (variable-aggregator) - succeeded"
             }
           ],
           "role": "agent",
-          "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-          "type": "message"
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
         },
         "state": "working"
       },
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "status-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
       "final": false,
+      "kind": "status-update",
       "status": {
         "message": {
-          "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
-          "messageId": "abcae93f-813d-490a-a501-df95c63ae450",
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "965d56e5-7f0e-49c1-9be4-8c0cf892c199",
           "metadata": {
             "dify_event": "node_started",
             "node_type": "llm",
             "title": "LLM",
-            "node_id": "8a145f80-be85-4900-a920-0a7c1d84ba58",
-            "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1"
+            "node_id": "23ccc2bf-1783-43bb-8920-0b5d01e3c501",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be"
           },
           "parts": [
             {
-              "text": "Node Started - LLM (llm)",
-              "type": "text"
+              "kind": "text",
+              "text": "Node Started - LLM (llm)"
             }
           ],
           "role": "agent",
-          "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-          "type": "message"
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
         },
         "state": "working"
       },
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "status-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
       "append": false,
       "artifact": {
-        "artifactId": "b7bfca6e-ddd8-4f94-96de-d9cf741ff46e",
+        "artifactId": "c75bdd58-d8b0-43c2-bf0a-e5bc78c8cc69",
         "description": "Generated text from LLM",
-        "name": "llm_response_1d84ba58",
+        "name": "llm_response_01e3c501",
         "parts": [
           {
-            "text": "今天在广东省宝安区，天气阴沉，气温为27摄氏度。东南方向的风速较小，不超过3级。湿度较高，达到了83%。以上信息是在2025年5月20日20:30报告的。",
-            "type": "text"
+            "kind": "text",
+            "text": "今天在广东宝安区的天气预报显示，天气阴沉，温度为30°C。南风，风力不超过3级，湿度为66%。这是截至2025年5月22日下午4:30的最新天气信息。"
           }
         ]
       },
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "kind": "artifact-update",
       "lastChunk": true,
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "artifact-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
       "final": false,
+      "kind": "status-update",
       "status": {
         "message": {
-          "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
-          "messageId": "80b5c392-c09d-42ae-8261-1876e3c1ad7c",
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "c0d494cf-a98b-41d1-9c1b-58020ed5dda4",
           "metadata": {
             "dify_event": "node_finished",
             "node_type": "llm",
             "title": "LLM",
-            "node_id": "8a145f80-be85-4900-a920-0a7c1d84ba58",
-            "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+            "node_id": "23ccc2bf-1783-43bb-8920-0b5d01e3c501",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be",
             "outputs": {
-              "text": "今天在广东省宝安区，天气阴沉，气温为27摄氏度。东南方向的风速较小，不超过3级。湿度较高，达到了83%。以上信息是在2025年5月20日20:30报告的。",
+              "text": "今天在广东宝安区的天气预报显示，天气阴沉，温度为30°C。南风，风力不超过3级，湿度为66%。这是截至2025年5月22日下午4:30的最新天气信息。",
               "usage": {
-                "prompt_tokens": 115,
+                "prompt_tokens": 114,
                 "prompt_unit_price": "0.15",
                 "prompt_price_unit": "0.000001",
-                "prompt_price": "0.0000173",
-                "completion_tokens": 58,
+                "prompt_price": "0.0000171",
+                "completion_tokens": 54,
                 "completion_unit_price": "0.6",
                 "completion_price_unit": "0.000001",
-                "completion_price": "0.0000348",
-                "total_tokens": 173,
-                "total_price": "0.0000521",
+                "completion_price": "0.0000324",
+                "total_tokens": 168,
+                "total_price": "0.0000495",
                 "currency": "USD",
-                "latency": 0.14780750032514334
+                "latency": 1.2643818855285645
               },
               "finish_reason": "stop",
               "files": []
@@ -500,136 +505,134 @@
           },
           "parts": [
             {
-              "text": "Node Finished - LLM (llm) - succeeded",
-              "type": "text"
+              "kind": "text",
+              "text": "Node Finished - LLM (llm) - succeeded"
             }
           ],
           "role": "agent",
-          "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-          "type": "message"
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
         },
         "state": "working"
       },
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "status-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
       "final": false,
+      "kind": "status-update",
       "status": {
         "message": {
-          "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
-          "messageId": "8533a297-6127-48cd-af28-6a94a382573b",
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "f119103b-c7a3-45fd-883a-bd19eb45ae8e",
           "metadata": {
             "dify_event": "node_started",
             "node_type": "end",
             "title": "End",
-            "node_id": "b6f9096e-1dd2-4346-af25-d8693bc244a2",
-            "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1"
+            "node_id": "2609f4f3-73a8-4384-90fa-f73aa55dc27f",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be"
           },
           "parts": [
             {
-              "text": "Node Started - End (end)",
-              "type": "text"
+              "kind": "text",
+              "text": "Node Started - End (end)"
             }
           ],
           "role": "agent",
-          "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-          "type": "message"
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
         },
         "state": "working"
       },
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "status-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
       "final": false,
+      "kind": "status-update",
       "status": {
         "message": {
-          "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
-          "messageId": "78be449f-e2fd-443a-b10e-ea6b9cd62957",
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "39035a55-6d98-4f71-b8fd-5faee8c527cc",
           "metadata": {
             "dify_event": "node_finished",
             "node_type": "end",
             "title": "End",
-            "node_id": "b6f9096e-1dd2-4346-af25-d8693bc244a2",
-            "workflow_run_id": "32dffe6c-aee6-4d06-9599-03a586c3a3c1",
+            "node_id": "2609f4f3-73a8-4384-90fa-f73aa55dc27f",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be",
             "outputs": {
-              "text": "今天在广东省宝安区，天气阴沉，气温为27摄氏度。东南方向的风速较小，不超过3级。湿度较高，达到了83%。以上信息是在2025年5月20日20:30报告的。"
+              "text": "今天在广东宝安区的天气预报显示，天气阴沉，温度为30°C。南风，风力不超过3级，湿度为66%。这是截至2025年5月22日下午4:30的最新天气信息。"
             },
             "status": "succeeded"
           },
           "parts": [
             {
-              "text": "Node Finished - End (end) - succeeded",
-              "type": "text"
+              "kind": "text",
+              "text": "Node Finished - End (end) - succeeded"
             }
           ],
           "role": "agent",
-          "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-          "type": "message"
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
         },
         "state": "working"
       },
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "status-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
       "append": false,
       "artifact": {
-        "artifactId": "91840b74-037a-4b3b-925b-04cecc4a07e9",
+        "artifactId": "cf984e95-df41-4448-b28d-0e41ce2f53c9",
         "description": "Weather information for 深圳",
         "name": "result",
         "parts": [
           {
-            "text": "今天在广东省宝安区，天气阴沉，气温为27摄氏度。东南方向的风速较小，不超过3级。湿度较高，达到了83%。以上信息是在2025年5月20日20:30报告的。",
-            "type": "text"
+            "kind": "text",
+            "text": "今天在广东宝安区的天气预报显示，天气阴沉，温度为30°C。南风，风力不超过3级，湿度为66%。这是截至2025年5月22日下午4:30的最新天气信息。"
           }
         ]
       },
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "kind": "artifact-update",
       "lastChunk": true,
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "artifact-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   },
   {
-    "id": "e1b4bcfd-a94e-4900-9e61-8620f7c3e61b",
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
     "jsonrpc": "2.0",
     "result": {
-      "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
       "final": true,
+      "kind": "status-update",
       "status": {
         "message": {
-          "contextId": "05908606-a8ee-4436-b601-8bd2340c4e7a",
-          "messageId": "e11b5848-2220-4a53-a280-731e9c3385ee",
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "d1d0db12-f392-49f9-80ff-d298cc8efe88",
           "parts": [
             {
-              "text": "今天在广东省宝安区，天气阴沉，气温为27摄氏度。东南方向的风速较小，不超过3级。湿度较高，达到了83%。以上信息是在2025年5月20日20:30报告的。",
-              "type": "text"
+              "kind": "text",
+              "text": "今天在广东宝安区的天气预报显示，天气阴沉，温度为30°C。南风，风力不超过3级，湿度为66%。这是截至2025年5月22日下午4:30的最新天气信息。"
             }
           ],
           "role": "agent",
-          "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-          "type": "message"
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
         },
         "state": "completed"
       },
-      "taskId": "bb029d30-2e2f-4555-889a-19a431345543",
-      "type": "status-update"
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
     }
   }
 ]

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict
 import json
 from uuid import uuid4
 
@@ -15,7 +15,13 @@ from a2a.types import (
 
 async def main() -> None:
     # Set default values for parameters
-    city = '深圳'  # Default city
+    # Define a generic data payload with multiple fields
+    data_payload: Dict[str, Any] = {
+        'city': '深圳',  # Default city
+        'api_key': 'app-SXqTiCm89mGr2IJhKvwWgR7s',  # API key
+        'user_id': 'kingstonwen104@gmail.com',  # User ID
+        'dify_server': 'cloud'
+    }
     response_mode = 'blocking'  # Default response mode
 
     # List to store all response chunks
@@ -26,12 +32,12 @@ async def main() -> None:
             httpx_client, 'http://localhost:8888'
         )
 
-        # Build message payload with city as DataPart and response_mode in configuration
+        # Build message payload with complete data payload as DataPart
         send_message_payload: dict[str, Any] = {
             'message': {
                 'role': 'user',
                 'parts': [
-                    {'type': 'data', 'data': {'city': city}},
+                    {'type': 'data', 'data': data_payload},
                 ],
                 'messageId': uuid4().hex,
             },
@@ -44,7 +50,7 @@ async def main() -> None:
             params=MessageSendParams(**send_message_payload)
         )
 
-        # print(f'Sending request to Dify agent for city: {city}...')
+        # print(f'Sending request to Dify agent with data: {json.dumps(data_payload, ensure_ascii=False)}...')
         # response = await client.send_message(request)
         # print(response.model_dump(mode='json', exclude_none=True))
 
@@ -56,7 +62,7 @@ async def main() -> None:
         )
 
         print(
-            f'Sending message/stream request to Dify agent for city: {city}...'
+            f'Sending message/stream request to Dify agent with data: {json.dumps(data_payload, ensure_ascii=False)}...'
         )
 
         stream_response = client.send_message_streaming(streaming_request)
