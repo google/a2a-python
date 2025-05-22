@@ -65,9 +65,10 @@ class ADKAgentExecutor(AgentExecutor):
         session_id: str,
         task_updater: TaskUpdater,
     ) -> None:
-        session_id = self._upsert_session(
+        session = await self._upsert_session(
             session_id,
-        ).id
+        )
+        session_id = session.id
         auth_details = None
         async for event in self._run_agent(session_id, new_message):
             # This agent is expected to do one of two things:
@@ -229,10 +230,10 @@ class ADKAgentExecutor(AgentExecutor):
     async def on_auth_callback(self, state: str, uri: str):
         self._awaiting_auth[state].set_result(uri)
 
-    def _upsert_session(self, session_id: str):
-        return self.runner.session_service.get_session(
+    async def _upsert_session(self, session_id: str):
+        return await self.runner.session_service.get_session(
             app_name=self.runner.app_name, user_id='self', session_id=session_id
-        ) or self.runner.session_service.create_session(
+        ) or await self.runner.session_service.create_session(
             app_name=self.runner.app_name, user_id='self', session_id=session_id
         )
 

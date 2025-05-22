@@ -156,9 +156,10 @@ class ADKAgentExecutor(AgentExecutor):
         session_id: str,
         task_updater: TaskUpdater,
     ) -> AsyncIterable[TaskStatus | Artifact]:
-        session_id = self._upsert_session(
+        session = await self._upsert_session(
             session_id,
-        ).id
+        )
+        session_id = session.id
         async for event in self._run_agent(
             session_id, new_message, task_updater
         ):
@@ -243,10 +244,10 @@ class ADKAgentExecutor(AgentExecutor):
         # Ideally: kill any ongoing tasks.
         raise ServerError(error=UnsupportedOperationError())
 
-    def _upsert_session(self, session_id: str):
-        return self.runner.session_service.get_session(
+    async def _upsert_session(self, session_id: str):
+        return await self.runner.session_service.get_session(
             app_name=self.runner.app_name, user_id='self', session_id=session_id
-        ) or self.runner.session_service.create_session(
+        ) or await self.runner.session_service.create_session(
             app_name=self.runner.app_name, user_id='self', session_id=session_id
         )
 
