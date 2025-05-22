@@ -1,6 +1,19 @@
 # A2A Python SDK
 
-A Python library that helps run agentic applications as A2AServers following the [Agent2Agent (A2A) Protocol](https://google.github.io/A2A/).
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+![PyPI - Version](https://img.shields.io/pypi/v/a2a-sdk)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/a2a-sdk)
+
+<!-- markdownlint-disable no-inline-html -->
+
+<html>
+   <h2 align="center">
+   <img src="https://raw.githubusercontent.com/google/A2A/refs/heads/main/docs/assets/a2a-logo-black.svg" width="256" alt="A2A Logo"/>
+   </h2>
+   <h3 align="center">A Python library that helps run agentic applications as A2AServers following the <a href="https://google.github.io/A2A">Agent2Agent (A2A) Protocol</a>.</h3>
+</html>
+
+<!-- markdownlint-enable no-inline-html -->
 
 ## Installation
 
@@ -8,7 +21,7 @@ You can install the A2A SDK using either `uv` or `pip`.
 
 ## Prerequisites
 
-- Python 3.13+
+- Python 3.10+
 - `uv` (optional, but recommended) or `pip`
 
 ### Using `uv`

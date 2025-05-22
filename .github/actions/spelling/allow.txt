@@ -32,6 +32,7 @@ lifecycles
 linting
 oauthoidc
 opensource
+pyversions
 socio
 sse
 tagwords
