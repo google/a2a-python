@@ -61,6 +61,20 @@ class EventQueue:
     async def dequeue_event(self, no_wait: bool = False) -> Event:
         """Dequeues an event from the queue.
 
+        This implementation expects that dequeue to raise an exception when
+        the queue has been closed. In python 3.13+ this is naturally provided
+        by the QueueShutDown exception generated when the queue has closed and
+        the user is awaiting the queue.get method. Python<=3.12 this needs to
+        manage this lifecylce itself. The current implementation can lead to
+        blocking if the dequeue_event is called before the EventQueue has been
+        closed but when there are no events on the queue. Two ways to avoid this
+        are to call this with no_wait = True which won't block, but is the
+        callers responsibility to retry as appropriate. Alternatively, one can
+        use a async Task management solution to cancel the get task if the queue
+        has closed or some other condition is met. The implementation of the
+        EventConsumer uses an async.wait with a timeout to abort the
+        dequeue_event call and retry, when it will return with a closed error.
+
         Args:
             no_wait: If True, retrieve an event immediately or raise `asyncio.QueueEmpty`.
                      If False (default), wait until an event is available.
