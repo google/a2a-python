@@ -23,17 +23,22 @@
    ```
 
 3. Install the dependencies
+- Execute it in the root directory of the project. 
+
    ```bash
-   cd ~/a2a-python/
    pip install .
    ```
 
 4. Start the server
+- Execute it in the travel_planner directory of the project. 
+- 
     ```bash
     uv run .
     ```
 
 5. Run the test client
+- Execute it in the travel_planner directory of the project. 
+
     ```bash
     uv run loop_client.py
     ```
