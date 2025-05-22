@@ -85,7 +85,8 @@ class A2AStarletteApplication:
             agent_card: The AgentCard describing the agent's capabilities.
             http_handler: The handler instance responsible for processing A2A
               requests via http.
-            context_builder:
+            context_builder: The CallContextBuilder used to construct the
+              ServerCallContext passed to the http_handler.
         """
         self.agent_card = agent_card
         self.handler = JSONRPCHandler(
