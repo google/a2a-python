@@ -23,7 +23,7 @@ import subprocess
 import nox
 
 
-DEFAULT_PYTHON_VERSION = '3.13'
+DEFAULT_PYTHON_VERSION = '3.10'
 
 CURRENT_DIRECTORY = pathlib.Path(__file__).parent.absolute()
 
@@ -127,7 +127,7 @@ def format(session):
             session.run(
                 'pyupgrade',
                 '--exit-zero-even-if-changed',
-                '--py313-plus',
+                '--py310-plus',
                 *lint_paths_py,
             )
         session.run(
