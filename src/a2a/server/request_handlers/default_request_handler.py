@@ -147,7 +147,7 @@ class DefaultRequestHandler(RequestHandler):
             queue: The event queue for the agent to publish to.
         """
         await self.agent_executor.execute(request, queue)
-        queue.close()
+        await queue.close()
 
     async def on_message_send(
         self, params: MessageSendParams

@@ -1,12 +1,12 @@
 name: Update A2A Schema from Specification
 
 on:
-  schedule:
-    - cron: "0 0 * * *" # Runs daily at 00:00 UTC
+  repository_dispatch:
+    types: [a2a_json_update]
   workflow_dispatch:
 
 jobs:
-  check_and_update:
+  generate_and_pr:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -19,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.10"
 
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -61,20 +61,17 @@ jobs:
             --use-standard-collections
           echo "Codegen finished."
 
-      - name: Create Pull Request if generated file changed
+      - name: Create Pull Request with Updates
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.A2A_BOT_PAT }}
-          committer: a2a-bot <a2a-bot@google.com>
-          author: a2a-bot <a2a-bot@google.com>
-          commit-message: "chore: 🤖 Auto-update A2A schema from specification"
-          title: "chore: 🤖 Auto-update A2A Schema from Specification"
+          committer: "a2a-bot <a2a-bot@google.com>"
+          author: "a2a-bot <a2a-bot@google.com>"
+          commit-message: "chore: 🤖Auto-update A2A types from google/A2A@${{ github.event.client_payload.sha }}"
+          title: "chore: 🤖 Auto-update A2A types from google/A2A"
           body: |
-            This PR automatically updates the A2A schema types based on the latest specification.
-
-            This update was triggered by the scheduled workflow run.
-            See the workflow run details: [${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          branch: "a2a-schema-update"
+            This PR updates `src/a2a/types.py` based on the latest `specification/json/a2a.json` from [google/A2A](https://github.com/google/A2A/commit/${{ github.event.client_payload.sha }}).
+          branch: "auto-update-a2a-types-${{ github.event.client_payload.sha }}"
           base: main
           labels: |
             automated
