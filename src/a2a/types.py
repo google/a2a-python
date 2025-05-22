@@ -90,8 +90,7 @@ class AgentSkill(BaseModel):
     examples: list[str] | None = None
     """
     The set of example scenarios that the skill can perform.
-    Will be used by the client as a hint to understand how the skill can be
-    used.
+    Will be used by the client as a hint to understand how the skill can be used.
     """
     id: str
     """
@@ -113,8 +112,7 @@ class AgentSkill(BaseModel):
     """
     tags: list[str]
     """
-    Set of tagwords describing classes of capabilities for this specific
-    skill.
+    Set of tagwords describing classes of capabilities for this specific skill.
     """
 
 
@@ -433,7 +431,7 @@ class JSONRPCMessage(BaseModel):
 
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
@@ -449,7 +447,7 @@ class JSONRPCRequest(BaseModel):
 
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
@@ -473,7 +471,7 @@ class JSONRPCResult(BaseModel):
 
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
@@ -716,7 +714,7 @@ class TaskResubscriptionRequest(BaseModel):
 
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
@@ -825,7 +823,7 @@ class CancelTaskRequest(BaseModel):
 
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
@@ -868,7 +866,7 @@ class GetTaskPushNotificationConfigRequest(BaseModel):
 
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
@@ -894,7 +892,7 @@ class GetTaskPushNotificationConfigSuccessResponse(BaseModel):
 
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
@@ -914,7 +912,7 @@ class GetTaskRequest(BaseModel):
 
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
@@ -952,7 +950,7 @@ class JSONRPCErrorResponse(BaseModel):
     )
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
@@ -1021,7 +1019,7 @@ class SetTaskPushNotificationConfigRequest(BaseModel):
 
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
@@ -1047,7 +1045,7 @@ class SetTaskPushNotificationConfigSuccessResponse(BaseModel):
 
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
@@ -1123,7 +1121,7 @@ class Message(BaseModel):
     """
     referenceTaskIds: list[str] | None = None
     """
-    list of tasks referenced as context by this message.
+    List of tasks referenced as context by this message.
     """
     role: Role
     """
@@ -1197,7 +1195,7 @@ class SendMessageRequest(BaseModel):
 
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
@@ -1221,7 +1219,7 @@ class SendStreamingMessageRequest(BaseModel):
 
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
@@ -1249,7 +1247,7 @@ class SetTaskPushNotificationConfigResponse(
 
 class TaskArtifactUpdateEvent(BaseModel):
     """
-    sent by server during sendStream or subscribe requests
+    Sent by server during sendStream or subscribe requests
     """
 
     append: bool | None = None
@@ -1300,7 +1298,7 @@ class TaskStatus(BaseModel):
 
 class TaskStatusUpdateEvent(BaseModel):
     """
-    sent by server during sendStream or subscribe requests
+    Sent by server during sendStream or subscribe requests
     """
 
     contextId: str
@@ -1369,8 +1367,7 @@ class AgentCard(BaseModel):
     """
     defaultInputModes: list[str]
     """
-    The set of interaction modes that the agent
-    supports across all skills. This can be overridden per-skill.
+    The set of interaction modes that the agent supports across all skills. This can be overridden per-skill.
     Supported mime types for input.
     """
     defaultOutputModes: list[str]
@@ -1405,6 +1402,11 @@ class AgentCard(BaseModel):
     skills: list[AgentSkill]
     """
     Skills are a unit of capability that an agent can perform.
+    """
+    supportsAuthenticatedExtendedCard: bool | None = None
+    """
+    true if the agent supports providing an extended agent card when the user is authenticated.
+    Defaults to false if not specified.
     """
     url: str
     """
@@ -1451,7 +1453,7 @@ class CancelTaskSuccessResponse(BaseModel):
 
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
@@ -1471,7 +1473,7 @@ class GetTaskSuccessResponse(BaseModel):
 
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
@@ -1491,7 +1493,7 @@ class SendMessageSuccessResponse(BaseModel):
 
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
@@ -1511,7 +1513,7 @@ class SendStreamingMessageSuccessResponse(BaseModel):
 
     id: str | int | None = None
     """
-    An identifier established by the Client that MUST contain a String, Number
+    An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
     jsonrpc: Literal['2.0'] = '2.0'
