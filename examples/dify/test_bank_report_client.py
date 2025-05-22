@@ -43,13 +43,13 @@ async def main() -> None:
     # Set default values for parameters
     api_key = 'app-eoW3l7V3CyWX9H78FbBGTrje'  # API key
     user_id = 'kingstonwen104@gmail.com'  # User ID
-    bank_statement_path = '银行流水例子.xlsx'  # Path to the bank statement file
+    bank_statement_path = 'bank_statement.xlsx'  # Path to the bank statement file
 
     # Check if the file exists
     if not os.path.exists(bank_statement_path):
         # Try relative path from the script location
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        bank_statement_path = os.path.join(script_dir, '银行流水例子.xlsx')
+        bank_statement_path = os.path.join(script_dir, 'bank_statement.xlsx')
         if not os.path.exists(bank_statement_path):
             print(f'Error: File {bank_statement_path} not found!')
             return
@@ -61,7 +61,6 @@ async def main() -> None:
 
     async with httpx.AsyncClient() as httpx_client:
         # First, upload the bank statement file
-        # if not file_id:
         print(f'Uploading file {bank_statement_path}...')
         try:
             upload_response = await upload_file(
