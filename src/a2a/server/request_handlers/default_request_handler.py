@@ -10,6 +10,7 @@ from a2a.server.agent_execution import (
     RequestContextBuilder,
     SimpleRequestContextBuilder,
 )
+from a2a.server.context import ServerCallContext
 from a2a.server.events import (
     Event,
     EventConsumer,
@@ -70,6 +71,8 @@ class DefaultRequestHandler(RequestHandler):
             task_store: The `TaskStore` instance to manage task persistence.
             queue_manager: The `QueueManager` instance to manage event queues. Defaults to `InMemoryQueueManager`.
             push_notifier: The `PushNotifier` instance for sending push notifications. Defaults to None.
+            request_context_builder: The `RequestContextBuilder` instance used
+              to build request contexts. Defaults to `SimpleRequestContextBuilder`.
         """
         self.agent_executor = agent_executor
         self.task_store = task_store
@@ -85,14 +88,20 @@ class DefaultRequestHandler(RequestHandler):
         self._running_agents = {}
         self._running_agents_lock = asyncio.Lock()
 
-    async def on_get_task(self, params: TaskQueryParams) -> Task | None:
+    async def on_get_task(
+        self,
+        params: TaskQueryParams,
+        context: ServerCallContext | None = None,
+    ) -> Task | None:
         """Default handler for 'tasks/get'."""
         task: Task | None = await self.task_store.get(params.id)
         if not task:
             raise ServerError(error=TaskNotFoundError())
         return task
 
-    async def on_cancel_task(self, params: TaskIdParams) -> Task | None:
+    async def on_cancel_task(
+        self, params: TaskIdParams, context: ServerCallContext | None = None
+    ) -> Task | None:
         """Default handler for 'tasks/cancel'.
 
         Attempts to cancel the task managed by the `AgentExecutor`.
@@ -150,7 +159,9 @@ class DefaultRequestHandler(RequestHandler):
         await queue.close()
 
     async def on_message_send(
-        self, params: MessageSendParams
+        self,
+        params: MessageSendParams,
+        context: ServerCallContext | None = None,
     ) -> Message | Task:
         """Default handler for 'message/send' interface (non-streaming).
 
@@ -183,6 +194,7 @@ class DefaultRequestHandler(RequestHandler):
             task_id=task.id if task else None,
             context_id=params.message.contextId,
             task=task,
+            context=context,
         )
 
         task_id = cast(str, request_context.task_id)
@@ -232,7 +244,9 @@ class DefaultRequestHandler(RequestHandler):
         return result
 
     async def on_message_send_stream(
-        self, params: MessageSendParams
+        self,
+        params: MessageSendParams,
+        context: ServerCallContext | None = None,
     ) -> AsyncGenerator[Event]:
         """Default handler for 'message/stream' (streaming).
 
@@ -270,6 +284,7 @@ class DefaultRequestHandler(RequestHandler):
             task_id=task.id if task else None,
             context_id=params.message.contextId,
             task=task,
+            context=context,
         )
 
         task_id = cast(str, request_context.task_id)
@@ -334,7 +349,9 @@ class DefaultRequestHandler(RequestHandler):
             self._running_agents.pop(task_id, None)
 
     async def on_set_task_push_notification_config(
-        self, params: TaskPushNotificationConfig
+        self,
+        params: TaskPushNotificationConfig,
+        context: ServerCallContext | None = None,
     ) -> TaskPushNotificationConfig:
         """Default handler for 'tasks/pushNotificationConfig/set'.
 
@@ -355,7 +372,9 @@ class DefaultRequestHandler(RequestHandler):
         return params
 
     async def on_get_task_push_notification_config(
-        self, params: TaskIdParams
+        self,
+        params: TaskIdParams,
+        context: ServerCallContext | None = None,
     ) -> TaskPushNotificationConfig:
         """Default handler for 'tasks/pushNotificationConfig/get'.
 
@@ -377,7 +396,9 @@ class DefaultRequestHandler(RequestHandler):
         )
 
     async def on_resubscribe_to_task(
-        self, params: TaskIdParams
+        self,
+        params: TaskIdParams,
+        context: ServerCallContext | None = None,
     ) -> AsyncGenerator[Event]:
         """Default handler for 'tasks/resubscribe'.
 
