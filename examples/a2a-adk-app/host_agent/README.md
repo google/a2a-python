@@ -1,5 +1,6 @@
+# An example host agent frond end
 
-
-> **⚠️ DISCLAIMER: THIS IS NOT AN OFFICIALLY SUPPORTED GOOGLE PRODUCT. THIS PROJECT IS INTENDED FOR DEMONSTRATION PURPOSES ONLY. IT IS NOT INTENDED FOR USE IN A PRODUCTION ENVIRONMENT.**
-
-
+- Start the server
+    ```bash
+    uv run app.py
+    ```

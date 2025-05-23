@@ -1,4 +1,4 @@
-An example langgraph agent .
+# Remote agent built by LangGraph
 
 ## Getting started
 
