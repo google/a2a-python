@@ -54,6 +54,7 @@ opensource
 pybuilder
 pypa
 pytype
+pyversions
 socio
 sse
 tagwords
