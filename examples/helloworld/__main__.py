@@ -44,16 +44,15 @@ if __name__ == '__main__':
 
     # This will be the authenticated extended agent card
     # It includes the additional 'extended_skill'
-    specific_extended_agent_card = AgentCard(
-        name='Hello World Agent - Extended Edition', # Different name for clarity
-        description='The full-featured hello world agent for authenticated users.',
-        url='http://localhost:9999/',
-        version='1.0.1', # Could even be a different version
-        defaultInputModes=['text'],
-        defaultOutputModes=['text'],
-        capabilities=AgentCapabilities(streaming=True), # Could have different capabilities
-        skills=[skill, extended_skill],  # Both skills for the extended card
-        supportsAuthenticatedExtendedCard=True,
+    specific_extended_agent_card = public_agent_card.model_copy(
+        update={
+            'name': 'Hello World Agent - Extended Edition', # Different name for clarity
+            'description': 'The full-featured hello world agent for authenticated users.',
+            'version': '1.0.1', # Could even be a different version
+            # Capabilities and other fields like url, defaultInputModes, defaultOutputModes,
+            # supportsAuthenticatedExtendedCard are inherited from public_agent_card unless specified here.
+            'skills': [skill, extended_skill],  # Both skills for the extended card
+        }
     )
 
     request_handler = DefaultRequestHandler(
