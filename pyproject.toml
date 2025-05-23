@@ -5,7 +5,7 @@ description = "A2A Python SDK"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [{ name = "Google LLC", email = "googleapis-packages@google.com" }]
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 keywords = ["A2A", "A2A SDK", "A2A Protocol", "Agent2Agent"]
 dependencies = [
     "httpx>=0.28.1",
@@ -22,6 +22,9 @@ classifiers = [
   "Intended Audience :: Developers",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Operating System :: OS Independent",
   "Topic :: Software Development :: Libraries :: Python Modules",

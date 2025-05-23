@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 
 from a2a.types import (
     A2AError,
@@ -39,6 +40,8 @@ class EventQueue:
         """Initializes the EventQueue."""
         self.queue: asyncio.Queue[Event] = asyncio.Queue()
         self._children: list[EventQueue] = []
+        self._is_closed = False
+        self._lock = asyncio.Lock()
         logger.debug('EventQueue initialized.')
 
     def enqueue_event(self, event: Event):
@@ -47,6 +50,9 @@ class EventQueue:
         Args:
             event: The event object to enqueue.
         """
+        if self._is_closed:
+            logger.warning('Queue is closed. Event will not be enqueued.')
+            return
         logger.debug(f'Enqueuing event of type: {type(event)}')
         self.queue.put_nowait(event)
         for child in self._children:
@@ -54,6 +60,20 @@ class EventQueue:
 
     async def dequeue_event(self, no_wait: bool = False) -> Event:
         """Dequeues an event from the queue.
+
+        This implementation expects that dequeue to raise an exception when
+        the queue has been closed. In python 3.13+ this is naturally provided
+        by the QueueShutDown exception generated when the queue has closed and
+        the user is awaiting the queue.get method. Python<=3.12 this needs to
+        manage this lifecycle itself. The current implementation can lead to
+        blocking if the dequeue_event is called before the EventQueue has been
+        closed but when there are no events on the queue. Two ways to avoid this
+        are to call this with no_wait = True which won't block, but is the
+        callers responsibility to retry as appropriate. Alternatively, one can
+        use a async Task management solution to cancel the get task if the queue
+        has closed or some other condition is met. The implementation of the
+        EventConsumer uses an async.wait with a timeout to abort the
+        dequeue_event call and retry, when it will return with a closed error.
 
         Args:
             no_wait: If True, retrieve an event immediately or raise `asyncio.QueueEmpty`.
@@ -66,6 +86,11 @@ class EventQueue:
             asyncio.QueueEmpty: If `no_wait` is True and the queue is empty.
             asyncio.QueueShutDown: If the queue has been closed and is empty.
         """
+        async with self._lock:
+            if self._is_closed and self.queue.empty():
+                logger.warning('Queue is closed. Event will not be dequeued.')
+                raise asyncio.QueueEmpty('Queue is closed.')
+
         if no_wait:
             logger.debug('Attempting to dequeue event (no_wait=True).')
             event = self.queue.get_nowait()
@@ -99,13 +124,30 @@ class EventQueue:
         self._children.append(queue)
         return queue
 
-    def close(self):
+    async def close(self):
         """Closes the queue for future push events.
 
         Once closed, `dequeue_event` will eventually raise `asyncio.QueueShutDown`
         when the queue is empty. Also closes all child queues.
         """
         logger.debug('Closing EventQueue.')
-        self.queue.shutdown()
-        for child in self._children:
-            child.close()
+        async with self._lock:
+            # If already closed, just return.
+            if self._is_closed:
+                return
+            self._is_closed = True
+        # If using python 3.13 or higher, use the shutdown method
+        if sys.version_info >= (3, 13):
+            self.queue.shutdown()
+            for child in self._children:
+                child.close()
+        # Otherwise, join the queue
+        else:
+            tasks = [asyncio.create_task(self.queue.join())]
+            for child in self._children:
+                tasks.append(asyncio.create_task(child.close()))
+            await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
+
+    def is_closed(self) -> bool:
+        """Checks if the queue is closed."""
+        return self._is_closed

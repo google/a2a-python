@@ -10,13 +10,13 @@ from a2a.server.agent_execution import (
     RequestContextBuilder,
     SimpleRequestContextBuilder,
 )
+from a2a.server.context import ServerCallContext
 from a2a.server.events import (
     Event,
     EventConsumer,
     EventQueue,
     InMemoryQueueManager,
     QueueManager,
-    TaskQueueExists,
 )
 from a2a.server.request_handlers.request_handler import RequestHandler
 from a2a.server.tasks import (
@@ -71,6 +71,8 @@ class DefaultRequestHandler(RequestHandler):
             task_store: The `TaskStore` instance to manage task persistence.
             queue_manager: The `QueueManager` instance to manage event queues. Defaults to `InMemoryQueueManager`.
             push_notifier: The `PushNotifier` instance for sending push notifications. Defaults to None.
+            request_context_builder: The `RequestContextBuilder` instance used
+              to build request contexts. Defaults to `SimpleRequestContextBuilder`.
         """
         self.agent_executor = agent_executor
         self.task_store = task_store
@@ -86,14 +88,20 @@ class DefaultRequestHandler(RequestHandler):
         self._running_agents = {}
         self._running_agents_lock = asyncio.Lock()
 
-    async def on_get_task(self, params: TaskQueryParams) -> Task | None:
+    async def on_get_task(
+        self,
+        params: TaskQueryParams,
+        context: ServerCallContext | None = None,
+    ) -> Task | None:
         """Default handler for 'tasks/get'."""
         task: Task | None = await self.task_store.get(params.id)
         if not task:
             raise ServerError(error=TaskNotFoundError())
         return task
 
-    async def on_cancel_task(self, params: TaskIdParams) -> Task | None:
+    async def on_cancel_task(
+        self, params: TaskIdParams, context: ServerCallContext | None = None
+    ) -> Task | None:
         """Default handler for 'tasks/cancel'.
 
         Attempts to cancel the task managed by the `AgentExecutor`.
@@ -148,10 +156,12 @@ class DefaultRequestHandler(RequestHandler):
             queue: The event queue for the agent to publish to.
         """
         await self.agent_executor.execute(request, queue)
-        queue.close()
+        await queue.close()
 
     async def on_message_send(
-        self, params: MessageSendParams
+        self,
+        params: MessageSendParams,
+        context: ServerCallContext | None = None,
     ) -> Message | Task:
         """Default handler for 'message/send' interface (non-streaming).
 
@@ -184,6 +194,7 @@ class DefaultRequestHandler(RequestHandler):
             task_id=task.id if task else None,
             context_id=params.message.contextId,
             task=task,
+            context=context,
         )
 
         task_id = cast(str, request_context.task_id)
@@ -212,6 +223,15 @@ class DefaultRequestHandler(RequestHandler):
             ) = await result_aggregator.consume_and_break_on_interrupt(consumer)
             if not result:
                 raise ServerError(error=InternalError())
+
+            if isinstance(result, Task) and task_id != result.id:
+                logger.error(
+                    f'Agent generated task_id={result.id} does not match the RequestContext task_id={task_id}.'
+                )
+                raise ServerError(
+                    InternalError(message='Task ID mismatch in agent response')
+                )
+
         finally:
             if interrupted:
                 # TODO: Track this disconnected cleanup task.
@@ -224,7 +244,9 @@ class DefaultRequestHandler(RequestHandler):
         return result
 
     async def on_message_send_stream(
-        self, params: MessageSendParams
+        self,
+        params: MessageSendParams,
+        context: ServerCallContext | None = None,
     ) -> AsyncGenerator[Event]:
         """Default handler for 'message/stream' (streaming).
 
@@ -262,6 +284,7 @@ class DefaultRequestHandler(RequestHandler):
             task_id=task.id if task else None,
             context_id=params.message.contextId,
             task=task,
+            context=context,
         )
 
         task_id = cast(str, request_context.task_id)
@@ -278,27 +301,27 @@ class DefaultRequestHandler(RequestHandler):
             consumer = EventConsumer(queue)
             producer_task.add_done_callback(consumer.agent_task_callback)
             async for event in result_aggregator.consume_and_emit(consumer):
-                if isinstance(event, Task) and task_id != event.id:
-                    logger.warning(
-                        f'Agent generated task_id={event.id} does not match the RequestContext task_id={task_id}.'
-                    )
-                    try:
-                        created_task: Task = event
-                        await self._queue_manager.add(created_task.id, queue)
-                        task_id = created_task.id
-                    except TaskQueueExists:
-                        logging.info(
-                            'Multiple Task objects created in event stream.'
+                if isinstance(event, Task):
+                    if task_id != event.id:
+                        logger.error(
+                            f'Agent generated task_id={event.id} does not match the RequestContext task_id={task_id}.'
                         )
+                        raise ServerError(
+                            InternalError(
+                                message='Task ID mismatch in agent response'
+                            )
+                        )
+
                     if (
                         self._push_notifier
                         and params.configuration
                         and params.configuration.pushNotificationConfig
                     ):
                         await self._push_notifier.set_info(
-                            created_task.id,
+                            task_id,
                             params.configuration.pushNotificationConfig,
                         )
+
                 if self._push_notifier and task_id:
                     latest_task = await result_aggregator.current_result
                     if isinstance(latest_task, Task):
@@ -326,7 +349,9 @@ class DefaultRequestHandler(RequestHandler):
             self._running_agents.pop(task_id, None)
 
     async def on_set_task_push_notification_config(
-        self, params: TaskPushNotificationConfig
+        self,
+        params: TaskPushNotificationConfig,
+        context: ServerCallContext | None = None,
     ) -> TaskPushNotificationConfig:
         """Default handler for 'tasks/pushNotificationConfig/set'.
 
@@ -347,7 +372,9 @@ class DefaultRequestHandler(RequestHandler):
         return params
 
     async def on_get_task_push_notification_config(
-        self, params: TaskIdParams
+        self,
+        params: TaskIdParams,
+        context: ServerCallContext | None = None,
     ) -> TaskPushNotificationConfig:
         """Default handler for 'tasks/pushNotificationConfig/get'.
 
@@ -369,7 +396,9 @@ class DefaultRequestHandler(RequestHandler):
         )
 
     async def on_resubscribe_to_task(
-        self, params: TaskIdParams
+        self,
+        params: TaskIdParams,
+        context: ServerCallContext | None = None,
     ) -> AsyncGenerator[Event]:
         """Default handler for 'tasks/resubscribe'.
 

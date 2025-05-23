@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 
 from collections.abc import AsyncGenerator
 
@@ -14,6 +15,13 @@ from a2a.types import (
 from a2a.utils.errors import ServerError
 from a2a.utils.telemetry import SpanKind, trace_class
 
+
+# This is an alias to the exception for closed queue
+QueueClosed = asyncio.QueueEmpty
+
+# When using python 3.13 or higher, the closed queue signal is QueueShutdown
+if sys.version_info >= (3, 13):
+    QueueClosed = asyncio.QueueShutDown
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +95,6 @@ class EventConsumer:
                 logger.debug(
                     f'Dequeued event of type: {type(event)} in consume_all.'
                 )
-                yield event
                 self.queue.task_done()
                 logger.debug(
                     'Marked task as done in event queue in consume_all'
@@ -109,15 +116,24 @@ class EventConsumer:
                     )
                 )
 
+                # Make sure the yield is after the close events, otherwise
+                # the caller may end up in a blocked state where this
+                # generator isn't called again to close things out and the
+                # other part is waiting for an event or a closed queue.
                 if is_final_event:
                     logger.debug('Stopping event consumption in consume_all.')
-                    self.queue.close()
+                    await self.queue.close()
+                    yield event
                     break
+                yield event
             except TimeoutError:
                 # continue polling until there is a final event
                 continue
-            except asyncio.QueueShutDown:
-                break
+            except QueueClosed:
+                # Confirm that the queue is closed, e.g. we aren't on
+                # python 3.12 and get a queue empty error on an open queue
+                if self.queue.is_closed():
+                    break
 
     def agent_task_callback(self, agent_task: asyncio.Task[None]):
         """Callback to handle exceptions from the agent's execution task.
