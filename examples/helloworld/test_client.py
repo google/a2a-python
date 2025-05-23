@@ -28,45 +28,38 @@ async def main() -> None:
         )
 
         # Fetch Public Agent Card and Initialize Client
-        public_agent_card: AgentCard | None = None
-        extended_agent_card: AgentCard | None = None
         final_agent_card_to_use: AgentCard | None = None
 
         try:
             logger.info(f"Attempting to fetch public agent card from: {base_url}{PUBLIC_AGENT_CARD_PATH}")
-            public_agent_card = await resolver.get_agent_card()  # Fetches from default public path
+            _public_card = await resolver.get_agent_card()  # Fetches from default public path
             logger.info("Successfully fetched public agent card:")
-            logger.info(public_agent_card.model_dump_json(indent=2, exclude_none=True))
+            logger.info(_public_card.model_dump_json(indent=2, exclude_none=True))
+            final_agent_card_to_use = _public_card
+            logger.info("\nUsing PUBLIC agent card for client initialization (default).")
 
-            # --- Conditional Step: Fetch Extended Agent Card
-            if public_agent_card and public_agent_card.supportsAuthenticatedExtendedCard:
-                logger.info(f"\nPublic card supports authenticated extended card. Attempting to fetch from: {base_url}{EXTENDED_AGENT_CARD_PATH}")
-                auth_headers_dict = {"Authorization": "Bearer dummy-token-for-extended-card"}
-                extended_agent_card = await resolver.get_agent_card(
-                    relative_card_path=EXTENDED_AGENT_CARD_PATH, # Or resolver.extended_agent_card_path
-                    http_kwargs={"headers": auth_headers_dict}
-                )
-                logger.info("Successfully fetched authenticated extended agent card:")
-                logger.info(extended_agent_card.model_dump_json(indent=2, exclude_none=True))
-            else:
-                logger.info("\nPublic card does not support authenticated extended card, or public card not fetched.")
+            if _public_card.supportsAuthenticatedExtendedCard:
+                try:
+                    logger.info(f"\nPublic card supports authenticated extended card. Attempting to fetch from: {base_url}{EXTENDED_AGENT_CARD_PATH}")
+                    auth_headers_dict = {"Authorization": "Bearer dummy-token-for-extended-card"}
+                    _extended_card = await resolver.get_agent_card(
+                        relative_card_path=EXTENDED_AGENT_CARD_PATH,
+                        http_kwargs={"headers": auth_headers_dict}
+                    )
+                    logger.info("Successfully fetched authenticated extended agent card:")
+                    logger.info(_extended_card.model_dump_json(indent=2, exclude_none=True))
+                    final_agent_card_to_use = _extended_card # Update to use the extended card
+                    logger.info("\nUsing AUTHENTICATED EXTENDED agent card for client initialization.")
+                except Exception as e_extended:
+                    logger.warning(f"Failed to fetch extended agent card: {e_extended}. Will proceed with public card.", exc_info=True)
+            elif _public_card: # supportsAuthenticatedExtendedCard is False or None
+                logger.info("\nPublic card does not indicate support for an extended card. Using public card.")
 
         except Exception as e:
-            logger.error(f"Error during agent card fetching: {e}", exc_info=True)
-            # If public card fetching failed, or extended card fetching failed after public card indicated support,
-            # we might not have a card to use.
+            logger.error(f"Critical error fetching public agent card: {e}", exc_info=True)
+            raise RuntimeError("Failed to fetch the public agent card. Cannot continue.") from e
 
-        # Determine which card to use and Initialize Client
-        if extended_agent_card:
-            final_agent_card_to_use = extended_agent_card
-            logger.info("\nUsing AUTHENTICATED EXTENDED agent card for client initialization.")
-        elif public_agent_card:
-            final_agent_card_to_use = public_agent_card
-            logger.info("\nUsing PUBLIC agent card for client initialization.")
-        else:
-            logger.error("\nNo agent card successfully fetched. Cannot initialize client.")
-            return # Cannot proceed
-
+       
         client = A2AClient(
             httpx_client=httpx_client, agent_card=final_agent_card_to_use
         )
