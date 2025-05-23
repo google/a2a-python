@@ -2,6 +2,7 @@ import logging
 
 from collections.abc import AsyncIterable
 
+from a2a.server.context import ServerCallContext
 from a2a.server.request_handlers.request_handler import RequestHandler
 from a2a.server.request_handlers.response_helpers import prepare_response_object
 from a2a.types import (
@@ -61,12 +62,15 @@ class JSONRPCHandler:
         self.request_handler = request_handler
 
     async def on_message_send(
-        self, request: SendMessageRequest
+        self,
+        request: SendMessageRequest,
+        context: ServerCallContext | None = None,
     ) -> SendMessageResponse:
         """Handles the 'message/send' JSON-RPC method.
 
         Args:
             request: The incoming `SendMessageRequest` object.
+            context: Context provided by the server.
 
         Returns:
             A `SendMessageResponse` object containing the result (Task or Message)
@@ -75,7 +79,7 @@ class JSONRPCHandler:
         # TODO: Wrap in error handler to return error states
         try:
             task_or_message = await self.request_handler.on_message_send(
-                request.params
+                request.params, context
             )
             return prepare_response_object(
                 request.id,
@@ -96,7 +100,9 @@ class JSONRPCHandler:
         'Streaming is not supported by the agent',
     )
     async def on_message_send_stream(
-        self, request: SendStreamingMessageRequest
+        self,
+        request: SendStreamingMessageRequest,
+        context: ServerCallContext | None = None,
     ) -> AsyncIterable[SendStreamingMessageResponse]:
         """Handles the 'message/stream' JSON-RPC method.
 
@@ -104,6 +110,7 @@ class JSONRPCHandler:
 
         Args:
             request: The incoming `SendStreamingMessageRequest` object.
+            context: Context provided by the server.
 
         Yields:
             `SendStreamingMessageResponse` objects containing streaming events
@@ -112,7 +119,7 @@ class JSONRPCHandler:
         """
         try:
             async for event in self.request_handler.on_message_send_stream(
-                request.params
+                request.params, context
             ):
                 yield prepare_response_object(
                     request.id,
@@ -134,18 +141,23 @@ class JSONRPCHandler:
             )
 
     async def on_cancel_task(
-        self, request: CancelTaskRequest
+        self,
+        request: CancelTaskRequest,
+        context: ServerCallContext | None = None,
     ) -> CancelTaskResponse:
         """Handles the 'tasks/cancel' JSON-RPC method.
 
         Args:
             request: The incoming `CancelTaskRequest` object.
+            context: Context provided by the server.
 
         Returns:
             A `CancelTaskResponse` object containing the updated Task or a JSON-RPC error.
         """
         try:
-            task = await self.request_handler.on_cancel_task(request.params)
+            task = await self.request_handler.on_cancel_task(
+                request.params, context
+            )
             if task:
                 return prepare_response_object(
                     request.id,
@@ -163,7 +175,9 @@ class JSONRPCHandler:
             )
 
     async def on_resubscribe_to_task(
-        self, request: TaskResubscriptionRequest
+        self,
+        request: TaskResubscriptionRequest,
+        context: ServerCallContext | None = None,
     ) -> AsyncIterable[SendStreamingMessageResponse]:
         """Handles the 'tasks/resubscribe' JSON-RPC method.
 
@@ -171,6 +185,7 @@ class JSONRPCHandler:
 
         Args:
             request: The incoming `TaskResubscriptionRequest` object.
+            context: Context provided by the server.
 
         Yields:
             `SendStreamingMessageResponse` objects containing streaming events
@@ -178,7 +193,7 @@ class JSONRPCHandler:
         """
         try:
             async for event in self.request_handler.on_resubscribe_to_task(
-                request.params
+                request.params, context
             ):
                 yield prepare_response_object(
                     request.id,
@@ -200,12 +215,15 @@ class JSONRPCHandler:
             )
 
     async def get_push_notification(
-        self, request: GetTaskPushNotificationConfigRequest
+        self,
+        request: GetTaskPushNotificationConfigRequest,
+        context: ServerCallContext | None = None,
     ) -> GetTaskPushNotificationConfigResponse:
         """Handles the 'tasks/pushNotificationConfig/get' JSON-RPC method.
 
         Args:
             request: The incoming `GetTaskPushNotificationConfigRequest` object.
+            context: Context provided by the server.
 
         Returns:
             A `GetTaskPushNotificationConfigResponse` object containing the config or a JSON-RPC error.
@@ -213,7 +231,7 @@ class JSONRPCHandler:
         try:
             config = (
                 await self.request_handler.on_get_task_push_notification_config(
-                    request.params
+                    request.params, context
                 )
             )
             return prepare_response_object(
@@ -235,7 +253,9 @@ class JSONRPCHandler:
         'Push notifications are not supported by the agent',
     )
     async def set_push_notification(
-        self, request: SetTaskPushNotificationConfigRequest
+        self,
+        request: SetTaskPushNotificationConfigRequest,
+        context: ServerCallContext | None = None,
     ) -> SetTaskPushNotificationConfigResponse:
         """Handles the 'tasks/pushNotificationConfig/set' JSON-RPC method.
 
@@ -243,6 +263,7 @@ class JSONRPCHandler:
 
         Args:
             request: The incoming `SetTaskPushNotificationConfigRequest` object.
+            context: Context provided by the server.
 
         Returns:
             A `SetTaskPushNotificationConfigResponse` object containing the config or a JSON-RPC error.
@@ -254,7 +275,7 @@ class JSONRPCHandler:
         try:
             config = (
                 await self.request_handler.on_set_task_push_notification_config(
-                    request.params
+                    request.params, context
                 )
             )
             return prepare_response_object(
@@ -271,17 +292,24 @@ class JSONRPCHandler:
                 )
             )
 
-    async def on_get_task(self, request: GetTaskRequest) -> GetTaskResponse:
+    async def on_get_task(
+        self,
+        request: GetTaskRequest,
+        context: ServerCallContext | None = None,
+    ) -> GetTaskResponse:
         """Handles the 'tasks/get' JSON-RPC method.
 
         Args:
             request: The incoming `GetTaskRequest` object.
+            context: Context provided by the server.
 
         Returns:
             A `GetTaskResponse` object containing the Task or a JSON-RPC error.
         """
         try:
-            task = await self.request_handler.on_get_task(request.params)
+            task = await self.request_handler.on_get_task(
+                request.params, context
+            )
             if task:
                 return prepare_response_object(
                     request.id,

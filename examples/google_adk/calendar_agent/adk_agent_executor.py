@@ -65,9 +65,10 @@ class ADKAgentExecutor(AgentExecutor):
         session_id: str,
         task_updater: TaskUpdater,
     ) -> None:
-        session_id = self._upsert_session(
+        session = await self._upsert_session(
             session_id,
-        ).id
+        )
+        session_id = session.id
         auth_details = None
         async for event in self._run_agent(session_id, new_message):
             # This agent is expected to do one of two things:
@@ -229,10 +230,10 @@ class ADKAgentExecutor(AgentExecutor):
     async def on_auth_callback(self, state: str, uri: str):
         self._awaiting_auth[state].set_result(uri)
 
-    def _upsert_session(self, session_id: str):
-        return self.runner.session_service.get_session(
+    async def _upsert_session(self, session_id: str):
+        return await self.runner.session_service.get_session(
             app_name=self.runner.app_name, user_id='self', session_id=session_id
-        ) or self.runner.session_service.create_session(
+        ) or await self.runner.session_service.create_session(
             app_name=self.runner.app_name, user_id='self', session_id=session_id
         )
 
@@ -317,7 +318,7 @@ def get_auth_config(
 ) -> AuthConfig:
     """Extracts the AuthConfig object from the arguments of the auth request function call."""
     if not auth_request_function_call.args or not (
-        auth_config := auth_request_function_call.args.get('auth_config')
+        auth_config := auth_request_function_call.args.get('authConfig')
     ):
         raise ValueError(
             f'Cannot get auth config from function call: {auth_request_function_call}'

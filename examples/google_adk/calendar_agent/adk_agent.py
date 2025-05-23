@@ -1,12 +1,12 @@
 import datetime
 
 from google.adk.agents import LlmAgent # type: ignore[import-untyped]
-from google.adk.tools.google_api_tool import calendar_tool_set # type: ignore[import-untyped]
+from google.adk.tools.google_api_tool import CalendarToolset # type: ignore[import-untyped]
 
 
-def create_agent(client_id, client_secret) -> LlmAgent:
+async def create_agent(client_id, client_secret) -> LlmAgent:
     """Constructs the ADK agent."""
-    calendar_tool_set.configure_auth(client_id, client_secret)
+    toolset = CalendarToolset(client_id=client_id, client_secret=client_secret)
     return LlmAgent(
         model='gemini-2.0-flash-001',
         name='calendar_agent',
@@ -23,5 +23,5 @@ When using the Calendar API tools, use well-formed RFC3339 timestamps.
 
 Today is {datetime.datetime.now()}.
 """,
-        tools=calendar_tool_set.get_tools(),
+        tools=await toolset.get_tools(),
     )

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from a2a.server.agent_execution import RequestContext
+from a2a.server.context import ServerCallContext
 from a2a.types import MessageSendParams, Task
 
 
@@ -14,5 +15,6 @@ class RequestContextBuilder(ABC):
         task_id: str | None = None,
         context_id: str | None = None,
         task: Task | None = None,
+        context: ServerCallContext | None = None,
     ) -> RequestContext:
         pass

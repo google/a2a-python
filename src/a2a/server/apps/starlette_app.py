@@ -1,6 +1,7 @@
 import json
 import logging
 import traceback
+from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
 from typing import Any
 
@@ -13,17 +14,38 @@ from starlette.routing import Route
 
 from a2a.server.request_handlers.jsonrpc_handler import JSONRPCHandler
 from a2a.server.request_handlers.request_handler import RequestHandler
-from a2a.types import (A2AError, A2ARequest, AgentCard, CancelTaskRequest,
-                       GetTaskPushNotificationConfigRequest, GetTaskRequest,
-                       InternalError, InvalidRequestError, JSONParseError,
-                       JSONRPCError, JSONRPCErrorResponse, JSONRPCResponse,
-                       SendMessageRequest, SendStreamingMessageRequest,
-                       SendStreamingMessageResponse,
-                       SetTaskPushNotificationConfigRequest,
-                       TaskResubscriptionRequest, UnsupportedOperationError)
+from a2a.server.context import ServerCallContext
+from a2a.types import (
+    A2AError,
+    A2ARequest,
+    AgentCard,
+    CancelTaskRequest,
+    GetTaskPushNotificationConfigRequest,
+    GetTaskRequest,
+    InternalError,
+    InvalidRequestError,
+    JSONParseError,
+    JSONRPCError,
+    JSONRPCErrorResponse,
+    JSONRPCResponse,
+    SendMessageRequest,
+    SendStreamingMessageRequest,
+    SendStreamingMessageResponse,
+    SetTaskPushNotificationConfigRequest,
+    TaskResubscriptionRequest,
+    UnsupportedOperationError,
+)
 from a2a.utils.errors import MethodNotImplementedError
 
 logger = logging.getLogger(__name__)
+
+
+class CallContextBuilder(ABC):
+    """A class for building ServerCallContexts using the Starlette Request."""
+
+    @abstractmethod
+    def build(self, request: Request) -> ServerCallContext:
+        """Builds a ServerCallContext from a Starlette Request."""
 
 
 class A2AStarletteApplication:
@@ -39,6 +61,7 @@ class A2AStarletteApplication:
         agent_card: AgentCard,
         http_handler: RequestHandler,
         extended_agent_card: AgentCard | None = None,
+        context_builder: CallContextBuilder | None = None,
     ):
         """Initializes the A2AStarletteApplication.
 
@@ -48,12 +71,16 @@ class A2AStarletteApplication:
               requests via http.
             extended_agent_card: An optional, distinct AgentCard to be served
               at the authenticated extended card endpoint.
+            context_builder: The CallContextBuilder used to construct the
+              ServerCallContext passed to the http_handler. If None, no
+              ServerCallContext is passed.
         """
         self.agent_card = agent_card
         self.extended_agent_card = extended_agent_card
         self.handler = JSONRPCHandler(
             agent_card=agent_card, request_handler=http_handler
         )
+        self._context_builder = context_builder
 
     def _generate_error_response(
         self, request_id: str | int | None, error: JSONRPCError | A2AError
@@ -115,6 +142,11 @@ class A2AStarletteApplication:
         try:
             body = await request.json()
             a2a_request = A2ARequest.model_validate(body)
+            call_context = (
+                self._context_builder.build(request)
+                if self._context_builder
+                else None
+            )
 
             request_id = a2a_request.root.id
             request_obj = a2a_request.root
@@ -124,11 +156,11 @@ class A2AStarletteApplication:
                 TaskResubscriptionRequest | SendStreamingMessageRequest,
             ):
                 return await self._process_streaming_request(
-                    request_id, a2a_request
+                    request_id, a2a_request, call_context
                 )
 
             return await self._process_non_streaming_request(
-                request_id, a2a_request
+                request_id, a2a_request, call_context
             )
         except MethodNotImplementedError:
             traceback.print_exc()
@@ -154,7 +186,10 @@ class A2AStarletteApplication:
             )
 
     async def _process_streaming_request(
-        self, request_id: str | int | None, a2a_request: A2ARequest
+        self,
+        request_id: str | int | None,
+        a2a_request: A2ARequest,
+        context: ServerCallContext,
     ) -> Response:
         """Processes streaming requests (message/stream or tasks/resubscribe).
 
@@ -171,14 +206,21 @@ class A2AStarletteApplication:
             request_obj,
             SendStreamingMessageRequest,
         ):
-            handler_result = self.handler.on_message_send_stream(request_obj)
+            handler_result = self.handler.on_message_send_stream(
+                request_obj, context
+            )
         elif isinstance(request_obj, TaskResubscriptionRequest):
-            handler_result = self.handler.on_resubscribe_to_task(request_obj)
+            handler_result = self.handler.on_resubscribe_to_task(
+                request_obj, context
+            )
 
         return self._create_response(handler_result)
 
     async def _process_non_streaming_request(
-        self, request_id: str | int | None, a2a_request: A2ARequest
+        self,
+        request_id: str | int | None,
+        a2a_request: A2ARequest,
+        context: ServerCallContext,
     ) -> Response:
         """Processes non-streaming requests (message/send, tasks/get, tasks/cancel, tasks/pushNotificationConfig/*).
 
@@ -193,18 +235,26 @@ class A2AStarletteApplication:
         handler_result: Any = None
         match request_obj:
             case SendMessageRequest():
-                handler_result = await self.handler.on_message_send(request_obj)
+                handler_result = await self.handler.on_message_send(
+                    request_obj, context
+                )
             case CancelTaskRequest():
-                handler_result = await self.handler.on_cancel_task(request_obj)
+                handler_result = await self.handler.on_cancel_task(
+                    request_obj, context
+                )
             case GetTaskRequest():
-                handler_result = await self.handler.on_get_task(request_obj)
+                handler_result = await self.handler.on_get_task(
+                    request_obj, context
+                )
             case SetTaskPushNotificationConfigRequest():
                 handler_result = await self.handler.set_push_notification(
-                    request_obj
+                    request_obj,
+                    context,
                 )
             case GetTaskPushNotificationConfigRequest():
                 handler_result = await self.handler.get_push_notification(
-                    request_obj
+                    request_obj,
+                    context,
                 )
             case _:
                 logger.error(

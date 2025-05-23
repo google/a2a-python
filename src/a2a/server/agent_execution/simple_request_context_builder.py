@@ -1,6 +1,7 @@
 import asyncio
 
 from a2a.server.agent_execution import RequestContext, RequestContextBuilder
+from a2a.server.context import ServerCallContext
 from a2a.server.tasks import TaskStore
 from a2a.types import MessageSendParams, Task
 
@@ -22,6 +23,7 @@ class SimpleRequestContextBuilder(RequestContextBuilder):
         task_id: str | None = None,
         context_id: str | None = None,
         task: Task | None = None,
+        context: ServerCallContext | None = None,
     ) -> RequestContext:
         related_tasks: list[Task] | None = None
 
@@ -45,4 +47,5 @@ class SimpleRequestContextBuilder(RequestContextBuilder):
             context_id=context_id,
             task=task,
             related_tasks=related_tasks,
+            call_context=context,
         )
