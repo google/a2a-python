@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
 
+from a2a.server.context import ServerCallContext
 from a2a.server.events.event_queue import Event
 from a2a.types import (
     Message,
@@ -22,26 +23,36 @@ class RequestHandler(ABC):
     """
 
     @abstractmethod
-    async def on_get_task(self, params: TaskQueryParams) -> Task | None:
+    async def on_get_task(
+        self,
+        params: TaskQueryParams,
+        context: ServerCallContext | None = None,
+    ) -> Task | None:
         """Handles the 'tasks/get' method.
 
         Retrieves the state and history of a specific task.
 
         Args:
             params: Parameters specifying the task ID and optionally history length.
+            context: Context provided by the server.
 
         Returns:
             The `Task` object if found, otherwise `None`.
         """
 
     @abstractmethod
-    async def on_cancel_task(self, params: TaskIdParams) -> Task | None:
+    async def on_cancel_task(
+        self,
+        params: TaskIdParams,
+        context: ServerCallContext | None = None,
+    ) -> Task | None:
         """Handles the 'tasks/cancel' method.
 
         Requests the agent to cancel an ongoing task.
 
         Args:
             params: Parameters specifying the task ID.
+            context: Context provided by the server.
 
         Returns:
             The `Task` object with its status updated to canceled, or `None` if the task was not found.
@@ -49,7 +60,9 @@ class RequestHandler(ABC):
 
     @abstractmethod
     async def on_message_send(
-        self, params: MessageSendParams
+        self,
+        params: MessageSendParams,
+        context: ServerCallContext | None = None,
     ) -> Task | Message:
         """Handles the 'message/send' method (non-streaming).
 
@@ -58,6 +71,7 @@ class RequestHandler(ABC):
 
         Args:
             params: Parameters including the message and configuration.
+            context: Context provided by the server.
 
         Returns:
             The final `Task` object or a final `Message` object.
@@ -65,7 +79,9 @@ class RequestHandler(ABC):
 
     @abstractmethod
     async def on_message_send_stream(
-        self, params: MessageSendParams
+        self,
+        params: MessageSendParams,
+        context: ServerCallContext | None = None,
     ) -> AsyncGenerator[Event]:
         """Handles the 'message/stream' method (streaming).
 
@@ -74,6 +90,7 @@ class RequestHandler(ABC):
 
         Args:
             params: Parameters including the message and configuration.
+            context: Context provided by the server.
 
         Yields:
             `Event` objects from the agent's execution.
@@ -86,7 +103,9 @@ class RequestHandler(ABC):
 
     @abstractmethod
     async def on_set_task_push_notification_config(
-        self, params: TaskPushNotificationConfig
+        self,
+        params: TaskPushNotificationConfig,
+        context: ServerCallContext | None = None,
     ) -> TaskPushNotificationConfig:
         """Handles the 'tasks/pushNotificationConfig/set' method.
 
@@ -94,6 +113,7 @@ class RequestHandler(ABC):
 
         Args:
             params: Parameters including the task ID and push notification configuration.
+            context: Context provided by the server.
 
         Returns:
             The provided `TaskPushNotificationConfig` upon success.
@@ -101,7 +121,9 @@ class RequestHandler(ABC):
 
     @abstractmethod
     async def on_get_task_push_notification_config(
-        self, params: TaskIdParams
+        self,
+        params: TaskIdParams,
+        context: ServerCallContext | None = None,
     ) -> TaskPushNotificationConfig:
         """Handles the 'tasks/pushNotificationConfig/get' method.
 
@@ -109,6 +131,7 @@ class RequestHandler(ABC):
 
         Args:
             params: Parameters including the task ID.
+            context: Context provided by the server.
 
         Returns:
             The `TaskPushNotificationConfig` for the task.
@@ -116,7 +139,9 @@ class RequestHandler(ABC):
 
     @abstractmethod
     async def on_resubscribe_to_task(
-        self, params: TaskIdParams
+        self,
+        params: TaskIdParams,
+        context: ServerCallContext | None = None,
     ) -> AsyncGenerator[Event]:
         """Handles the 'tasks/resubscribe' method.
 
@@ -124,6 +149,7 @@ class RequestHandler(ABC):
 
         Args:
             params: Parameters including the task ID.
+            context: Context provided by the server.
 
         Yields:
              `Event` objects from the agent's ongoing execution for the specified task.
