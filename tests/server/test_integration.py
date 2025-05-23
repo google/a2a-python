@@ -8,26 +8,13 @@ from starlette.routing import Route
 from starlette.testclient import TestClient
 
 from a2a.server.apps.starlette_app import A2AStarletteApplication
-from a2a.types import (
-    AgentCapabilities,
-    AgentCard,
-    Artifact,
-    DataPart,
-    InternalError,
-    InvalidRequestError,
-    JSONParseError,
-    Part,
-    PushNotificationConfig,
-    Task,
-    TaskArtifactUpdateEvent,
-    TaskPushNotificationConfig,
-    TaskState,
-    TaskStatus,
-    TextPart,
-    UnsupportedOperationError,
-)
+from a2a.types import (AgentCapabilities, AgentCard, Artifact, DataPart,
+                       InternalError, InvalidRequestError, JSONParseError,
+                       Part, PushNotificationConfig, Task,
+                       TaskArtifactUpdateEvent, TaskPushNotificationConfig,
+                       TaskState, TaskStatus, TextPart,
+                       UnsupportedOperationError)
 from a2a.utils.errors import MethodNotImplementedError
-
 
 # === TEST SETUP ===
 
@@ -149,21 +136,6 @@ def test_authenticated_extended_agent_card_endpoint_not_supported(
     client = TestClient(app_instance.build())
     response = client.get('/agent/authenticatedExtendedCard')
     assert response.status_code == 404 # Starlette's default for no route
-
-
-def test_authenticated_extended_agent_card_endpoint_supported_no_specific_extended_card(
-    agent_card: AgentCard, handler: mock.AsyncMock
-):
-    """Test extended card endpoint returns main card if supported but no specific extended card is set."""
-    agent_card.supportsAuthenticatedExtendedCard = True
-    app_instance = A2AStarletteApplication(agent_card, handler)
-    client = TestClient(app_instance.build())
-
-    response = client.get('/agent/authenticatedExtendedCard')
-    assert response.status_code == 200
-    data = response.json()
-    assert data['name'] == agent_card.name # Should be the main agent card
-    assert data['version'] == agent_card.version
 
 
 def test_authenticated_extended_agent_card_endpoint_supported_with_specific_extended_card(

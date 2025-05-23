@@ -12,29 +12,17 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
 
+from a2a.server.context import ServerCallContext
 from a2a.server.request_handlers.jsonrpc_handler import JSONRPCHandler
 from a2a.server.request_handlers.request_handler import RequestHandler
-from a2a.server.context import ServerCallContext
-from a2a.types import (
-    A2AError,
-    A2ARequest,
-    AgentCard,
-    CancelTaskRequest,
-    GetTaskPushNotificationConfigRequest,
-    GetTaskRequest,
-    InternalError,
-    InvalidRequestError,
-    JSONParseError,
-    JSONRPCError,
-    JSONRPCErrorResponse,
-    JSONRPCResponse,
-    SendMessageRequest,
-    SendStreamingMessageRequest,
-    SendStreamingMessageResponse,
-    SetTaskPushNotificationConfigRequest,
-    TaskResubscriptionRequest,
-    UnsupportedOperationError,
-)
+from a2a.types import (A2AError, A2ARequest, AgentCard, CancelTaskRequest,
+                       GetTaskPushNotificationConfigRequest, GetTaskRequest,
+                       InternalError, InvalidRequestError, JSONParseError,
+                       JSONRPCError, JSONRPCErrorResponse, JSONRPCResponse,
+                       SendMessageRequest, SendStreamingMessageRequest,
+                       SendStreamingMessageResponse,
+                       SetTaskPushNotificationConfigRequest,
+                       TaskResubscriptionRequest, UnsupportedOperationError)
 from a2a.utils.errors import MethodNotImplementedError
 
 logger = logging.getLogger(__name__)
@@ -80,6 +68,13 @@ class A2AStarletteApplication:
         self.handler = JSONRPCHandler(
             agent_card=agent_card, request_handler=http_handler
         )
+        if (
+            self.agent_card.supportsAuthenticatedExtendedCard
+            and self.extended_agent_card is None
+        ):
+            logger.error(
+                'AgentCard.supportsAuthenticatedExtendedCard is True, but no extended_agent_card was provided. The /agent/authenticatedExtendedCard endpoint will return 404.'
+            )
         self._context_builder = context_builder
 
     def _generate_error_response(
@@ -345,10 +340,12 @@ class A2AStarletteApplication:
                     mode='json', exclude_none=True
                 )
             )
-        # Otherwise, if supportsAuthenticatedExtendedCard is true but no specific
-        # extended card is set, serve the main agent_card.
+        # If supportsAuthenticatedExtendedCard is true, but no specific
+        # extended_agent_card was provided during server initialization,
+        # return a 404
         return JSONResponse(
-            self.agent_card.model_dump(mode='json', exclude_none=True)
+            {'error': 'Authenticated extended agent card is supported but not configured on the server.'},
+            status_code=404,
         )
 
     def routes(
