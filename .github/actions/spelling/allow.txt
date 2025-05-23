@@ -51,10 +51,6 @@ npx
 oauthoidc
 openbnb
 opensource
-pybuilder
-pypa
-pytype
-pyversions
 socio
 sse
 tagwords
