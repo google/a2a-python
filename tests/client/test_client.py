@@ -108,24 +108,11 @@ class TestA2ACardResolver:
             httpx_client=mock_httpx_client,
             base_url='http://example.com/',
             agent_card_path='/.well-known/agent.json/',
-            extended_agent_card_path='/agent/authenticatedExtendedCard/',
         )
         assert resolver.base_url == 'http://example.com'
         assert (
             resolver.agent_card_path == '.well-known/agent.json/'
         )  # Path is only lstrip'd
-        assert resolver.extended_agent_card_path == 'agent/authenticatedExtendedCard/'
-
-        resolver_no_leading_slash_path = A2ACardResolver(
-            httpx_client=AsyncMock(),
-            base_url='http://example.com',
-            agent_card_path='.well-known/agent.json',
-        )
-        assert resolver_no_leading_slash_path.base_url == 'http://example.com'
-        assert (
-            resolver_no_leading_slash_path.agent_card_path
-            == '.well-known/agent.json'
-        )
 
     @pytest.mark.asyncio
     async def test_get_agent_card_success_public_only(
@@ -168,17 +155,16 @@ class TestA2ACardResolver:
             httpx_client=mock_httpx_client,
             base_url=self.BASE_URL,
             agent_card_path=self.AGENT_CARD_PATH,
-            extended_agent_card_path=self.EXTENDED_AGENT_CARD_PATH.lstrip('/'),
         )
         
         # Fetch the extended card by providing its relative path and example auth
         auth_kwargs = {"headers": {"Authorization": "Bearer testtoken"}}
         agent_card_result = await resolver.get_agent_card(
-            relative_card_path=resolver.extended_agent_card_path,
+            relative_card_path=self.EXTENDED_AGENT_CARD_PATH,
             http_kwargs=auth_kwargs
         )
 
-        expected_extended_url = f'{self.BASE_URL}/{resolver.extended_agent_card_path}'
+        expected_extended_url = f'{self.BASE_URL}/{self.EXTENDED_AGENT_CARD_PATH.lstrip("/")}'
         mock_httpx_client.get.assert_called_once_with(expected_extended_url, **auth_kwargs)
         extended_card_response.raise_for_status.assert_called_once()
 

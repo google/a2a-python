@@ -29,7 +29,6 @@ class A2ACardResolver:
         httpx_client: httpx.AsyncClient,
         base_url: str,
         agent_card_path: str = '/.well-known/agent.json',
-        extended_agent_card_path: str = '/agent/authenticatedExtendedCard',
     ):
         """Initializes the A2ACardResolver.
 
@@ -40,7 +39,6 @@ class A2ACardResolver:
         """
         self.base_url = base_url.rstrip('/')
         self.agent_card_path = agent_card_path.lstrip('/')
-        self.extended_agent_card_path = extended_agent_card_path.lstrip('/')
         self.httpx_client = httpx_client
 
     async def get_agent_card(
@@ -160,7 +158,8 @@ class A2AClient:
             httpx_client: An async HTTP client instance (e.g., httpx.AsyncClient).
             base_url: The base URL of the agent's host.
             agent_card_path: The path to the agent card endpoint, relative to the base URL.
-
+            http_kwargs: Optional dictionary of keyword arguments to pass to the
+                underlying httpx.get request when fetching the agent card.
         Returns:
             An initialized `A2AClient` instance.
 
