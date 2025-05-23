@@ -1,5 +1,6 @@
 import uuid
 
+from a2a.server.context import ServerCallContext
 from a2a.types import (
     InvalidParamsError,
     Message,
@@ -26,6 +27,7 @@ class RequestContext:
         context_id: str | None = None,
         task: Task | None = None,
         related_tasks: list[Task] | None = None,
+        call_context: ServerCallContext | None = None,
     ):
         """Initializes the RequestContext.
 
@@ -43,6 +45,7 @@ class RequestContext:
         self._context_id = context_id
         self._current_task = task
         self._related_tasks = related_tasks
+        self._call_context = call_context
         # If the task id and context id were provided, make sure they
         # match the request. Otherwise, create them
         if self._params:
@@ -124,6 +127,11 @@ class RequestContext:
         if not self._params:
             return None
         return self._params.configuration
+
+    @property
+    def call_context(self) -> ServerCallContext | None:
+        """The server call context associated with this request."""
+        return self._call_context
 
     def _check_or_generate_task_id(self) -> None:
         """Ensures a task ID is present, generating one if necessary."""
