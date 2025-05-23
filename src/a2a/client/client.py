@@ -44,13 +44,19 @@ class A2ACardResolver:
         self.httpx_client = httpx_client
 
     async def get_agent_card(
-        self, http_kwargs: dict[str, Any] | None = None
+        self,
+        relative_card_path: str | None = None,
+        http_kwargs: dict[str, Any] | None = None,
     ) -> AgentCard:
-        # Fetch the initial public agent card
-        public_card_url = f'{self.base_url}/{self.agent_card_path}'
-        """Fetches the agent card from the specified URL.
+        """Fetches an agent card from a specified path relative to the base_url.
+
+        If relative_card_path is None, it defaults to the resolver's configured
+        agent_card_path (for the public agent card).
 
         Args:
+            relative_card_path: Optional path to the agent card endpoint,
+                relative to the base URL. If None, uses the default public
+                agent card path.
             http_kwargs: Optional dictionary of keyword arguments to pass to the
                 underlying httpx.get request.
 
@@ -62,89 +68,45 @@ class A2ACardResolver:
             A2AClientJSONError: If the response body cannot be decoded as JSON
                 or validated against the AgentCard schema.
         """
+        if relative_card_path is None:
+            # Use the default public agent card path configured during initialization
+            path_segment = self.agent_card_path
+        else:
+            path_segment = relative_card_path.lstrip('/')
+
+        target_url = f'{self.base_url}/{path_segment}'
+
         try:
             response = await self.httpx_client.get(
-                public_card_url,
+                target_url,
                 **(http_kwargs or {}),
             )
             response.raise_for_status()
-            public_agent_card_data = response.json()
+            agent_card_data = response.json()
             logger.info(
-                'Successfully fetched public agent card data: %s',
-                public_agent_card_data,
-            )  # Added for verbosity
-            # print(f"DEBUG: Fetched public agent card data:\n{json.dumps(public_agent_card_data, indent=2)}") # Added for direct output
-            agent_card = AgentCard.model_validate(public_agent_card_data)
+                'Successfully fetched agent card data from %s: %s',
+                target_url,
+                agent_card_data,
+            )
+            agent_card = AgentCard.model_validate(agent_card_data)
         except httpx.HTTPStatusError as e:
             raise A2AClientHTTPError(
                 e.response.status_code,
-                f'Failed to fetch public agent card from {public_card_url}: {e}',
+                f'Failed to fetch agent card from {target_url}: {e}',
             ) from e
         except json.JSONDecodeError as e:
             raise A2AClientJSONError(
-                f'Failed to parse JSON for public agent card from {public_card_url}: {e}'
+                f'Failed to parse JSON for agent card from {target_url}: {e}'
             ) from e
         except httpx.RequestError as e:
             raise A2AClientHTTPError(
                 503,
-                f'Network communication error fetching public agent card from {public_card_url}: {e}',
+                f'Network communication error fetching agent card from {target_url}: {e}',
             ) from e
-
-        # Check for supportsAuthenticatedExtendedCard
-        if agent_card.supportsAuthenticatedExtendedCard:
-            # Construct URL for the extended card.
-            # The extended card URL is relative to the agent's base URL specified *in* the agent card.
-            if not agent_card.url:
-                logger.warning(
-                    'Agent card (from %s) indicates support for an extended card '
-                    "but does not specify its own base 'url' field. "
-                    'Cannot fetch extended card. Proceeding with public card.',
-                    public_card_url,
-                )
-                return agent_card
-
-            extended_card_base_url = agent_card.url.rstrip('/')
-            full_extended_card_url = (
-                f'{extended_card_base_url}/{self.extended_agent_card_path}'
-            )
-
-            logger.info(
-                'Attempting to fetch extended agent card from %s',
-                full_extended_card_url,
-            )
-            try:
-                # Make another GET request for the extended card
-                # Note: Authentication headers will be added here when auth is implemented.
-                extended_response = await self.httpx_client.get(
-                    full_extended_card_url,
-                    **(http_kwargs or {}),  # Passing original http_kwargs
-                )
-                extended_response.raise_for_status()
-                extended_agent_card_data = extended_response.json()
-                logger.info(
-                    'Successfully fetched extended agent card data: %s',
-                    extended_agent_card_data,
-                )  # Added for verbosity
-                
-                # This new card data replaces the old one entirely
-                agent_card = AgentCard.model_validate(extended_agent_card_data)
-                logger.info(
-                    'Successfully fetched and using extended agent card from %s',
-                    full_extended_card_url,
-                )
-            except (
-                httpx.HTTPStatusError,
-                httpx.RequestError,
-                json.JSONDecodeError,
-                ValidationError,
-            ) as e:
-                logger.warning(
-                    'Failed to fetch or parse extended agent card from %s. Error: %s. '
-                    'Proceeding with the initially fetched public agent card.',
-                    full_extended_card_url,
-                    e,
-                )
-                # Fallback to the already parsed public_agent_card (which is 'agent_card' at this point)
+        except ValidationError as e:  # Pydantic validation error
+            raise A2AClientJSONError(
+                f'Failed to validate agent card structure from {target_url}: {e.json()}'
+            ) from e
 
         return agent_card
 
@@ -187,14 +149,17 @@ class A2AClient:
         agent_card_path: str = '/.well-known/agent.json',
         http_kwargs: dict[str, Any] | None = None,
     ) -> 'A2AClient':
-        """Fetches the AgentCard and initializes an A2A client.
+        """Fetches the public AgentCard and initializes an A2A client.
+
+        This method will always fetch the public agent card. If an authenticated
+        or extended agent card is required, the A2ACardResolver should be used
+        directly to fetch the specific card, and then the A2AClient should be
+        instantiated with it.
 
         Args:
             httpx_client: An async HTTP client instance (e.g., httpx.AsyncClient).
             base_url: The base URL of the agent's host.
             agent_card_path: The path to the agent card endpoint, relative to the base URL.
-            http_kwargs: Optional dictionary of keyword arguments to pass to the
-                underlying httpx.get request when fetching the agent card.
 
         Returns:
             An initialized `A2AClient` instance.
@@ -205,7 +170,7 @@ class A2AClient:
         """
         agent_card: AgentCard = await A2ACardResolver(
             httpx_client, base_url=base_url, agent_card_path=agent_card_path
-        ).get_agent_card(http_kwargs=http_kwargs)
+        ).get_agent_card(http_kwargs=http_kwargs) # Fetches public card by default
         return A2AClient(httpx_client=httpx_client, agent_card=agent_card)
 
     async def send_message(

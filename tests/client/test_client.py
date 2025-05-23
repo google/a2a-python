@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 from httpx_sse import EventSource, ServerSentEvent
+from pydantic import ValidationError as PydanticValidationError
 
 from a2a.client import (A2ACardResolver, A2AClient, A2AClientHTTPError,
                         A2AClientJSONError, create_text_message_object)
@@ -152,139 +153,58 @@ class TestA2ACardResolver:
         assert mock_httpx_client.get.call_count == 1
 
     @pytest.mark.asyncio
-    async def test_get_agent_card_success_with_extended_card(
-        self, mock_httpx_client: AsyncMock
-    ):
-        public_card_response = AsyncMock(spec=httpx.Response)
-        public_card_response.status_code = 200
-        public_card_response.json.return_value = (
-            AGENT_CARD_SUPPORTS_EXTENDED.model_dump(mode='json')
-        )
-
+    async def test_get_agent_card_success_with_specified_path_for_extended_card(
+        self, mock_httpx_client: AsyncMock):
         extended_card_response = AsyncMock(spec=httpx.Response)
         extended_card_response.status_code = 200
         extended_card_response.json.return_value = AGENT_CARD_EXTENDED.model_dump(
             mode='json'
         )
 
-        # Configure side_effect to return different responses for different calls
-        mock_httpx_client.get.side_effect = [
-            public_card_response,
-            extended_card_response,
-        ]
+        # Mock the single call for the extended card
+        mock_httpx_client.get.return_value = extended_card_response
 
         resolver = A2ACardResolver(
             httpx_client=mock_httpx_client,
             base_url=self.BASE_URL,
             agent_card_path=self.AGENT_CARD_PATH,
-            extended_agent_card_path=self.EXTENDED_AGENT_CARD_PATH,
+            extended_agent_card_path=self.EXTENDED_AGENT_CARD_PATH.lstrip('/'),
         )
-        agent_card_result = await resolver.get_agent_card()
-
-        assert mock_httpx_client.get.call_count == 2
-        public_call_args = mock_httpx_client.get.call_args_list[0]
-        extended_call_args = mock_httpx_client.get.call_args_list[1]
-
-        assert public_call_args[0][0] == self.FULL_AGENT_CARD_URL
-        # The extended card URL is based on the AGENT_CARD_SUPPORTS_EXTENDED.url
-        expected_extended_url = (
-            f'{AGENT_CARD_SUPPORTS_EXTENDED.url.rstrip("/")}/'
-            f'{self.EXTENDED_AGENT_CARD_PATH.lstrip("/")}'
+        
+        # Fetch the extended card by providing its relative path and example auth
+        auth_kwargs = {"headers": {"Authorization": "Bearer testtoken"}}
+        agent_card_result = await resolver.get_agent_card(
+            relative_card_path=resolver.extended_agent_card_path,
+            http_kwargs=auth_kwargs
         )
-        assert extended_call_args[0][0] == expected_extended_url
 
-        public_card_response.raise_for_status.assert_called_once()
+        expected_extended_url = f'{self.BASE_URL}/{resolver.extended_agent_card_path}'
+        mock_httpx_client.get.assert_called_once_with(expected_extended_url, **auth_kwargs)
         extended_card_response.raise_for_status.assert_called_once()
 
         assert isinstance(agent_card_result, AgentCard)
         assert agent_card_result == AGENT_CARD_EXTENDED # Should return the extended card
 
     @pytest.mark.asyncio
-    async def test_get_agent_card_extended_card_fetch_fails_http_error(
+    async def test_get_agent_card_validation_error(
         self, mock_httpx_client: AsyncMock
     ):
-        public_card_response = AsyncMock(spec=httpx.Response)
-        public_card_response.status_code = 200
-        public_card_response.json.return_value = (
-            AGENT_CARD_SUPPORTS_EXTENDED.model_dump(mode='json')
-        )
-
-        extended_card_http_error = httpx.HTTPStatusError(
-            'Extended card not found',
-            request=MagicMock(),
-            response=MagicMock(status_code=404),
-        )
-
-        mock_httpx_client.get.side_effect = [
-            public_card_response,
-            extended_card_http_error,
-        ]
+        mock_response = AsyncMock(spec=httpx.Response)
+        mock_response.status_code = 200
+        # Data that will cause a Pydantic ValidationError
+        mock_response.json.return_value = {"invalid_field": "value", "name": "Test Agent"} 
+        mock_httpx_client.get.return_value = mock_response
 
         resolver = A2ACardResolver(
             httpx_client=mock_httpx_client, base_url=self.BASE_URL
         )
-        agent_card_result = await resolver.get_agent_card()
-
-        assert mock_httpx_client.get.call_count == 2
-        assert agent_card_result == AGENT_CARD_SUPPORTS_EXTENDED # Fallback to public
-
-    @pytest.mark.asyncio
-    async def test_get_agent_card_extended_card_fetch_fails_json_error(
-        self, mock_httpx_client: AsyncMock
-    ):
-        public_card_response = AsyncMock(spec=httpx.Response)
-        public_card_response.status_code = 200
-        public_card_response.json.return_value = (
-            AGENT_CARD_SUPPORTS_EXTENDED.model_dump(mode='json')
-        )
-
-        extended_card_response_bad_json = AsyncMock(spec=httpx.Response)
-        extended_card_response_bad_json.status_code = 200
-        extended_card_response_bad_json.json.side_effect = json.JSONDecodeError(
-            'Bad JSON', 'doc', 0
-        )
-
-        mock_httpx_client.get.side_effect = [
-            public_card_response,
-            extended_card_response_bad_json,
-        ]
-
-        resolver = A2ACardResolver(
-            httpx_client=mock_httpx_client, base_url=self.BASE_URL
-        )
-        agent_card_result = await resolver.get_agent_card()
-
-        assert mock_httpx_client.get.call_count == 2
-        assert agent_card_result == AGENT_CARD_SUPPORTS_EXTENDED # Fallback to public
-
-    @pytest.mark.asyncio
-    async def test_get_agent_card_supports_extended_but_no_url_in_card(
-        self, mock_httpx_client: AsyncMock
-    ):
-        # Public card indicates support for extended, but has no 'url' field itself
-        public_card_response = AsyncMock(spec=httpx.Response)
-        public_card_response.status_code = 200
-        public_card_response.json.return_value = (
-            AGENT_CARD_NO_URL_SUPPORTS_EXTENDED.model_dump(mode='json')
-        )
-
-        mock_httpx_client.get.return_value = public_card_response
-
-        resolver = A2ACardResolver(
-            httpx_client=mock_httpx_client, base_url=self.BASE_URL
-        )
-
-        # Patch logger to check for warning
-        with patch('a2a.client.client.logger') as mock_logger:
-            agent_card_result = await resolver.get_agent_card()
-
-            assert mock_httpx_client.get.call_count == 1 # Only public card fetched
-            assert agent_card_result == AGENT_CARD_NO_URL_SUPPORTS_EXTENDED
-            mock_logger.warning.assert_called_once()
-            assert (
-                "does not specify its own base 'url' field"
-                in mock_logger.warning.call_args[0][0]
-            )
+        # The call that is expected to raise an error should be within pytest.raises
+        with pytest.raises(A2AClientJSONError) as exc_info:
+            await resolver.get_agent_card() # Fetches from default path
+        
+        assert f'Failed to validate agent card structure from {self.FULL_AGENT_CARD_URL}' in str(exc_info.value)
+        assert 'invalid_field' in str(exc_info.value) # Check if Pydantic error details are present
+        assert mock_httpx_client.get.call_count == 1 # Should only be called once
 
     @pytest.mark.asyncio
     async def test_get_agent_card_http_status_error(
@@ -311,7 +231,7 @@ class TestA2ACardResolver:
             await resolver.get_agent_card()
 
         assert exc_info.value.status_code == 404
-        assert f'Failed to fetch public agent card from {self.FULL_AGENT_CARD_URL}' in str(exc_info.value)
+        assert f'Failed to fetch agent card from {self.FULL_AGENT_CARD_URL}' in str(exc_info.value)
         assert 'Not Found' in str(exc_info.value)
         mock_httpx_client.get.assert_called_once_with(self.FULL_AGENT_CARD_URL)
 
@@ -336,7 +256,7 @@ class TestA2ACardResolver:
             await resolver.get_agent_card()
 
         # Assertions using exc_info must be after the with block
-        assert f'Failed to parse JSON for public agent card from {self.FULL_AGENT_CARD_URL}' in str(exc_info.value)
+        assert f'Failed to parse JSON for agent card from {self.FULL_AGENT_CARD_URL}' in str(exc_info.value)
         assert 'Expecting value' in str(exc_info.value)
         mock_httpx_client.get.assert_called_once_with(self.FULL_AGENT_CARD_URL)
 
@@ -357,7 +277,7 @@ class TestA2ACardResolver:
             await resolver.get_agent_card()
 
         assert exc_info.value.status_code == 503
-        assert f'Network communication error fetching public agent card from {self.FULL_AGENT_CARD_URL}' in str(exc_info.value)
+        assert f'Network communication error fetching agent card from {self.FULL_AGENT_CARD_URL}' in str(exc_info.value)
         assert 'Network issue' in str(exc_info.value)
         mock_httpx_client.get.assert_called_once_with(self.FULL_AGENT_CARD_URL)
 
@@ -426,7 +346,8 @@ class TestA2AClient:
                 agent_card_path=agent_card_path,
             )
             mock_resolver_instance.get_agent_card.assert_called_once_with(
-                http_kwargs=resolver_kwargs
+                http_kwargs=resolver_kwargs,
+                # relative_card_path=None is implied by not passing it
             )
             assert isinstance(client, A2AClient)
             assert client.url == mock_agent_card.url
