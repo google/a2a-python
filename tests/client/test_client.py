@@ -158,7 +158,7 @@ class TestA2ACardResolver:
         )
         
         # Fetch the extended card by providing its relative path and example auth
-        auth_kwargs = {"headers": {"Authorization": "Bearer testtoken"}}
+        auth_kwargs = {"headers": {"Authorization": "Bearer test token"}}
         agent_card_result = await resolver.get_agent_card(
             relative_card_path=self.EXTENDED_AGENT_CARD_PATH,
             http_kwargs=auth_kwargs
