@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.2.5](https://github.com/google/a2a-python/compare/v0.2.4...v0.2.5) (2025-05-24)
+
+
+### Features
+
+* Add functionality for extended agent card.  ([#31](https://github.com/google/a2a-python/issues/31)) ([20f0826](https://github.com/google/a2a-python/commit/20f0826a2cb9b77b89b85189fd91e7cd62318a30))
+* Introduce a ServerCallContext ([#94](https://github.com/google/a2a-python/issues/94)) ([85b521d](https://github.com/google/a2a-python/commit/85b521d8a790dacb775ef764a66fbdd57b180da3))
+
+
+### Bug Fixes
+
+* fix hello world example for python 3.12 ([#98](https://github.com/google/a2a-python/issues/98)) ([536e4a1](https://github.com/google/a2a-python/commit/536e4a11f2f32332968a06e7d0bc4615e047a56c))
+* Update the google adk demos to use ADK v1.0 ([#95](https://github.com/google/a2a-python/issues/95)) ([c351656](https://github.com/google/a2a-python/commit/c351656a91c37338668b0cd0c4db5fedd152d743))
+
+
+### Documentation
+
+* Update README for Python 3.10+ support ([#90](https://github.com/google/a2a-python/issues/90)) ([e0db20f](https://github.com/google/a2a-python/commit/e0db20ffc20aa09ee68304cc7e2a67c32ecdd6a8))
+
 ## [0.2.4](https://github.com/google/a2a-python/compare/v0.2.3...v0.2.4) (2025-05-22)
 
 
