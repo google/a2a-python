@@ -1,31 +1,25 @@
 import json
-
+import logging
 from collections.abc import AsyncGenerator
 from typing import Any
 from uuid import uuid4
 
 import httpx
-
 from httpx_sse import SSEError, aconnect_sse
+from pydantic import ValidationError
 
 from a2a.client.errors import A2AClientHTTPError, A2AClientJSONError
-from a2a.types import (
-    AgentCard,
-    CancelTaskRequest,
-    CancelTaskResponse,
-    GetTaskPushNotificationConfigRequest,
-    GetTaskPushNotificationConfigResponse,
-    GetTaskRequest,
-    GetTaskResponse,
-    SendMessageRequest,
-    SendMessageResponse,
-    SendStreamingMessageRequest,
-    SendStreamingMessageResponse,
-    SetTaskPushNotificationConfigRequest,
-    SetTaskPushNotificationConfigResponse,
-)
+from a2a.types import (AgentCard, CancelTaskRequest, CancelTaskResponse,
+                       GetTaskPushNotificationConfigRequest,
+                       GetTaskPushNotificationConfigResponse, GetTaskRequest,
+                       GetTaskResponse, SendMessageRequest,
+                       SendMessageResponse, SendStreamingMessageRequest,
+                       SendStreamingMessageResponse,
+                       SetTaskPushNotificationConfigRequest,
+                       SetTaskPushNotificationConfigResponse)
 from a2a.utils.telemetry import SpanKind, trace_class
 
+logger = logging.getLogger(__name__)
 
 class A2ACardResolver:
     """Agent Card resolver."""
@@ -48,11 +42,19 @@ class A2ACardResolver:
         self.httpx_client = httpx_client
 
     async def get_agent_card(
-        self, http_kwargs: dict[str, Any] | None = None
+        self,
+        relative_card_path: str | None = None,
+        http_kwargs: dict[str, Any] | None = None,
     ) -> AgentCard:
-        """Fetches the agent card from the specified URL.
+        """Fetches an agent card from a specified path relative to the base_url.
+
+        If relative_card_path is None, it defaults to the resolver's configured
+        agent_card_path (for the public agent card).
 
         Args:
+            relative_card_path: Optional path to the agent card endpoint,
+                relative to the base URL. If None, uses the default public
+                agent card path.
             http_kwargs: Optional dictionary of keyword arguments to pass to the
                 underlying httpx.get request.
 
@@ -64,21 +66,47 @@ class A2ACardResolver:
             A2AClientJSONError: If the response body cannot be decoded as JSON
                 or validated against the AgentCard schema.
         """
+        if relative_card_path is None:
+            # Use the default public agent card path configured during initialization
+            path_segment = self.agent_card_path
+        else:
+            path_segment = relative_card_path.lstrip('/')
+
+        target_url = f'{self.base_url}/{path_segment}'
+
         try:
             response = await self.httpx_client.get(
-                f'{self.base_url}/{self.agent_card_path}',
+                target_url,
                 **(http_kwargs or {}),
             )
             response.raise_for_status()
-            return AgentCard.model_validate(response.json())
+            agent_card_data = response.json()
+            logger.info(
+                'Successfully fetched agent card data from %s: %s',
+                target_url,
+                agent_card_data,
+            )
+            agent_card = AgentCard.model_validate(agent_card_data)
         except httpx.HTTPStatusError as e:
-            raise A2AClientHTTPError(e.response.status_code, str(e)) from e
+            raise A2AClientHTTPError(
+                e.response.status_code,
+                f'Failed to fetch agent card from {target_url}: {e}',
+            ) from e
         except json.JSONDecodeError as e:
-            raise A2AClientJSONError(str(e)) from e
+            raise A2AClientJSONError(
+                f'Failed to parse JSON for agent card from {target_url}: {e}'
+            ) from e
         except httpx.RequestError as e:
             raise A2AClientHTTPError(
-                503, f'Network communication error: {e}'
+                503,
+                f'Network communication error fetching agent card from {target_url}: {e}',
             ) from e
+        except ValidationError as e:  # Pydantic validation error
+            raise A2AClientJSONError(
+                f'Failed to validate agent card structure from {target_url}: {e.json()}'
+            ) from e
+
+        return agent_card
 
 
 @trace_class(kind=SpanKind.CLIENT)
@@ -119,7 +147,12 @@ class A2AClient:
         agent_card_path: str = '/.well-known/agent.json',
         http_kwargs: dict[str, Any] | None = None,
     ) -> 'A2AClient':
-        """Fetches the AgentCard and initializes an A2A client.
+        """Fetches the public AgentCard and initializes an A2A client.
+
+        This method will always fetch the public agent card. If an authenticated
+        or extended agent card is required, the A2ACardResolver should be used
+        directly to fetch the specific card, and then the A2AClient should be
+        instantiated with it.
 
         Args:
             httpx_client: An async HTTP client instance (e.g., httpx.AsyncClient).
@@ -127,7 +160,6 @@ class A2AClient:
             agent_card_path: The path to the agent card endpoint, relative to the base URL.
             http_kwargs: Optional dictionary of keyword arguments to pass to the
                 underlying httpx.get request when fetching the agent card.
-
         Returns:
             An initialized `A2AClient` instance.
 
@@ -137,7 +169,7 @@ class A2AClient:
         """
         agent_card: AgentCard = await A2ACardResolver(
             httpx_client, base_url=base_url, agent_card_path=agent_card_path
-        ).get_agent_card(http_kwargs=http_kwargs)
+        ).get_agent_card(http_kwargs=http_kwargs) # Fetches public card by default
         return A2AClient(httpx_client=httpx_client, agent_card=agent_card)
 
     async def send_message(
