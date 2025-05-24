@@ -377,6 +377,6 @@ class JSONRPCApplication(ABC):
             **kwargs: Additional keyword arguments to pass to the FastAPI constructor.
 
         Returns:
-            A configured FastAPI application instance.
+            A configured FastAPI or Starlette application instance.
         """
         pass
