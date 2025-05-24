@@ -8,6 +8,7 @@ authors = [{ name = "Google LLC", email = "googleapis-packages@google.com" }]
 requires-python = ">=3.10"
 keywords = ["A2A", "A2A SDK", "A2A Protocol", "Agent2Agent"]
 dependencies = [
+    "asyncpg>=0.30.0",
     "httpx>=0.28.1",
     "httpx-sse>=0.4.0",
     "opentelemetry-api>=1.33.0",
@@ -73,6 +74,7 @@ members = [
 
 [dependency-groups]
 dev = [
+    "asyncpg-stubs>=0.30.1",
     "datamodel-code-generator>=0.30.0",
     "mypy>=1.15.0",
     "pytest>=8.3.5",
