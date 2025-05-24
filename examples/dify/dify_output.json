@@ -1,0 +1,638 @@
+[
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "history": [
+        {
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "19ca8ec7c3794c0083c43178effbcc47",
+          "parts": [
+            {
+              "data": {
+                "city": "深圳",
+                "api_key": "app-SXqTiCm89mGr2IJhKvwWgR7s",
+                "user_id": "kingstonwen104@gmail.com",
+                "dify_server": "cloud"
+              },
+              "kind": "data"
+            }
+          ],
+          "role": "user",
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+        }
+      ],
+      "id": "c230abc1-8a34-48fe-aceb-56ae858dfa90",
+      "kind": "task",
+      "status": {
+        "state": "submitted"
+      }
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "final": false,
+      "kind": "status-update",
+      "status": {
+        "message": {
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "fde753c8-df9f-47df-b40b-9bd79711a455",
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Processing weather request for 深圳..."
+            }
+          ],
+          "role": "agent",
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+        },
+        "state": "working"
+      },
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "final": false,
+      "kind": "status-update",
+      "status": {
+        "message": {
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "d1635832-ac17-4250-b181-4f329245251c",
+          "metadata": {
+            "dify_event": "workflow_started",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be"
+          },
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Workflow Started"
+            }
+          ],
+          "role": "agent",
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+        },
+        "state": "working"
+      },
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "final": false,
+      "kind": "status-update",
+      "status": {
+        "message": {
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "18cc2b18-ffc1-44d8-9fa1-ddcf4a1887bb",
+          "metadata": {
+            "dify_event": "node_started",
+            "node_type": "start",
+            "title": "Start",
+            "node_id": "85a9a738-a705-47c6-addd-19cdcb332d6e",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be"
+          },
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Node Started - Start (start)"
+            }
+          ],
+          "role": "agent",
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+        },
+        "state": "working"
+      },
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "final": false,
+      "kind": "status-update",
+      "status": {
+        "message": {
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "67900304-76dd-45d3-ae7b-0116533cccc2",
+          "metadata": {
+            "dify_event": "node_finished",
+            "node_type": "start",
+            "title": "Start",
+            "node_id": "85a9a738-a705-47c6-addd-19cdcb332d6e",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be",
+            "outputs": {
+              "city": "深圳",
+              "sys.files": [],
+              "sys.user_id": "kingstonwen104@gmail.com",
+              "sys.app_id": "c01efd1a-4bc0-4030-86d6-9a51e722cb7e",
+              "sys.workflow_id": "cb6661b3-f65c-46d7-8d2b-0ff695b29376",
+              "sys.workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be"
+            },
+            "status": "succeeded"
+          },
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Node Finished - Start (start) - succeeded"
+            }
+          ],
+          "role": "agent",
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+        },
+        "state": "working"
+      },
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "final": false,
+      "kind": "status-update",
+      "status": {
+        "message": {
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "211a22bc-29cf-48b5-8078-a6633061e986",
+          "metadata": {
+            "dify_event": "node_started",
+            "node_type": "if-else",
+            "title": "IF/ELSE",
+            "node_id": "9da5a0bb-9b0e-4f83-acdd-8067bcf2bf7c",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be"
+          },
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Node Started - IF/ELSE (if-else)"
+            }
+          ],
+          "role": "agent",
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+        },
+        "state": "working"
+      },
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "final": false,
+      "kind": "status-update",
+      "status": {
+        "message": {
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "c40298e4-649c-47ef-9176-b3928942dbae",
+          "metadata": {
+            "dify_event": "node_finished",
+            "node_type": "if-else",
+            "title": "IF/ELSE",
+            "node_id": "9da5a0bb-9b0e-4f83-acdd-8067bcf2bf7c",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be",
+            "outputs": {
+              "result": true,
+              "selected_case_id": "61e6d6ac-2743-456c-972e-52d877bf4c64"
+            },
+            "status": "succeeded"
+          },
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Node Finished - IF/ELSE (if-else) - succeeded"
+            }
+          ],
+          "role": "agent",
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+        },
+        "state": "working"
+      },
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "final": false,
+      "kind": "status-update",
+      "status": {
+        "message": {
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "bbcaee3f-bcaa-46e6-b6b7-17cb621d4c00",
+          "metadata": {
+            "dify_event": "node_started",
+            "node_type": "http-request",
+            "title": "GET 深圳南山天气",
+            "node_id": "fb1b9dbd-775e-4c66-98f7-934a46b3ba68",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be"
+          },
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Node Started - GET 深圳南山天气 (http-request)"
+            }
+          ],
+          "role": "agent",
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+        },
+        "state": "working"
+      },
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "append": false,
+      "artifact": {
+        "artifactId": "471fc603-8e45-4898-b882-6a5185a5fed6",
+        "description": "API response from GET 深圳南山天气",
+        "name": "GET 深圳南山天气_response",
+        "parts": [
+          {
+            "kind": "text",
+            "text": "{\n  \"status\": \"1\",\n  \"count\": \"1\",\n  \"info\": \"OK\",\n  \"infocode\": \"10000\",\n  \"lives\": [\n    {\n      \"province\": \"广东\",\n      \"city\": \"宝安区\",\n      \"adcode\": \"440306\",\n      \"weather\": \"阴\",\n      \"temperature\": \"30\",\n      \"winddirection\": \"南\",\n      \"windpower\": \"≤3\",\n      \"humidity\": \"66\",\n      \"reporttime\": \"2025-05-22 16:30:41\",\n      \"temperature_float\": \"30.0\",\n      \"humidity_float\": \"66.0\"\n    }\n  ]\n}"
+          }
+        ]
+      },
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "kind": "artifact-update",
+      "lastChunk": true,
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "final": false,
+      "kind": "status-update",
+      "status": {
+        "message": {
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "ade4ed28-94e7-4ab8-834b-12c8a50c4e33",
+          "metadata": {
+            "dify_event": "node_finished",
+            "node_type": "http-request",
+            "title": "GET 深圳南山天气",
+            "node_id": "fb1b9dbd-775e-4c66-98f7-934a46b3ba68",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be",
+            "outputs": {
+              "status_code": 200,
+              "body": "{\"status\":\"1\",\"count\":\"1\",\"info\":\"OK\",\"infocode\":\"10000\",\"lives\":[{\"province\":\"广东\",\"city\":\"宝安区\",\"adcode\":\"440306\",\"weather\":\"阴\",\"temperature\":\"30\",\"winddirection\":\"南\",\"windpower\":\"≤3\",\"humidity\":\"66\",\"reporttime\":\"2025-05-22 16:30:41\",\"temperature_float\":\"30.0\",\"humidity_float\":\"66.0\"}]}",
+              "headers": {
+                "server": "Tengine",
+                "date": "Thu, 22 May 2025 08:36:09 GMT",
+                "content-type": "application/json;charset=UTF-8",
+                "content-length": "304",
+                "connection": "close",
+                "gsid": "033005149099174790296920100059380624913",
+                "sc": "0.006",
+                "access-control-allow-origin": "*",
+                "access-control-allow-methods": "*",
+                "access-control-allow-headers": "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,key,x-biz,x-info,platinfo,encr,enginever,gzipped,poiid"
+              },
+              "files": []
+            },
+            "status": "succeeded"
+          },
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Node Finished - GET 深圳南山天气 (http-request) - succeeded"
+            }
+          ],
+          "role": "agent",
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+        },
+        "state": "working"
+      },
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "final": false,
+      "kind": "status-update",
+      "status": {
+        "message": {
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "16155f29-b4b5-44ee-b218-7059772f4849",
+          "metadata": {
+            "dify_event": "node_started",
+            "node_type": "variable-aggregator",
+            "title": "Variable Aggregator",
+            "node_id": "9b2c625b-9b0f-4249-924c-828539155b73",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be"
+          },
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Node Started - Variable Aggregator (variable-aggregator)"
+            }
+          ],
+          "role": "agent",
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+        },
+        "state": "working"
+      },
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "final": false,
+      "kind": "status-update",
+      "status": {
+        "message": {
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "2e4fc76c-530b-41fc-b2cd-f3419ca49a14",
+          "metadata": {
+            "dify_event": "node_finished",
+            "node_type": "variable-aggregator",
+            "title": "Variable Aggregator",
+            "node_id": "9b2c625b-9b0f-4249-924c-828539155b73",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be",
+            "outputs": {
+              "output": "{\"status\":\"1\",\"count\":\"1\",\"info\":\"OK\",\"infocode\":\"10000\",\"lives\":[{\"province\":\"广东\",\"city\":\"宝安区\",\"adcode\":\"440306\",\"weather\":\"阴\",\"temperature\":\"30\",\"winddirection\":\"南\",\"windpower\":\"≤3\",\"humidity\":\"66\",\"reporttime\":\"2025-05-22 16:30:41\",\"temperature_float\":\"30.0\",\"humidity_float\":\"66.0\"}]}"
+            },
+            "status": "succeeded"
+          },
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Node Finished - Variable Aggregator (variable-aggregator) - succeeded"
+            }
+          ],
+          "role": "agent",
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+        },
+        "state": "working"
+      },
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "final": false,
+      "kind": "status-update",
+      "status": {
+        "message": {
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "965d56e5-7f0e-49c1-9be4-8c0cf892c199",
+          "metadata": {
+            "dify_event": "node_started",
+            "node_type": "llm",
+            "title": "LLM",
+            "node_id": "23ccc2bf-1783-43bb-8920-0b5d01e3c501",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be"
+          },
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Node Started - LLM (llm)"
+            }
+          ],
+          "role": "agent",
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+        },
+        "state": "working"
+      },
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "append": false,
+      "artifact": {
+        "artifactId": "c75bdd58-d8b0-43c2-bf0a-e5bc78c8cc69",
+        "description": "Generated text from LLM",
+        "name": "llm_response_01e3c501",
+        "parts": [
+          {
+            "kind": "text",
+            "text": "今天在广东宝安区的天气预报显示，天气阴沉，温度为30°C。南风，风力不超过3级，湿度为66%。这是截至2025年5月22日下午4:30的最新天气信息。"
+          }
+        ]
+      },
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "kind": "artifact-update",
+      "lastChunk": true,
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "final": false,
+      "kind": "status-update",
+      "status": {
+        "message": {
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "c0d494cf-a98b-41d1-9c1b-58020ed5dda4",
+          "metadata": {
+            "dify_event": "node_finished",
+            "node_type": "llm",
+            "title": "LLM",
+            "node_id": "23ccc2bf-1783-43bb-8920-0b5d01e3c501",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be",
+            "outputs": {
+              "text": "今天在广东宝安区的天气预报显示，天气阴沉，温度为30°C。南风，风力不超过3级，湿度为66%。这是截至2025年5月22日下午4:30的最新天气信息。",
+              "usage": {
+                "prompt_tokens": 114,
+                "prompt_unit_price": "0.15",
+                "prompt_price_unit": "0.000001",
+                "prompt_price": "0.0000171",
+                "completion_tokens": 54,
+                "completion_unit_price": "0.6",
+                "completion_price_unit": "0.000001",
+                "completion_price": "0.0000324",
+                "total_tokens": 168,
+                "total_price": "0.0000495",
+                "currency": "USD",
+                "latency": 1.2643818855285645
+              },
+              "finish_reason": "stop",
+              "files": []
+            },
+            "status": "succeeded"
+          },
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Node Finished - LLM (llm) - succeeded"
+            }
+          ],
+          "role": "agent",
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+        },
+        "state": "working"
+      },
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "final": false,
+      "kind": "status-update",
+      "status": {
+        "message": {
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "f119103b-c7a3-45fd-883a-bd19eb45ae8e",
+          "metadata": {
+            "dify_event": "node_started",
+            "node_type": "end",
+            "title": "End",
+            "node_id": "2609f4f3-73a8-4384-90fa-f73aa55dc27f",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be"
+          },
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Node Started - End (end)"
+            }
+          ],
+          "role": "agent",
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+        },
+        "state": "working"
+      },
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "final": false,
+      "kind": "status-update",
+      "status": {
+        "message": {
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "39035a55-6d98-4f71-b8fd-5faee8c527cc",
+          "metadata": {
+            "dify_event": "node_finished",
+            "node_type": "end",
+            "title": "End",
+            "node_id": "2609f4f3-73a8-4384-90fa-f73aa55dc27f",
+            "workflow_run_id": "540e3d3f-d16a-4509-8b68-790677e998be",
+            "outputs": {
+              "text": "今天在广东宝安区的天气预报显示，天气阴沉，温度为30°C。南风，风力不超过3级，湿度为66%。这是截至2025年5月22日下午4:30的最新天气信息。"
+            },
+            "status": "succeeded"
+          },
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Node Finished - End (end) - succeeded"
+            }
+          ],
+          "role": "agent",
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+        },
+        "state": "working"
+      },
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "append": false,
+      "artifact": {
+        "artifactId": "cf984e95-df41-4448-b28d-0e41ce2f53c9",
+        "description": "Weather information for 深圳",
+        "name": "result",
+        "parts": [
+          {
+            "kind": "text",
+            "text": "今天在广东宝安区的天气预报显示，天气阴沉，温度为30°C。南风，风力不超过3级，湿度为66%。这是截至2025年5月22日下午4:30的最新天气信息。"
+          }
+        ]
+      },
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "kind": "artifact-update",
+      "lastChunk": true,
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  },
+  {
+    "id": "de54e757-8eb2-4979-a32f-24fb26d11c9e",
+    "jsonrpc": "2.0",
+    "result": {
+      "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+      "final": true,
+      "kind": "status-update",
+      "status": {
+        "message": {
+          "contextId": "7530cdc7-7b40-4b5c-857e-c42f95485ad2",
+          "kind": "message",
+          "messageId": "d1d0db12-f392-49f9-80ff-d298cc8efe88",
+          "parts": [
+            {
+              "kind": "text",
+              "text": "今天在广东宝安区的天气预报显示，天气阴沉，温度为30°C。南风，风力不超过3级，湿度为66%。这是截至2025年5月22日下午4:30的最新天气信息。"
+            }
+          ],
+          "role": "agent",
+          "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+        },
+        "state": "completed"
+      },
+      "taskId": "c230abc1-8a34-48fe-aceb-56ae858dfa90"
+    }
+  }
+]
