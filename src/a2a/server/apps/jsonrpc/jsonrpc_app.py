@@ -51,18 +51,18 @@ class CallContextBuilder(ABC):
 
 
 class JSONRPCApplication(ABC):
-    """Base class for A2A applications.
+    """Base class for A2A JSONRPC applications.
 
-    Args:
-        agent_card: The AgentCard describing the agent's capabilities.
-        http_handler: The handler instance responsible for processing A2A
-            requests via http.
+    Handles incoming JSON-RPC requests, routes them to the appropriate
+    handler methods, and manages response generation including Server-Sent Events
+    (SSE).
     """
 
     def __init__(
         self,
         agent_card: AgentCard,
         http_handler: RequestHandler,
+        extended_agent_card: AgentCard | None = None,
         context_builder: CallContextBuilder | None = None,
     ):
         """Initializes the A2AStarletteApplication.
@@ -71,14 +71,24 @@ class JSONRPCApplication(ABC):
             agent_card: The AgentCard describing the agent's capabilities.
             http_handler: The handler instance responsible for processing A2A
               requests via http.
+            extended_agent_card: An optional, distinct AgentCard to be served
+              at the authenticated extended card endpoint.
             context_builder: The CallContextBuilder used to construct the
               ServerCallContext passed to the http_handler. If None, no
               ServerCallContext is passed.
         """
         self.agent_card = agent_card
+        self.extended_agent_card = extended_agent_card
         self.handler = JSONRPCHandler(
             agent_card=agent_card, request_handler=http_handler
         )
+        if (
+            self.agent_card.supportsAuthenticatedExtendedCard
+            and self.extended_agent_card is None
+        ):
+            logger.error(
+                'AgentCard.supportsAuthenticatedExtendedCard is True, but no extended_agent_card was provided. The /agent/authenticatedExtendedCard endpoint will return 404.'
+            )
         self._context_builder = context_builder
 
     def _generate_error_response(
@@ -321,8 +331,35 @@ class JSONRPCApplication(ABC):
         Returns:
             A JSONResponse containing the agent card data.
         """
+        # The public agent card is a direct serialization of the agent_card
+        # provided at initialization.
         return JSONResponse(
             self.agent_card.model_dump(mode='json', exclude_none=True)
+        )
+
+    async def _handle_get_authenticated_extended_agent_card(
+        self, request: Request
+    ) -> JSONResponse:
+        """Handles GET requests for the authenticated extended agent card."""
+        if not self.agent_card.supportsAuthenticatedExtendedCard:
+            return JSONResponse(
+                {'error': 'Extended agent card not supported or not enabled.'},
+                status_code=404,
+            )
+
+        # If an explicit extended_agent_card is provided, serve that.
+        if self.extended_agent_card:
+            return JSONResponse(
+                self.extended_agent_card.model_dump(
+                    mode='json', exclude_none=True
+                )
+            )
+        # If supportsAuthenticatedExtendedCard is true, but no specific
+        # extended_agent_card was provided during server initialization,
+        # return a 404
+        return JSONResponse(
+            {'error': 'Authenticated extended agent card is supported but not configured on the server.'},
+            status_code=404,
         )
 
     @abstractmethod

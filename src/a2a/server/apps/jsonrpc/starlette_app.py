@@ -26,6 +26,7 @@ class A2AStarletteApplication(JSONRPCApplication):
         self,
         agent_card: AgentCard,
         http_handler: RequestHandler,
+        extended_agent_card: AgentCard | None = None,
         context_builder: CallContextBuilder | None = None,
     ):
         """Initializes the A2AStarletteApplication.
@@ -34,6 +35,8 @@ class A2AStarletteApplication(JSONRPCApplication):
             agent_card: The AgentCard describing the agent's capabilities.
             http_handler: The handler instance responsible for processing A2A
               requests via http.
+            extended_agent_card: An optional, distinct AgentCard to be served
+              at the authenticated extended card endpoint.
             context_builder: The CallContextBuilder used to construct the
               ServerCallContext passed to the http_handler. If None, no
               ServerCallContext is passed.
@@ -41,6 +44,7 @@ class A2AStarletteApplication(JSONRPCApplication):
         super().__init__(
             agent_card=agent_card,
             http_handler=http_handler,
+            extended_agent_card=extended_agent_card,
             context_builder=context_builder
         )
 
