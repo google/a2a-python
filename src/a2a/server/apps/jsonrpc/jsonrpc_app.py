@@ -3,26 +3,40 @@ import logging
 import traceback
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
-from typing import Any
+from typing import Any, Union
 
+from fastapi import FastAPI
 from pydantic import ValidationError
 from sse_starlette.sse import EventSourceResponse
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
-from starlette.routing import Route
 
 from a2a.server.context import ServerCallContext
 from a2a.server.request_handlers.jsonrpc_handler import JSONRPCHandler
 from a2a.server.request_handlers.request_handler import RequestHandler
-from a2a.types import (A2AError, A2ARequest, AgentCard, CancelTaskRequest,
-                       GetTaskPushNotificationConfigRequest, GetTaskRequest,
-                       InternalError, InvalidRequestError, JSONParseError,
-                       JSONRPCError, JSONRPCErrorResponse, JSONRPCResponse,
-                       SendMessageRequest, SendStreamingMessageRequest,
-                       SendStreamingMessageResponse,
-                       SetTaskPushNotificationConfigRequest,
-                       TaskResubscriptionRequest, UnsupportedOperationError)
+from a2a.server.context import ServerCallContext
+from a2a.types import (
+    A2AError,
+    A2ARequest,
+    AgentCard,
+    CancelTaskRequest,
+    GetTaskPushNotificationConfigRequest,
+    GetTaskRequest,
+    InternalError,
+    InvalidRequestError,
+    JSONParseError,
+    JSONRPCError,
+    JSONRPCErrorResponse,
+    JSONRPCResponse,
+    SendMessageRequest,
+    SendStreamingMessageRequest,
+    SendStreamingMessageResponse,
+    SetTaskPushNotificationConfigRequest,
+    TaskResubscriptionRequest,
+    UnsupportedOperationError,
+)
+
 from a2a.utils.errors import MethodNotImplementedError
 
 logger = logging.getLogger(__name__)
@@ -36,19 +50,19 @@ class CallContextBuilder(ABC):
         """Builds a ServerCallContext from a Starlette Request."""
 
 
-class A2AStarletteApplication:
-    """A Starlette application implementing the A2A protocol server endpoints.
+class JSONRPCApplication(ABC):
+    """Base class for A2A applications.
 
-    Handles incoming JSON-RPC requests, routes them to the appropriate
-    handler methods, and manages response generation including Server-Sent Events
-    (SSE).
+    Args:
+        agent_card: The AgentCard describing the agent's capabilities.
+        http_handler: The handler instance responsible for processing A2A
+            requests via http.
     """
 
     def __init__(
         self,
         agent_card: AgentCard,
         http_handler: RequestHandler,
-        extended_agent_card: AgentCard | None = None,
         context_builder: CallContextBuilder | None = None,
     ):
         """Initializes the A2AStarletteApplication.
@@ -57,24 +71,14 @@ class A2AStarletteApplication:
             agent_card: The AgentCard describing the agent's capabilities.
             http_handler: The handler instance responsible for processing A2A
               requests via http.
-            extended_agent_card: An optional, distinct AgentCard to be served
-              at the authenticated extended card endpoint.
             context_builder: The CallContextBuilder used to construct the
               ServerCallContext passed to the http_handler. If None, no
               ServerCallContext is passed.
         """
         self.agent_card = agent_card
-        self.extended_agent_card = extended_agent_card
         self.handler = JSONRPCHandler(
             agent_card=agent_card, request_handler=http_handler
         )
-        if (
-            self.agent_card.supportsAuthenticatedExtendedCard
-            and self.extended_agent_card is None
-        ):
-            logger.error(
-                'AgentCard.supportsAuthenticatedExtendedCard is True, but no extended_agent_card was provided. The /agent/authenticatedExtendedCard endpoint will return 404.'
-            )
         self._context_builder = context_builder
 
     def _generate_error_response(
@@ -317,104 +321,25 @@ class A2AStarletteApplication:
         Returns:
             A JSONResponse containing the agent card data.
         """
-        # The public agent card is a direct serialization of the agent_card
-        # provided at initialization.
         return JSONResponse(
             self.agent_card.model_dump(mode='json', exclude_none=True)
         )
 
-    async def _handle_get_authenticated_extended_agent_card(
-        self, request: Request
-    ) -> JSONResponse:
-        """Handles GET requests for the authenticated extended agent card."""
-        if not self.agent_card.supportsAuthenticatedExtendedCard:
-            return JSONResponse(
-                {'error': 'Extended agent card not supported or not enabled.'},
-                status_code=404,
-            )
-
-        # If an explicit extended_agent_card is provided, serve that.
-        if self.extended_agent_card:
-            return JSONResponse(
-                self.extended_agent_card.model_dump(
-                    mode='json', exclude_none=True
-                )
-            )
-        # If supportsAuthenticatedExtendedCard is true, but no specific
-        # extended_agent_card was provided during server initialization,
-        # return a 404
-        return JSONResponse(
-            {'error': 'Authenticated extended agent card is supported but not configured on the server.'},
-            status_code=404,
-        )
-
-    def routes(
-        self,
-        agent_card_url: str = '/.well-known/agent.json',
-        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
-        rpc_url: str = '/',
-    ) -> list[Route]:
-        """Returns the Starlette Routes for handling A2A requests.
-
-        Args:
-            agent_card_url: The URL path for the agent card endpoint.
-            rpc_url: The URL path for the A2A JSON-RPC endpoint (POST requests).
-            extended_agent_card_url: The URL for the authenticated extended agent card endpoint.
-
-        Returns:
-            A list of Starlette Route objects.
-        """
-        app_routes = [
-            Route(
-                rpc_url,
-                self._handle_requests,
-                methods=['POST'],
-                name='a2a_handler',
-            ),
-            Route(
-                agent_card_url,
-                self._handle_get_agent_card,
-                methods=['GET'],
-                name='agent_card',
-            ),
-        ]
-
-        if self.agent_card.supportsAuthenticatedExtendedCard:
-            app_routes.append(
-                Route(
-                    extended_agent_card_url,
-                    self._handle_get_authenticated_extended_agent_card,
-                    methods=['GET'],
-                    name='authenticated_extended_agent_card',
-                )
-            )
-        return app_routes
-
+    @abstractmethod
     def build(
         self,
         agent_card_url: str = '/.well-known/agent.json',
-        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
         rpc_url: str = '/',
         **kwargs: Any,
-    ) -> Starlette:
-        """Builds and returns the Starlette application instance.
+    ) -> Union[Starlette, FastAPI]:
+        """Builds and returns the FastAPI application instance.
 
         Args:
-            agent_card_url: The URL path for the agent card endpoint.
-            rpc_url: The URL path for the A2A JSON-RPC endpoint (POST requests).
-            extended_agent_card_url: The URL for the authenticated extended agent card endpoint.
-            **kwargs: Additional keyword arguments to pass to the Starlette
-              constructor.
+            agent_card_url: The URL for the agent card endpoint.
+            rpc_url: The URL for the A2A JSON-RPC endpoint
+            **kwargs: Additional keyword arguments to pass to the FastAPI constructor.
 
         Returns:
-            A configured Starlette application instance.
+            A configured FastAPI application instance.
         """
-        app_routes = self.routes(
-            agent_card_url, extended_agent_card_url, rpc_url
-        )
-        if 'routes' in kwargs:
-            kwargs['routes'].extend(app_routes)
-        else:
-            kwargs['routes'] = app_routes
-
-        return Starlette(**kwargs)
+        pass
