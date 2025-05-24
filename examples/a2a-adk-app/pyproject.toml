@@ -1,0 +1,17 @@
+[project]
+name = "a2a-mcp-app"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "a2a-sdk>=0.2.2",
+    "click>=8.2.0",
+    "geopy>=2.4.1",
+    "google-adk>=1.0.0",
+    "gradio>=5.30.0",
+    "langchain-google-genai>=2.1.4",
+    "langchain-mcp-adapters>=0.1.1",
+    "langgraph>=0.4.5",
+    "mcp>=1.9.0",
+]
