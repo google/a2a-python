@@ -1,6 +1,8 @@
+import contextlib
 import json
 import logging
 import traceback
+
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
 from typing import Any
@@ -8,24 +10,43 @@ from typing import Any
 from pydantic import ValidationError
 from sse_starlette.sse import EventSourceResponse
 from starlette.applications import Starlette
+from starlette.authentication import BaseUser
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
 
+from a2a.auth.user import UnauthenticatedUser
+from a2a.auth.user import User as A2AUser
 from a2a.server.context import ServerCallContext
 from a2a.server.request_handlers.jsonrpc_handler import JSONRPCHandler
 from a2a.server.request_handlers.request_handler import RequestHandler
-from a2a.types import (A2AError, A2ARequest, AgentCard, CancelTaskRequest,
-                       GetTaskPushNotificationConfigRequest, GetTaskRequest,
-                       InternalError, InvalidRequestError, JSONParseError,
-                       JSONRPCError, JSONRPCErrorResponse, JSONRPCResponse,
-                       SendMessageRequest, SendStreamingMessageRequest,
-                       SendStreamingMessageResponse,
-                       SetTaskPushNotificationConfigRequest,
-                       TaskResubscriptionRequest, UnsupportedOperationError)
+from a2a.types import (
+    A2AError,
+    A2ARequest,
+    AgentCard,
+    CancelTaskRequest,
+    GetTaskPushNotificationConfigRequest,
+    GetTaskRequest,
+    InternalError,
+    InvalidRequestError,
+    JSONParseError,
+    JSONRPCError,
+    JSONRPCErrorResponse,
+    JSONRPCResponse,
+    SendMessageRequest,
+    SendStreamingMessageRequest,
+    SendStreamingMessageResponse,
+    SetTaskPushNotificationConfigRequest,
+    TaskResubscriptionRequest,
+    UnsupportedOperationError,
+)
 from a2a.utils.errors import MethodNotImplementedError
 
+
 logger = logging.getLogger(__name__)
+
+# Register Starlette User as an implementation of a2a.auth.user.User
+A2AUser.register(BaseUser)
 
 
 class CallContextBuilder(ABC):
@@ -34,6 +55,18 @@ class CallContextBuilder(ABC):
     @abstractmethod
     def build(self, request: Request) -> ServerCallContext:
         """Builds a ServerCallContext from a Starlette Request."""
+
+
+class DefaultCallContextBuilder(CallContextBuilder):
+    """A default implementation of CallContextBuilder."""
+
+    def build(self, request: Request) -> ServerCallContext:
+        user = UnauthenticatedUser()
+        state = {}
+        with contextlib.suppress(Exception):
+            user = request.user
+            state['auth'] = request.auth
+        return ServerCallContext(user=user, state=state)
 
 
 class A2AStarletteApplication:
@@ -75,7 +108,7 @@ class A2AStarletteApplication:
             logger.error(
                 'AgentCard.supportsAuthenticatedExtendedCard is True, but no extended_agent_card was provided. The /agent/authenticatedExtendedCard endpoint will return 404.'
             )
-        self._context_builder = context_builder
+        self._context_builder = context_builder or DefaultCallContextBuilder()
 
     def _generate_error_response(
         self, request_id: str | int | None, error: JSONRPCError | A2AError
@@ -137,11 +170,7 @@ class A2AStarletteApplication:
         try:
             body = await request.json()
             a2a_request = A2ARequest.model_validate(body)
-            call_context = (
-                self._context_builder.build(request)
-                if self._context_builder
-                else None
-            )
+            call_context = self._context_builder.build(request)
 
             request_id = a2a_request.root.id
             request_obj = a2a_request.root
@@ -344,7 +373,9 @@ class A2AStarletteApplication:
         # extended_agent_card was provided during server initialization,
         # return a 404
         return JSONResponse(
-            {'error': 'Authenticated extended agent card is supported but not configured on the server.'},
+            {
+                'error': 'Authenticated extended agent card is supported but not configured on the server.'
+            },
             status_code=404,
         )
 
