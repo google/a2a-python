@@ -37,13 +37,11 @@ gle
 gpt
 inmemory
 kwarg
-l'actualit
 l'actualité
 langgraph
 lifecycles
 linting
 llm
-m'appelle
 mcp
 mundo
 npx
