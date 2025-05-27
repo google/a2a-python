@@ -3,22 +3,21 @@
 import collections.abc
 import typing
 
+from pydantic import BaseModel, ConfigDict, Field
+
+from a2a.auth.user import UnauthenticatedUser, User
+
 
 State = collections.abc.MutableMapping[str, typing.Any]
 
 
-class ServerCallContext:
+class ServerCallContext(BaseModel):
     """A context passed when calling a server method.
 
     This class allows storing arbitrary user data in the state attribute.
     """
 
-    def __init__(self, state: State | None = None):
-        if state is None:
-            state = {}
-        self._state = state
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    @property
-    def state(self) -> State:
-        """Get the user-provided state."""
-        return self._state
+    state: State = Field(default={})
+    user: User = Field(default=UnauthenticatedUser())

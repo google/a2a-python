@@ -1,8 +1,8 @@
 # See https://github.com/check-spelling/check-spelling/wiki/Configuration-Examples:-excludes
+(?:^|/)(?i).gitignore\E$
+(?:^|/)(?i)CODE_OF_CONDUCT.md\E$
 (?:^|/)(?i)COPYRIGHT
 (?:^|/)(?i)LICEN[CS]E
-(?:^|/)(?i)CODE_OF_CONDUCT.md\E$
-(?:^|/)(?i).gitignore\E$
 (?:^|/)3rdparty/
 (?:^|/)go\.sum$
 (?:^|/)package(?:-lock|)\.json$
@@ -33,6 +33,7 @@
 \.gif$
 \.git-blame-ignore-revs$
 \.gitattributes$
+\.gitignore\E$
 \.gitkeep$
 \.graffle$
 \.gz$
@@ -62,6 +63,7 @@
 \.pyc$
 \.pylintrc$
 \.qm$
+\.ruff.toml$
 \.s$
 \.sig$
 \.so$
@@ -71,6 +73,7 @@
 \.tgz$
 \.tiff?$
 \.ttf$
+\.vscode/
 \.wav$
 \.webm$
 \.webp$
@@ -82,8 +85,7 @@
 \.zip$
 ^\.github/actions/spelling/
 ^\.github/workflows/
-\.gitignore\E$
-\.vscode/
-noxfile.py
-\.ruff.toml$
+^\Qsrc/a2a/auth/__init__.py\E$
+^\Qsrc/a2a/server/request_handlers/context.py\E$
 CHANGELOG.md
+noxfile.py
