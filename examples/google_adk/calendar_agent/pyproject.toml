@@ -3,7 +3,7 @@ name = "adk-auth-example"
 version = "0.1.0"
 description = "Calendar agent example"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 dependencies = [
     "a2a-sdk",
     "click>=8.1.8",

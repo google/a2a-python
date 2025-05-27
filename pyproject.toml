@@ -15,7 +15,6 @@ dependencies = [
     "pydantic>=2.11.3",
     "sse-starlette>=2.3.3",
     "starlette>=0.46.2",
-    "typing-extensions>=4.13.2",
 ]
 
 classifiers = [

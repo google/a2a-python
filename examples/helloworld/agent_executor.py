@@ -1,5 +1,3 @@
-from typing_extensions import override
-
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from a2a.utils import new_agent_text_message
@@ -18,7 +16,6 @@ class HelloWorldAgentExecutor(AgentExecutor):
     def __init__(self):
         self.agent = HelloWorldAgent()
 
-    @override
     async def execute(
         self,
         context: RequestContext,
@@ -27,7 +24,6 @@ class HelloWorldAgentExecutor(AgentExecutor):
         result = await self.agent.invoke()
         event_queue.enqueue_event(new_agent_text_message(result))
 
-    @override
     async def cancel(
         self, context: RequestContext, event_queue: EventQueue
     ) -> None:
