@@ -1416,6 +1416,10 @@ class AgentCard(BaseModel):
     """
     The version of the agent - format is up to the provider.
     """
+    supportsAuthenticatedExtendedCard: bool | None = Field(default=None)
+    """
+    Optional field indicating there is an extended card available post authentication at the /agent/authenticatedExtendedCard endpoint.
+    """
 
 
 class Task(BaseModel):
