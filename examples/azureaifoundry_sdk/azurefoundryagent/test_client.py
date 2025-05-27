@@ -118,7 +118,7 @@ async def main() -> None:
         except Exception as e:
             logger.error(f"❌ Critical error fetching public agent card: {e}")
             logger.info("💡 Make sure the AI Foundry Calendar Agent server is running:")
-            logger.info(f"   python -m aifoundry_a2a_demo --host localhost --port {base_url.split(':')[-1]}")
+            logger.info(f"   uv run .")
             raise RuntimeError("Failed to fetch the public agent card. Cannot continue.") from e
 
         # Initialize A2A Client
