@@ -25,7 +25,7 @@ class InMemoryTaskStore(TaskStore):
         """Saves or updates a task in the in-memory store."""
         async with self.lock:
             self.tasks[task.id] = task
-            logger.info('Task %s saved successfully.', task.id)
+            logger.debug('Task %s saved successfully.', task.id)
 
     async def get(self, task_id: str) -> Task | None:
         """Retrieves a task from the in-memory store by ID."""
@@ -44,7 +44,7 @@ class InMemoryTaskStore(TaskStore):
             logger.debug('Attempting to delete task with id: %s', task_id)
             if task_id in self.tasks:
                 del self.tasks[task_id]
-                logger.info('Task %s deleted successfully.', task_id)
+                logger.debug('Task %s deleted successfully.', task_id)
             else:
                 logger.warning(
                     'Attempted to delete nonexistent task with id: %s', task_id
