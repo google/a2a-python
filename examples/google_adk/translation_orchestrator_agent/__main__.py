@@ -1,20 +1,16 @@
-import asyncio
-import functools
 import logging
 import os
-import sys
 
 import click
 import uvicorn
 
+from adk_agent_executor import ADKTranslationOrchestratorAgentExecutor
 from dotenv import load_dotenv
 
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore
 from a2a.types import AgentCapabilities, AgentCard, AgentSkill
-
-from adk_agent_executor import ADKTranslationOrchestratorAgentExecutor
 
 
 load_dotenv()
@@ -30,7 +26,9 @@ logger.setLevel(logging.INFO)
 def main(host: str, port: int):
     # Ensure GOOGLE_API_KEY is set for the orchestrator's Gemini model.
     if not os.getenv('GOOGLE_API_KEY'):
-        logger.error('GOOGLE_API_KEY environment variable not set for orchestrator. This agent may not function correctly.')
+        logger.error(
+            'GOOGLE_API_KEY environment variable not set for orchestrator. This agent may not function correctly.'
+        )
 
     # Define the skills exposed by the orchestrator agent.
     skill_spanish = AgentSkill(
@@ -75,20 +73,30 @@ def main(host: str, port: int):
         defaultInputModes=['text'],
         defaultOutputModes=['text'],
         capabilities=AgentCapabilities(streaming=True),
-        skills=[skill_spanish, skill_french, skill_search_and_translate]
+        skills=[skill_spanish, skill_french, skill_search_and_translate],
     )
     request_handler = DefaultRequestHandler(
         agent_executor=agent_executor, task_store=InMemoryTaskStore()
     )
     app = A2AStarletteApplication(agent_card, request_handler)
 
-    logger.info(f"Starting Translation Orchestrator Agent server on http://{host}:{port}")
-    logger.info(f"This agent identifies itself to clients with the ID: translation_orchestrator.")
-    logger.info("This agent will delegate to:")
-    logger.info("  - Spanish Translator (expected ID: spanish_translator, e.g., on port 10010)")
-    logger.info("  - French Translator (expected ID: french_translator, e.g., on port 10011)")
-    logger.info("  - Brave Search Agent (expected ID: mcp_brave_search_agent_adk, e.g., on port 10009)")
-    
+    logger.info(
+        f'Starting Translation Orchestrator Agent server on http://{host}:{port}'
+    )
+    logger.info(
+        'This agent identifies itself to clients with the ID: translation_orchestrator.'
+    )
+    logger.info('This agent will delegate to:')
+    logger.info(
+        '  - Spanish Translator (expected ID: spanish_translator, e.g., on port 10010)'
+    )
+    logger.info(
+        '  - French Translator (expected ID: french_translator, e.g., on port 10011)'
+    )
+    logger.info(
+        '  - Brave Search Agent (expected ID: mcp_brave_search_agent_adk, e.g., on port 10009)'
+    )
+
     uvicorn.run(app.build(), host=host, port=port)
 
 

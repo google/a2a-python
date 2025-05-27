@@ -1,12 +1,20 @@
 import os
+
+from a2a_translation_tools import (
+    search_and_translate_news_function,
+    translate_to_french_function,
+    translate_to_spanish_function,
+)
 from google.adk.agents import LlmAgent
-from a2a_translation_tools import translate_to_spanish_function, translate_to_french_function, search_and_translate_news_function
+
 
 async def create_translation_orchestrator_agent() -> LlmAgent:
     """Constructs the ADK Translation Orchestrator agent using function-based tools."""
     # Ensure GOOGLE_API_KEY is set for the Gemini model used by this orchestrator.
-    if not os.getenv("GOOGLE_API_KEY"):
-        print("Warning: GOOGLE_API_KEY environment variable not set for orchestrator. This agent may not function correctly.")
+    if not os.getenv('GOOGLE_API_KEY'):
+        print(
+            'Warning: GOOGLE_API_KEY environment variable not set for orchestrator. This agent may not function correctly.'
+        )
 
     return LlmAgent(
         model='gemini-2.0-flash',
@@ -61,6 +69,6 @@ Remember, your decision to use a tool should lead to an actual tool invocation b
         tools=[
             translate_to_spanish_function,
             translate_to_french_function,
-            search_and_translate_news_function
-        ]
+            search_and_translate_news_function,
+        ],
     )

@@ -3,19 +3,15 @@ import asyncio
 import logging
 
 from collections.abc import AsyncGenerator, AsyncIterable
-from typing import Any
-from uuid import uuid4
 
+from adk_agent import create_mcp_brave_search_agent
 from google.adk import Runner
-from google.adk.agents import LlmAgent, RunConfig
 from google.adk.artifacts import InMemoryArtifactService
 from google.adk.events import Event
 from google.adk.memory.in_memory_memory_service import InMemoryMemoryService
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
-from pydantic import ConfigDict
 
-from a2a.client import A2AClient
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from a2a.server.tasks import TaskUpdater
@@ -24,25 +20,13 @@ from a2a.types import (
     FilePart,
     FileWithBytes,
     FileWithUri,
-    GetTaskRequest,
-    GetTaskSuccessResponse,
-    Message,
-    MessageSendParams,
     Part,
-    Role,
-    SendMessageRequest,
-    SendMessageSuccessResponse,
-    Task,
-    TaskQueryParams,
     TaskState,
     TaskStatus,
     TextPart,
     UnsupportedOperationError,
 )
-from a2a.utils import get_text_parts
 from a2a.utils.errors import ServerError
-
-from adk_agent import create_mcp_brave_search_agent
 
 
 logger = logging.getLogger(__name__)
@@ -67,7 +51,7 @@ class ADKBraveSearchAgentExecutor(AgentExecutor):
         self,
         session_id: str,
         new_message: types.Content,
-        task_updater: TaskUpdater, # This parameter is not used in this method.
+        task_updater: TaskUpdater,  # This parameter is not used in this method.
     ) -> AsyncGenerator[Event]:
         """Runs the ADK agent with the given message."""
         return self.runner.run_async(
@@ -88,7 +72,9 @@ class ADKBraveSearchAgentExecutor(AgentExecutor):
         )
         session_id = session.id
         async for event in self._run_agent(
-            session_id, new_message, task_updater # Pass task_updater to _run_agent
+            session_id,
+            new_message,
+            task_updater,  # Pass task_updater to _run_agent
         ):
             logger.debug('Received ADK event: %s', event)
             if event.is_final_response():
@@ -98,7 +84,7 @@ class ADKBraveSearchAgentExecutor(AgentExecutor):
                 task_updater.add_artifact(response)
                 task_updater.complete()
                 break
-            elif not event.get_function_calls():
+            if not event.get_function_calls():
                 # If it's not a final response and no function calls, it's an interim update.
                 logger.debug('Yielding update response')
                 task_updater.update_status(
@@ -109,7 +95,10 @@ class ADKBraveSearchAgentExecutor(AgentExecutor):
                 )
             else:
                 # This agent does not use tools, so function calls are unexpected.
-                logger.debug('Skipping event with function call: %s', event.get_function_calls())
+                logger.debug(
+                    'Skipping event with function call: %s',
+                    event.get_function_calls(),
+                )
 
     async def execute(
         self,

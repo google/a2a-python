@@ -1,12 +1,19 @@
 import os
+
 from google.adk.agents import LlmAgent
-from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, StdioServerParameters
+from google.adk.tools.mcp_tool.mcp_toolset import (
+    MCPToolset,
+    StdioServerParameters,
+)
+
 
 async def create_mcp_brave_search_agent() -> LlmAgent:
     """Constructs the ADK MCP Brave Search agent."""
-    brave_api_key = os.getenv("BRAVE_API_KEY")
+    brave_api_key = os.getenv('BRAVE_API_KEY')
     if not brave_api_key:
-        raise ValueError("BRAVE_API_KEY environment variable not set. This agent requires it.")
+        raise ValueError(
+            'BRAVE_API_KEY environment variable not set. This agent requires it.'
+        )
 
     return LlmAgent(
         model='gemini-2.0-flash',
@@ -24,12 +31,10 @@ async def create_mcp_brave_search_agent() -> LlmAgent:
                 connection_params=StdioServerParameters(
                     command='npx',
                     args=[
-                        "-y",
-                        "@modelcontextprotocol/server-brave-search",
+                        '-y',
+                        '@modelcontextprotocol/server-brave-search',
                     ],
-                    env={
-                        "BRAVE_API_KEY": brave_api_key
-                    }
+                    env={'BRAVE_API_KEY': brave_api_key},
                 ),
             )
         ],

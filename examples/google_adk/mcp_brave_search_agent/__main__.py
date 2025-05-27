@@ -1,5 +1,3 @@
-import asyncio
-import functools
 import logging
 import os
 import sys
@@ -7,14 +5,13 @@ import sys
 import click
 import uvicorn
 
+from adk_agent_executor import ADKBraveSearchAgentExecutor
 from dotenv import load_dotenv
 
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore
 from a2a.types import AgentCapabilities, AgentCard, AgentSkill
-
-from adk_agent_executor import ADKBraveSearchAgentExecutor
 
 
 load_dotenv()
@@ -28,7 +25,9 @@ logging.basicConfig()
 def main(host: str, port: int):
     # Ensure BRAVE_API_KEY is set for the Brave Search MCP server.
     if not os.getenv('BRAVE_API_KEY'):
-        print('BRAVE_API_KEY environment variable not set. This agent requires it to function.')
+        print(
+            'BRAVE_API_KEY environment variable not set. This agent requires it to function.'
+        )
         sys.exit(1)
 
     # Define the capabilities and skills of this Brave Search Agent.

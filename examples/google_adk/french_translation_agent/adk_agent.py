@@ -1,11 +1,15 @@
 import os
+
 from google.adk.agents import LlmAgent
+
 
 async def create_french_translation_agent() -> LlmAgent:
     """Constructs the ADK French Translation agent."""
     # Ensure GOOGLE_API_KEY is set for Gemini model usage.
-    if not os.getenv("GOOGLE_API_KEY"):
-        print("Warning: GOOGLE_API_KEY environment variable not set. This agent may not function correctly.")
+    if not os.getenv('GOOGLE_API_KEY'):
+        print(
+            'Warning: GOOGLE_API_KEY environment variable not set. This agent may not function correctly.'
+        )
 
     return LlmAgent(
         model='gemini-1.5-flash',

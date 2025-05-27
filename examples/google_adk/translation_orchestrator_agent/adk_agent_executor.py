@@ -3,19 +3,15 @@ import asyncio
 import logging
 
 from collections.abc import AsyncGenerator, AsyncIterable
-from typing import Any
-from uuid import uuid4
 
+from adk_agent import create_translation_orchestrator_agent
 from google.adk import Runner
-from google.adk.agents import LlmAgent, RunConfig
 from google.adk.artifacts import InMemoryArtifactService
 from google.adk.events import Event
 from google.adk.memory.in_memory_memory_service import InMemoryMemoryService
 from google.adk.sessions import InMemorySessionService
 from google.genai import types as genai_types
-from pydantic import ConfigDict
 
-from a2a.client import A2AClient
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events.event_queue import EventQueue
 from a2a.server.tasks import TaskUpdater
@@ -24,25 +20,13 @@ from a2a.types import (
     FilePart,
     FileWithBytes,
     FileWithUri,
-    GetTaskRequest,
-    GetTaskSuccessResponse,
-    Message,
-    MessageSendParams,
     Part,
-    Role,
-    SendMessageRequest,
-    SendMessageSuccessResponse,
-    Task,
-    TaskQueryParams,
     TaskState,
     TaskStatus,
     TextPart,
     UnsupportedOperationError,
 )
-from a2a.utils import get_text_parts
 from a2a.utils.errors import ServerError
-
-from adk_agent import create_translation_orchestrator_agent
 
 
 logger = logging.getLogger(__name__)
@@ -67,7 +51,7 @@ class ADKTranslationOrchestratorAgentExecutor(AgentExecutor):
         self,
         session_id: str,
         new_message: genai_types.Content,
-        task_updater: TaskUpdater, # This parameter is not used in this method.
+        task_updater: TaskUpdater,  # This parameter is not used in this method.
     ) -> AsyncGenerator[Event, None]:
         """Runs the ADK orchestrator agent with the given message."""
         return self.runner.run_async(
@@ -88,25 +72,36 @@ class ADKTranslationOrchestratorAgentExecutor(AgentExecutor):
         )
         session_id = session.id
         async for event in self._run_agent(
-            session_id, new_message, task_updater # Pass task_updater to _run_agent
+            session_id,
+            new_message,
+            task_updater,  # Pass task_updater to _run_agent
         ):
             logger.debug('Orchestrator Received ADK event: %s', event)
-            
+
             if event.is_final_response():
                 # The final response from the orchestrator's LLM, which should be the translated text or an error.
                 final_parts = convert_genai_parts_to_a2a(event.content.parts)
-                logger.debug('Orchestrator LLM final content parts: %s', final_parts)
+                logger.debug(
+                    'Orchestrator LLM final content parts: %s', final_parts
+                )
 
                 task_updater.add_artifact(parts=final_parts)
                 task_updater.complete()
-                logger.info("Orchestrator task completed with final parts added as artifact.")
+                logger.info(
+                    'Orchestrator task completed with final parts added as artifact.'
+                )
                 break
-            elif event.get_function_calls():
+            if event.get_function_calls():
                 # Log when the LLM generates a function call (delegation to sub-agent).
-                logger.info(f"Orchestrator LLM generated function call: {event.get_function_calls()}")
+                logger.info(
+                    f'Orchestrator LLM generated function call: {event.get_function_calls()}'
+                )
             elif event.content and event.content.parts:
                 # Interim response from the orchestrator's LLM.
-                logger.debug('Orchestrator LLM interim response parts: %s', event.content.parts)
+                logger.debug(
+                    'Orchestrator LLM interim response parts: %s',
+                    event.content.parts,
+                )
                 task_updater.update_status(
                     TaskState.working,
                     message=task_updater.new_agent_message(
@@ -115,7 +110,6 @@ class ADKTranslationOrchestratorAgentExecutor(AgentExecutor):
                 )
             else:
                 logger.debug('Orchestrator skipping event: %s', event)
-
 
     async def execute(
         self,
@@ -127,10 +121,12 @@ class ADKTranslationOrchestratorAgentExecutor(AgentExecutor):
         if not context.current_task:
             updater.submit()
         updater.start_work()
-        
+
         # Convert the initial user message parts to Gen AI format for the orchestrator agent.
-        initial_user_message_parts = convert_a2a_parts_to_genai(context.message.parts)
-        
+        initial_user_message_parts = convert_a2a_parts_to_genai(
+            context.message.parts
+        )
+
         await self._process_request(
             genai_types.UserContent(parts=initial_user_message_parts),
             context.context_id,

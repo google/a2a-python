@@ -1,21 +1,18 @@
-import asyncio
-import functools
 import logging
 import os
-import sys
 
 import click
 import uvicorn
 
+
+# Use absolute import for the executor
+from adk_agent_executor import ADKSpanishTranslationAgentExecutor
 from dotenv import load_dotenv
 
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore
 from a2a.types import AgentCapabilities, AgentCard, AgentSkill
-
-# Use absolute import for the executor
-from adk_agent_executor import ADKSpanishTranslationAgentExecutor
 
 
 load_dotenv()
@@ -31,7 +28,9 @@ logger.setLevel(logging.INFO)
 def main(host: str, port: int):
     # Ensure OPENAI_API_KEY is set for the OpenAI model used via LiteLLM.
     if not os.getenv('OPENAI_API_KEY'):
-        logger.error('OPENAI_API_KEY environment variable not set. This agent may not function correctly.')
+        logger.error(
+            'OPENAI_API_KEY environment variable not set. This agent may not function correctly.'
+        )
 
     # Define the capabilities and skills of this Spanish Translation Agent.
     skill = AgentSkill(
@@ -54,15 +53,19 @@ def main(host: str, port: int):
         defaultInputModes=['text'],
         defaultOutputModes=['text'],
         capabilities=AgentCapabilities(streaming=True),
-        skills=[skill]
+        skills=[skill],
     )
     request_handler = DefaultRequestHandler(
         agent_executor=agent_executor, task_store=InMemoryTaskStore()
     )
     app = A2AStarletteApplication(agent_card, request_handler)
-    
-    logger.info(f"Starting Spanish Translation Agent server on http://{host}:{port}")
-    logger.info(f"This agent is identified by 'spanish_translator' for delegation.")
+
+    logger.info(
+        f'Starting Spanish Translation Agent server on http://{host}:{port}'
+    )
+    logger.info(
+        "This agent is identified by 'spanish_translator' for delegation."
+    )
     uvicorn.run(app.build(), host=host, port=port)
 
 
