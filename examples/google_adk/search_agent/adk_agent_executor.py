@@ -8,7 +8,7 @@ from collections.abc import AsyncGenerator, AsyncIterable
 from typing import Any
 from uuid import uuid4 # For generating unique IDs
 
-# 🔩 Third-party Library Imports: Google ADK and GenAI
+# 🔩 Third-party Library Imports: Google ADK and Gen AI
 from google.adk import Runner # Core ADK component for running agents
 from google.adk.agents import LlmAgent, RunConfig # ADK agent and run configuration
 from google.adk.artifacts import InMemoryArtifactService # For storing artifacts in memory
@@ -16,7 +16,7 @@ from google.adk.events import Event # Represents events during agent execution
 from google.adk.memory.in_memory_memory_service import InMemoryMemoryService # For agent memory
 from google.adk.sessions import InMemorySessionService, Session # For managing agent sessions
 from google.adk.tools import BaseTool, ToolContext # Base for creating tools
-from google.genai import types as genai_types # Google GenAI specific types
+from google.genai import types as genai_types # Google Gen AI specific types
 from pydantic import ConfigDict # For Pydantic model configuration
 
 # 🚀 A2A SDK Imports: Core components for A2A server and client interaction
@@ -88,7 +88,7 @@ class ADKSearchAgentExecutor(AgentExecutor):
     def _run_agent(
         self,
         session_id: str, # The ID of the current conversation session
-        new_message: genai_types.Content, # The user's message, converted to Google GenAI format
+        new_message: genai_types.Content, # The user's message, converted to Google Gen AI format
         task_updater: TaskUpdater, # A2A TaskUpdater, though not directly used in this ADK call
     ) -> AsyncGenerator[Event, None]: # Returns an async generator of ADK Events
         """
@@ -107,7 +107,7 @@ class ADKSearchAgentExecutor(AgentExecutor):
 
     async def _process_request(
         self,
-        new_message: genai_types.Content, # The user's message in Google GenAI format
+        new_message: genai_types.Content, # The user's message in Google Gen AI format
         session_id: str,                  # The ID for the current session/conversation
         task_updater: TaskUpdater,        # A2A TaskUpdater to send updates and artifacts
     ) -> AsyncIterable[TaskStatus | Artifact]: # Note: This method doesn't directly yield; updates are via TaskUpdater
@@ -185,7 +185,7 @@ class ADKSearchAgentExecutor(AgentExecutor):
         # 🚦 Signal that the agent is starting to work on the task.
         updater.start_work() # Sends a 'task_started_working' event
 
-        # 📨 Convert the A2A message parts to Google GenAI `Content` format
+        # 📨 Convert the A2A message parts to Google Gen AI `Content` format
         # and then process the request.
         # The `context.message.parts` contains the user's input.
         # `context.context_id` is used as the `session_id` for the ADK agent.
@@ -228,11 +228,11 @@ class ADKSearchAgentExecutor(AgentExecutor):
         )
 
 
-# ↔️ Data Conversion Utilities: A2A <-> Google GenAI
+# ↔️ Data Conversion Utilities: A2A <-> Google Gen AI
 
 def convert_a2a_parts_to_genai(parts: list[Part]) -> list[genai_types.Part]:
     """
-    🔄 Converts a list of A2A `Part` objects to a list of Google GenAI `Part` objects.
+    🔄 Converts a list of A2A `Part` objects to a list of Google Gen AI `Part` objects.
     This is used to prepare user messages for the ADK agent.
     """
     return [convert_a2a_part_to_genai(part) for part in parts]
@@ -240,12 +240,12 @@ def convert_a2a_parts_to_genai(parts: list[Part]) -> list[genai_types.Part]:
 
 def convert_a2a_part_to_genai(part: Part) -> genai_types.Part:
     """
-    🔄 Converts a single A2A `Part` object to a Google GenAI `Part` object.
+    🔄 Converts a single A2A `Part` object to a Google Gen AI `Part` object.
     Handles `TextPart` and `FilePart` (with URI or bytes).
     """
     actual_part = part.root # A2A `Part` is a discriminated union, `root` holds the actual data.
     if isinstance(actual_part, TextPart):
-        # 📄 Convert A2A TextPart to Google GenAI Text Part
+        # 📄 Convert A2A TextPart to Google Gen AI Text Part
         return genai_types.Part(text=actual_part.text)
     if isinstance(actual_part, FilePart):
         # 📁 Convert A2A FilePart
@@ -258,7 +258,7 @@ def convert_a2a_part_to_genai(part: Part) -> genai_types.Part:
                 )
             )
         if isinstance(actual_part.file, FileWithBytes):
-            # 💾 File content as raw bytes, converted to Google GenAI Blob
+            # 💾 File content as raw bytes, converted to Google Gen AI Blob
             return genai_types.Part(
                 inline_data=genai_types.Blob(
                     data=actual_part.file.bytes,
@@ -268,33 +268,33 @@ def convert_a2a_part_to_genai(part: Part) -> genai_types.Part:
         # Should not be reached if A2A types are used correctly
         raise ValueError(f'Unsupported A2A file type within FilePart: {type(actual_part.file)}')
     # Should not be reached if A2A types are used correctly
-    raise ValueError(f'Unsupported A2A part type for GenAI conversion: {type(actual_part)}')
+    raise ValueError(f'Unsupported A2A part type for Gen AI conversion: {type(actual_part)}')
 
 
 def convert_genai_parts_to_a2a(parts: list[genai_types.Part]) -> list[Part]:
     """
-    🔄 Converts a list of Google GenAI `Part` objects to a list of A2A `Part` objects.
+    🔄 Converts a list of Google Gen AI `Part` objects to a list of A2A `Part` objects.
     This is used to process responses from the ADK agent.
     Filters out any parts that don't have recognized content.
     """
     return [
         convert_genai_part_to_a2a(part)
         for part in parts
-        # Ensure the GenAI part has content we can convert
+        # Ensure the Gen AI part has content we can convert
         if (part.text or part.file_data or part.inline_data)
     ]
 
 
 def convert_genai_part_to_a2a(part: genai_types.Part) -> Part:
     """
-    🔄 Converts a single Google GenAI `Part` object to an A2A `Part` object.
+    🔄 Converts a single Google Gen AI `Part` object to an A2A `Part` object.
     Handles text, file data (URI), and inline data (bytes).
     """
     if part.text:
-        # 📄 Convert Google GenAI Text Part to A2A TextPart
+        # 📄 Convert Google Gen AI Text Part to A2A TextPart
         return TextPart(text=part.text)
     if part.file_data:
-        # 🔗 Convert Google GenAI FileData (URI) to A2A FilePart with FileWithUri
+        # 🔗 Convert Google Gen AI FileData (URI) to A2A FilePart with FileWithUri
         return FilePart(
             file=FileWithUri(
                 uri=part.file_data.file_uri,
@@ -302,7 +302,7 @@ def convert_genai_part_to_a2a(part: genai_types.Part) -> Part:
             )
         )
     if part.inline_data:
-        # 💾 Convert Google GenAI InlineData (Blob) to A2A FilePart with FileWithBytes
+        # 💾 Convert Google Gen AI InlineData (Blob) to A2A FilePart with FileWithBytes
         # Note: A2A `Part` is a discriminated union, so we wrap FilePart in `Part(root=...)`
         return Part(
             root=FilePart(
@@ -313,4 +313,4 @@ def convert_genai_part_to_a2a(part: genai_types.Part) -> Part:
             )
         )
     # This should ideally not be reached if parts are pre-filtered in the calling function.
-    raise ValueError(f'Unsupported Google GenAI part type for A2A conversion (empty or unknown): {part}')
+    raise ValueError(f'Unsupported Google Gen AI part type for A2A conversion (empty or unknown): {part}')

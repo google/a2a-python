@@ -142,12 +142,12 @@ class ADKBraveSearchAgentExecutor(AgentExecutor):
 
 
 def convert_a2a_parts_to_genai(parts: list[Part]) -> list[types.Part]:
-    """Converts a list of A2A Part objects to a list of Google GenAI Part objects."""
+    """Converts a list of A2A Part objects to a list of Google Gen AI Part objects."""
     return [convert_a2a_part_to_genai(part) for part in parts]
 
 
 def convert_a2a_part_to_genai(part: Part) -> types.Part:
-    """Converts a single A2A Part object to a Google GenAI Part object."""
+    """Converts a single A2A Part object to a Google Gen AI Part object."""
     part = part.root
     if isinstance(part, TextPart):
         return types.Part(text=part.text)
@@ -169,7 +169,7 @@ def convert_a2a_part_to_genai(part: Part) -> types.Part:
 
 
 def convert_genai_parts_to_a2a(parts: list[types.Part]) -> list[Part]:
-    """Converts a list of Google GenAI Part objects to a list of A2A Part objects."""
+    """Converts a list of Google Gen AI Part objects to a list of A2A Part objects."""
     return [
         convert_genai_part_to_a2a(part)
         for part in parts
@@ -178,7 +178,7 @@ def convert_genai_parts_to_a2a(parts: list[types.Part]) -> list[Part]:
 
 
 def convert_genai_part_to_a2a(part: types.Part) -> Part:
-    """Converts a single Google GenAI Part object to an A2A Part object."""
+    """Converts a single Google Gen AI Part object to an A2A Part object."""
     if part.text:
         return TextPart(text=part.text)
     if part.file_data:
