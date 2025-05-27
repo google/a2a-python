@@ -15,10 +15,10 @@ A demonstration project showcasing the integration of Azure AI Foundry with the 
 ```
 ├── foundry_agent.py           # AI Foundry calendar agent 
 ├── foundry_agent_executor.py  # A2A framework executor
-├── __main__.py               # Main application
-├── pyproject.toml            # Project dependencies 
-├── test_client.toml            # Test 
-└── .env.template             # Environment variables template
+├── __main__.py                # Main application
+├── pyproject.toml             # Project dependencies 
+├── test_client.toml           # Test 
+└── .env.template              # Environment variables template
 ```
 
 ## Quick Start
