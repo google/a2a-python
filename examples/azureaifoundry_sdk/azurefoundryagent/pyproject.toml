@@ -5,7 +5,7 @@ description = "AI Foundry Agent-to-Agent communication demo with calendar capabi
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "a2a-sdk>=0.2.4",
+    "a2a-sdk>=0.2.5",
     "azure-ai-projects>=1.0.0b11",
     "azure-ai-agents>=1.0.0",
     "azure-identity>=1.23.0",
