@@ -14,7 +14,7 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    if: github.repository == 'google/a2a-python'
+    if: github.repository == 'google-a2a/a2a-python'
 
     strategy:
       matrix:

@@ -32,8 +32,8 @@ classifiers = [
 
 [project.urls]
 homepage = "https://google.github.io/A2A/"
-repository = "https://github.com/google/a2a-python"
-changelog = "https://github.com/google/a2a-python/blob/main/CHANGELOG.md"
+repository = "https://github.com/google-a2a/a2a-python"
+changelog = "https://github.com/google-a2a/a2a-python/blob/main/CHANGELOG.md"
 documentation = "https://google.github.io/A2A/"
 
 [tool.hatch.build.targets.wheel]

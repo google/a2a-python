@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     # if on repo to avoid failing runs on forks
     if: |
-      github.repository == 'google/a2a-python' 
+      github.repository == 'google-a2a/a2a-python' 
         && (contains(github.event_name, 'pull_request') || github.event_name == 'push')
     concurrency:
       group: spelling-${{ github.event.pull_request.number || github.ref }}

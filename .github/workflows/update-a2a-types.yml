@@ -40,7 +40,7 @@ jobs:
         run: |
           set -euo pipefail # Exit immediately if a command exits with a non-zero status
 
-          REMOTE_URL="https://raw.githubusercontent.com/google/A2A/refs/heads/main/specification/json/a2a.json"
+          REMOTE_URL="https://raw.githubusercontent.com/google-a2a/A2A/refs/heads/main/specification/json/a2a.json"
           GENERATED_FILE="${{ steps.vars.outputs.GENERATED_FILE }}"
 
           echo "Running datamodel-codegen..."
@@ -67,10 +67,10 @@ jobs:
           token: ${{ secrets.A2A_BOT_PAT }}
           committer: "a2a-bot <a2a-bot@google.com>"
           author: "a2a-bot <a2a-bot@google.com>"
-          commit-message: "chore: 🤖Auto-update A2A types from google/A2A@${{ github.event.client_payload.sha }}"
-          title: "chore: 🤖 Auto-update A2A types from google/A2A"
+          commit-message: "chore: 🤖Auto-update A2A types from google-a2a/A2A@${{ github.event.client_payload.sha }}"
+          title: "chore: 🤖 Auto-update A2A types from google-a2a/A2A"
           body: |
-            This PR updates `src/a2a/types.py` based on the latest `specification/json/a2a.json` from [google/A2A](https://github.com/google/A2A/commit/${{ github.event.client_payload.sha }}).
+            This PR updates `src/a2a/types.py` based on the latest `specification/json/a2a.json` from [google-a2a/A2A](https://github.com/google-a2a/A2A/commit/${{ github.event.client_payload.sha }}).
           branch: "auto-update-a2a-types-${{ github.event.client_payload.sha }}"
           base: main
           labels: |
