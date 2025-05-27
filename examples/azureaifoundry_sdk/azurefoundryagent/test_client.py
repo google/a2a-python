@@ -62,7 +62,7 @@ async def main() -> None:
     EXTENDED_AGENT_CARD_PATH = "/agent/authenticatedExtendedCard"
 
     # Configure logging to show INFO level messages
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level_name)s - %(message)s')
     logger = logging.getLogger(__name__)  # Get a logger instance
 
     # Use environment variable or default to our AI Foundry agent port

@@ -26,8 +26,6 @@ A demonstration project showcasing the integration of Azure AI Foundry with the 
 ### 1. Environment Setup
 
 ```bash
-# Clone the project
-cd aifoundry_a2a_demo
 
 # Copy environment variables template
 cp .env.template .env
