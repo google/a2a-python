@@ -6,13 +6,13 @@ from abc import ABC, abstractmethod
 class User(ABC):
     """A representation of an authenticated user."""
 
-    @abstractmethod
     @property
+    @abstractmethod
     def is_authenticated(self) -> bool:
         """Returns whether the current user is authenticated."""
 
-    @abstractmethod
     @property
+    @abstractmethod
     def user_name(self) -> str:
         """Returns the user name of the current user."""
 

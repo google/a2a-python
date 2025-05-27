@@ -3,7 +3,7 @@
 import collections.abc
 import typing
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from a2a.auth.user import UnauthenticatedUser, User
 
@@ -16,6 +16,8 @@ class ServerCallContext(BaseModel):
 
     This class allows storing arbitrary user data in the state attribute.
     """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     state: State = Field(default={})
     user: User = Field(default=UnauthenticatedUser())

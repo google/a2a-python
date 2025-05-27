@@ -15,6 +15,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
 
+from a2a.auth.user import UnauthenticatedUser
 from a2a.auth.user import User as A2AUser
 from a2a.server.context import ServerCallContext
 from a2a.server.request_handlers.jsonrpc_handler import JSONRPCHandler
@@ -60,7 +61,7 @@ class DefaultCallContextBuilder(CallContextBuilder):
     """A default implementation of CallContextBuilder."""
 
     def build(self, request: Request) -> ServerCallContext:
-        user = None
+        user = UnauthenticatedUser()
         state = {}
         with contextlib.suppress(Exception):
             user = request.user
