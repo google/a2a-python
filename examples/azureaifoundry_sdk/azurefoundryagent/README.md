@@ -41,9 +41,6 @@ cp .env.template .env
 ```bash
 # Using uv (recommended)
 uv sync
-
-# Or using pip
-pip install -e .
 ```
 
 ### 3. Configure Azure AI Foundry
