@@ -59,7 +59,7 @@ async def main() -> None:
             logger.error(f"Critical error fetching public agent card: {e}", exc_info=True)
             raise RuntimeError("Failed to fetch the public agent card. Cannot continue.") from e
 
-       
+
         client = A2AClient(
             httpx_client=httpx_client, agent_card=final_agent_card_to_use
         )
@@ -80,14 +80,19 @@ async def main() -> None:
 
         response = await client.send_message(request)
         print(response.model_dump(mode='json', exclude_none=True))
+        # The HelloWorld agent doesn't support streaming requests. Validate
+        # this throws an error.
+        try:
+            streaming_request = SendStreamingMessageRequest(
+                params=MessageSendParams(**send_message_payload)
+            )
 
-        streaming_request = SendStreamingMessageRequest(
-            params=MessageSendParams(**send_message_payload)
-        )
-
-        stream_response = client.send_message_streaming(streaming_request)
-        async for chunk in stream_response:
-            print(chunk.model_dump(mode='json', exclude_none=True))
+            stream_response = client.send_message_streaming(streaming_request)
+            print("Got an unexpected response:")
+            async for chunk in stream_response:
+                print(chunk.model_dump(mode='json', exclude_none=True))
+        except Exception:
+          pass
 
 
 if __name__ == '__main__':
