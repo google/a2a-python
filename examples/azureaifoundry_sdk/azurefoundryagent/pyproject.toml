@@ -1,0 +1,17 @@
+[project]
+name = "aifoundry-a2a-demo"
+version = "0.1.0"
+description = "AI Foundry Agent-to-Agent communication demo with calendar capabilities"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "a2a-sdk>=0.2.4",
+    "azure-ai-projects>=1.0.0b11",
+    "azure-ai-agents>=1.0.0",
+    "azure-identity>=1.23.0",
+    "uvicorn>=0.34.2",
+    "click>=8.0.0",
+    "python-dotenv>=1.0.0",
+    "starlette>=0.35.0",
+    "httpx>=0.25.0",
+]
