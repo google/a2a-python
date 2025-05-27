@@ -10,9 +10,15 @@ from dotenv import load_dotenv
 
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
-from a2a.server.tasks import InMemoryPushNotifier, InMemoryTaskStore
+from a2a.server.tasks import (
+    DatabaseTaskStore,
+    InMemoryPushNotifier,
+    InMemoryTaskStore,
+)
 from a2a.types import AgentCapabilities, AgentCard, AgentSkill
 
+
+# os is already imported
 
 load_dotenv()
 
@@ -25,11 +31,24 @@ def main(host: str, port: int):
         print('GOOGLE_API_KEY environment variable not set.')
         sys.exit(1)
 
-    client = httpx.AsyncClient()
+    client = httpx.AsyncClient()  # This is for the push_notifier
+
+    database_url = os.environ.get('DATABASE_URL')
+    task_store_instance: InMemoryTaskStore | DatabaseTaskStore
+
+    if database_url:
+        print(f'Using DatabaseTaskStore with URL: {database_url} in {__file__}')
+        task_store_instance = DatabaseTaskStore(
+            db_url=database_url, create_table=True
+        )
+    else:
+        print(f'DATABASE_URL not set in {__file__}, using InMemoryTaskStore.')
+        task_store_instance = InMemoryTaskStore()
+
     request_handler = DefaultRequestHandler(
         agent_executor=CurrencyAgentExecutor(),
-        task_store=InMemoryTaskStore(),
-        push_notifier=InMemoryPushNotifier(client),
+        task_store=task_store_instance,
+        push_notifier=InMemoryPushNotifier(client),  # Preserving push_notifier
     )
 
     server = A2AStarletteApplication(

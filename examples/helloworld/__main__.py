@@ -46,12 +46,15 @@ if __name__ == '__main__':
     # It includes the additional 'extended_skill'
     specific_extended_agent_card = public_agent_card.model_copy(
         update={
-            'name': 'Hello World Agent - Extended Edition', # Different name for clarity
+            'name': 'Hello World Agent - Extended Edition',  # Different name for clarity
             'description': 'The full-featured hello world agent for authenticated users.',
-            'version': '1.0.1', # Could even be a different version
+            'version': '1.0.1',  # Could even be a different version
             # Capabilities and other fields like url, defaultInputModes, defaultOutputModes,
             # supportsAuthenticatedExtendedCard are inherited from public_agent_card unless specified here.
-            'skills': [skill, extended_skill],  # Both skills for the extended card
+            'skills': [
+                skill,
+                extended_skill,
+            ],  # Both skills for the extended card
         }
     )
 
@@ -60,9 +63,11 @@ if __name__ == '__main__':
         task_store=InMemoryTaskStore(),
     )
 
-    server = A2AStarletteApplication(agent_card=public_agent_card,
-                                     http_handler=request_handler,
-                                     extended_agent_card=specific_extended_agent_card)
+    server = A2AStarletteApplication(
+        agent_card=public_agent_card,
+        http_handler=request_handler,
+        extended_agent_card=specific_extended_agent_card,
+    )
     import uvicorn
 
     uvicorn.run(server.build(), host='0.0.0.0', port=9999)
