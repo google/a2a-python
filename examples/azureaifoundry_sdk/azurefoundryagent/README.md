@@ -15,7 +15,6 @@ A demonstration project showcasing the integration of Azure AI Foundry with the 
 ```
 ├── foundry_agent.py           # AI Foundry calendar agent implementation
 ├── foundry_agent_executor.py  # A2A framework executor
-├── demo.ipynb                 # Interactive demonstration notebook
 ├── __main__.py               # Main application
 ├── aifoundry_agent.py        # Base AI Foundry agent
 ├── pyproject.toml            # Project dependencies configuration
@@ -48,8 +47,8 @@ uv sync
 Set the following required environment variables in the `.env` file:
 
 ```env
-AZURE_AI_FOUNDRY_PROJECT_ENDPOINT=https://your-project.cognitiveservices.azure.com/
-AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME=gpt-4o
+AZURE_AI_FOUNDRY_PROJECT_ENDPOINT=Your Azure AI Foundry Project Endpoint
+AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME=Your Azure AI Foundry Deployment Model Name
 ```
 
 ### 4. Run the Demo
