@@ -58,7 +58,8 @@ jobs:
             --use-default-kwarg \
             --use-one-literal-as-default \
             --class-name A2A \
-            --use-standard-collections
+            --use-standard-collections \
+            --use-subclass-enum
           echo "Codegen finished."
 
       - name: Create Pull Request with Updates

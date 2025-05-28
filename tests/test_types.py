@@ -1487,3 +1487,12 @@ def test_a2a_error_validation_and_serialization() -> None:
     invalid_data: dict[str, Any] = {'code': -99999, 'message': 'Unknown error'}
     with pytest.raises(ValidationError):
         A2AError.model_validate(invalid_data)
+
+
+def test_subclass_enums() -> None:
+    """validate subtype enum types"""
+    assert "cookie" == In.cookie
+
+    assert "user" == Role.user
+
+    assert "working" == TaskState.working

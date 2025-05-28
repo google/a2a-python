@@ -17,5 +17,6 @@ uv run datamodel-codegen \
   --use-default-kwarg \
   --use-one-literal-as-default \
   --class-name A2A \
-  --use-standard-collections
+  --use-standard-collections \
+  --use-subclass-enum
 ```

@@ -13,7 +13,7 @@ class A2A(RootModel[Any]):
     root: Any
 
 
-class In(Enum):
+class In(str, Enum):
     """
     The location of the API key. Valid values are "query", "header", or "cookie".
     """
@@ -484,7 +484,7 @@ class JSONRPCSuccessResponse(BaseModel):
     """
 
 
-class Role(Enum):
+class Role(str, Enum):
     """
     Message sender's role
     """
@@ -731,7 +731,7 @@ class TaskResubscriptionRequest(BaseModel):
     """
 
 
-class TaskState(Enum):
+class TaskState(str, Enum):
     """
     Represents the possible states of a Task.
     """
