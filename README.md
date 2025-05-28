@@ -42,7 +42,7 @@ pip install a2a-sdk
 
 ## Examples
 
-### [Helloworld Example](https://github.com/google/a2a-samples/tree/main/samples/helloworld)
+### [Helloworld Example](https://github.com/google-a2a/a2a-samples/tree/main/samples/python/agents/helloworld)
 
 1. Run Remote Agent
 
@@ -58,7 +58,7 @@ pip install a2a-sdk
    uv run test_client.py
    ```
 
-You can also find more examples [here](https://github.com/google-a2a/A2A/tree/main/samples/python/agents)
+You can also find more Python samples [here](https://github.com/google-a2a/a2a-samples/tree/main/samples/python) and JavaScript samples [here](https://github.com/google-a2a/a2a-samples/tree/main/samples/js).
 
 ## License
 
