@@ -913,6 +913,7 @@ def test_a2a_request_root_model() -> None:
         ),
     )
     set_push_notif_req_data: dict[str, Any] = {
+        'id': 1,
         'jsonrpc': '2.0',
         'method': 'tasks/pushNotificationConfig/set',
         'params': task_push_config.model_dump(),
@@ -932,6 +933,7 @@ def test_a2a_request_root_model() -> None:
     # GetTaskPushNotificationConfigRequest
     id_params = TaskIdParams(id='t2')
     get_push_notif_req_data: dict[str, Any] = {
+        'id': 1,
         'jsonrpc': '2.0',
         'method': 'tasks/pushNotificationConfig/get',
         'params': id_params.model_dump(),
@@ -971,6 +973,83 @@ def test_a2a_request_root_model() -> None:
     }
     with pytest.raises(ValidationError):
         A2ARequest.model_validate(invalid_req_data)
+
+
+def test_a2a_request_root_model_id_validation() -> None:
+    # SendMessageRequest case
+    send_params = MessageSendParams(message=Message(**MINIMAL_MESSAGE_USER))
+    send_req_data: dict[str, Any] = {
+        'jsonrpc': '2.0',
+        'method': 'message/send',
+        'params': send_params.model_dump(),
+    }
+    with pytest.raises(ValidationError):
+        A2ARequest.model_validate(send_req_data)  # missing id
+
+    # SendStreamingMessageRequest case
+    send_subs_req_data: dict[str, Any] = {
+        'jsonrpc': '2.0',
+        'method': 'message/stream',
+        'params': send_params.model_dump(),
+    }
+    with pytest.raises(ValidationError):
+        A2ARequest.model_validate(send_subs_req_data)  # missing id
+
+    # GetTaskRequest case
+    get_params = TaskQueryParams(id='t2')
+    get_req_data: dict[str, Any] = {
+        'jsonrpc': '2.0',
+        'method': 'tasks/get',
+        'params': get_params.model_dump(),
+    }
+    with pytest.raises(ValidationError):
+        A2ARequest.model_validate(get_req_data)  # missing id
+
+    # CancelTaskRequest case
+    id_params = TaskIdParams(id='t2')
+    cancel_req_data: dict[str, Any] = {
+        'jsonrpc': '2.0',
+        'method': 'tasks/cancel',
+        'params': id_params.model_dump(),
+    }
+    with pytest.raises(ValidationError):
+        A2ARequest.model_validate(cancel_req_data)  # missing id
+
+    # SetTaskPushNotificationConfigRequest
+    task_push_config = TaskPushNotificationConfig(
+        taskId='t2',
+        pushNotificationConfig=PushNotificationConfig(
+            url='https://example.com', token='token'
+        ),
+    )
+    set_push_notif_req_data: dict[str, Any] = {
+        'jsonrpc': '2.0',
+        'method': 'tasks/pushNotificationConfig/set',
+        'params': task_push_config.model_dump(),
+        'taskId': 2,
+    }
+    with pytest.raises(ValidationError):
+        A2ARequest.model_validate(set_push_notif_req_data)  # missing id
+
+    # GetTaskPushNotificationConfigRequest
+    id_params = TaskIdParams(id='t2')
+    get_push_notif_req_data: dict[str, Any] = {
+        'jsonrpc': '2.0',
+        'method': 'tasks/pushNotificationConfig/get',
+        'params': id_params.model_dump(),
+        'taskId': 2,
+    }
+    with pytest.raises(ValidationError):
+        A2ARequest.model_validate(get_push_notif_req_data)
+
+    # TaskResubscriptionRequest
+    task_resubscribe_req_data: dict[str, Any] = {
+        'jsonrpc': '2.0',
+        'method': 'tasks/resubscribe',
+        'params': id_params.model_dump(),
+    }
+    with pytest.raises(ValidationError):
+        A2ARequest.model_validate(task_resubscribe_req_data)
 
 
 def test_content_type_not_supported_error():
