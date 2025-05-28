@@ -58,7 +58,7 @@ pip install a2a-sdk
    uv run test_client.py
    ```
 
-You can also find more examples [here](https://github.com/google-a2a/a2a-samples/tree/main/samples/python/agents)
+You can also find more Python samples [here](https://github.com/google-a2a/a2a-samples/tree/main/samples/python) and JavaScript samples [here](https://github.com/google-a2a/a2a-samples/tree/main/samples/js).
 
 ## License
 
