@@ -3,8 +3,6 @@ import logging
 import sys
 
 from a2a.types import (
-    A2AError,
-    JSONRPCError,
     Message,
     Task,
     TaskArtifactUpdateEvent,
@@ -21,8 +19,6 @@ Event = (
     | Task
     | TaskStatusUpdateEvent
     | TaskArtifactUpdateEvent
-    | A2AError
-    | JSONRPCError
 )
 """Type alias for events that can be enqueued."""
 
