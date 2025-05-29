@@ -48,13 +48,14 @@ pip install a2a-sdk
 
    ```bash
    git clone https://github.com/google-a2a/a2a-samples.git
-   cd samples/helloworld
+   cd a2a-samples/samples/python/agents/helloworld
    uv run .
    ```
 
 2. In another terminal, run the client
 
    ```bash
+   cd a2a-samples/samples/python/agents/helloworld
    uv run test_client.py
    ```
 
