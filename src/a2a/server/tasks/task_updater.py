@@ -96,6 +96,10 @@ class TaskUpdater:
     def failed(self, message: Message | None = None):
         """Marks the task as failed and publishes a final status update."""
         self.update_status(TaskState.failed, message=message, final=True)
+    
+    def reject(self, message: Message | None = None):
+        """Marks the task as rejected and publishes a final status update."""
+        self.update_status(TaskState.rejected, message=message, final=True)
 
     def submit(self, message: Message | None = None):
         """Marks the task as submitted and publishes a status update."""
