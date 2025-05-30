@@ -68,8 +68,8 @@ jobs:
           token: ${{ secrets.A2A_BOT_PAT }}
           committer: "a2a-bot <a2a-bot@google.com>"
           author: "a2a-bot <a2a-bot@google.com>"
-          commit-message: "chore: 🤖Auto-update A2A types from google-a2a/A2A@${{ github.event.client_payload.sha }}"
-          title: "chore: 🤖 Auto-update A2A types from google-a2a/A2A"
+          commit-message: "${{github.event.client_payload.message}} 🤖"
+          title: "${{github.event.client_payload.message}} 🤖"
           body: |
             This PR updates `src/a2a/types.py` based on the latest `specification/json/a2a.json` from [google-a2a/A2A](https://github.com/google-a2a/A2A/commit/${{ github.event.client_payload.sha }}).
           branch: "auto-update-a2a-types-${{ github.event.client_payload.sha }}"
