@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.2.6](https://github.com/google-a2a/a2a-python/compare/v0.2.5...v0.2.6) (2025-05-30)
+
+
+### Features
+
+* **spec:** Add an optional iconUrl field to the AgentCard 🤖 ([a1025f4](https://github.com/google-a2a/a2a-python/commit/a1025f406acd88e7485a5c0f4dd8a42488c41fa2))
+
+
+### Bug Fixes
+
+* generate StrEnum types for enums ([#134](https://github.com/google-a2a/a2a-python/issues/134)) ([0c49dab](https://github.com/google-a2a/a2a-python/commit/0c49dabcdb9d62de49fda53d7ce5c691b8c1591c))
+* remove error types from enqueable events ([#138](https://github.com/google-a2a/a2a-python/issues/138)) ([511992f](https://github.com/google-a2a/a2a-python/commit/511992fe585bd15e956921daeab4046dc4a50a0a))
+* Remove examples from toml ([#127](https://github.com/google-a2a/a2a-python/issues/127)) ([2b29c09](https://github.com/google-a2a/a2a-python/commit/2b29c09c5181e0dd536832a47c72a4689ea95b5b))
+
+
+### Documentation
+
+* fix and clarify path to hello world example in usage instructions ([#136](https://github.com/google-a2a/a2a-python/issues/136)) ([4d658a5](https://github.com/google-a2a/a2a-python/commit/4d658a52fc97e8e57f9489991d8e51290924185c))
+* remove final and metadata fields from docstring ([#66](https://github.com/google-a2a/a2a-python/issues/66)) ([3c50ee1](https://github.com/google-a2a/a2a-python/commit/3c50ee1f64c103a543c8afb6d2ac3a11063b0f43))
+
 ## [0.2.5](https://github.com/google-a2a/a2a-python/compare/v0.2.4...v0.2.5) (2025-05-27)
 
 
