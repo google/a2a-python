@@ -1383,6 +1383,10 @@ class AgentCard(BaseModel):
     """
     A URL to documentation for the agent.
     """
+    iconUrl: str | None = None
+    """
+    A URL to an icon for the agent.
+    """
     name: str
     """
     Human readable name of the agent.
