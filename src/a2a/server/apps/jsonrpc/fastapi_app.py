@@ -1,11 +1,13 @@
 import logging
+
 from typing import Any
 
 from fastapi import FastAPI, Request
 
-from a2a.server.apps.jsonrpc import JSONRPCApplication, CallContextBuilder
+from a2a.server.apps.jsonrpc import CallContextBuilder, JSONRPCApplication
 from a2a.server.request_handlers.jsonrpc_handler import RequestHandler
 from a2a.types import AgentCard
+
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +17,8 @@ class A2AFastAPIApplication(JSONRPCApplication):
 
     Handles incoming JSON-RPC requests, routes them to the appropriate
     handler methods, and manages response generation including Server-Sent Events
-    (SSE)."""
+    (SSE).
+    """
 
     def __init__(
         self,
@@ -40,7 +43,7 @@ class A2AFastAPIApplication(JSONRPCApplication):
             agent_card=agent_card,
             http_handler=http_handler,
             extended_agent_card=extended_agent_card,
-            context_builder=context_builder
+            context_builder=context_builder,
         )
 
     def build(

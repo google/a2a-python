@@ -16,7 +16,6 @@ dependencies = [
     "pydantic>=2.11.3",
     "sse-starlette>=2.3.3",
     "starlette>=0.46.2",
-    "typing-extensions>=4.13.2",
 ]
 
 classifiers = [
@@ -34,8 +33,8 @@ classifiers = [
 
 [project.urls]
 homepage = "https://google.github.io/A2A/"
-repository = "https://github.com/google/a2a-python"
-changelog = "https://github.com/google/a2a-python/blob/main/CHANGELOG.md"
+repository = "https://github.com/google-a2a/a2a-python"
+changelog = "https://github.com/google-a2a/a2a-python/blob/main/CHANGELOG.md"
 documentation = "https://google.github.io/A2A/"
 
 [tool.hatch.build.targets.wheel]
@@ -63,14 +62,6 @@ exclude = [
 [tool.uv-dynamic-versioning]
 vcs = "git"
 style = "pep440"
-
-[tool.uv.workspace]
-members = [
-    "examples/langgraph",
-    "examples/helloworld",
-    "examples/google_adk/birthday_planner",
-    "examples/google_adk/calendar_agent",
-]
 
 [dependency-groups]
 dev = [

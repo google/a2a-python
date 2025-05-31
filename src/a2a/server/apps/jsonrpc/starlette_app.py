@@ -1,13 +1,12 @@
 import logging
 
 from typing import Any
-from abc import ABC, abstractmethod
 
 from starlette.applications import Starlette
 from starlette.routing import Route
 
+from a2a.server.apps.jsonrpc import CallContextBuilder, JSONRPCApplication
 from a2a.server.request_handlers.jsonrpc_handler import RequestHandler
-from a2a.server.apps.jsonrpc import JSONRPCApplication, CallContextBuilder
 from a2a.types import AgentCard
 
 
@@ -45,7 +44,7 @@ class A2AStarletteApplication(JSONRPCApplication):
             agent_card=agent_card,
             http_handler=http_handler,
             extended_agent_card=extended_agent_card,
-            context_builder=context_builder
+            context_builder=context_builder,
         )
 
     def routes(
