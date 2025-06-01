@@ -61,6 +61,58 @@ pip install a2a-sdk
 
 You can also find more Python samples [here](https://github.com/google-a2a/a2a-samples/tree/main/samples/python) and JavaScript samples [here](https://github.com/google-a2a/a2a-samples/tree/main/samples/js).
 
+### Blog Post Generation Agent Example
+
+This example demonstrates an agent capable of generating blog posts using the Gemini API.
+
+#### Prerequisites
+
+1.  **Install Dependencies**:
+    Ensure you have all necessary dependencies installed. If you've followed the main installation for `a2a-sdk`, you might also need `python-dotenv` and `google-generativeai`:
+    ```bash
+    pip install python-dotenv google-generativeai
+    ```
+    (Note: `google-generativeai` should already be installed if previous steps were followed for this agent, but `python-dotenv` is likely new for this example).
+
+2.  **Set up Gemini API Key**:
+    - Create a `.env` file in the root of this repository by copying the `.env.example` file:
+      ```bash
+      cp .env.example .env
+      ```
+    - Edit the `.env` file and replace `"your_actual_google_gemini_api_key_here"` with your actual Gemini API key.
+      ```
+      GEMINI_API_KEY="your_actual_api_key_here"
+      ```
+
+#### Running the Example
+
+1.  Navigate to the `examples` directory (if you are not already there):
+    ```bash
+    cd examples
+    ```
+2.  Run the script:
+    ```bash
+    python run_blog_generator.py
+    ```
+    The script will:
+    - Generate a blog topic based on predefined keywords.
+    - Generate an outline for the topic.
+    - Write content for each section of the outline.
+    - Assemble the full blog post.
+    - Print the final blog post to the console and save it to `generated_blog_post.md` in the `examples` directory (where the script is run).
+
+#### How it Works
+
+The `run_blog_generator.py` script uses the `ExampleAgent` located in `src/a2a/example_agent/agent.py`. This agent has been configured with capabilities to:
+- `generate_blog_topic`: Creates a topic.
+- `generate_blog_outline`: Structures the blog post.
+- `write_blog_section`: Writes content for each section using the Gemini API.
+- `assemble_blog_post`: Compiles the sections into a final blog post.
+
+The agent reads the `GEMINI_API_KEY` from the environment variables (loaded from the `.env` file located in the project root or the `examples/` directory).
+
+*Note: The `ExampleAgent` currently uses placeholder classes for some core A2A SDK components (`Agent`, `AgentCapability`, etc.) as they were not found directly within the SDK during development of this example. These placeholders would ideally be replaced by actual SDK components.*
+
 ## License
 
 This project is licensed under the terms of the [Apache 2.0 License](https://raw.githubusercontent.com/google-a2a/a2a-python/refs/heads/main/LICENSE).
