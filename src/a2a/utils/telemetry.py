@@ -138,7 +138,10 @@ def trace_function(
         f'Start tracing for {actual_span_name}, is_async_func {is_async_func}'
     )
 
-    async def _invoke_with_tracing(*args, **kwargs):
+    @functools.wraps(func)
+    async def async_wrapper(*args, **kwargs) -> any:
+        """Async Wrapper for the decorator."""
+        logger.debug('Start async tracer')
         tracer = trace.get_tracer(
             INSTRUMENTING_MODULE_NAME, INSTRUMENTING_MODULE_VERSION
         )
@@ -152,11 +155,7 @@ def trace_function(
 
             try:
                 # Async wrapper, await for the function call to complete.
-                if is_async_func:
-                    result = await func(*args, **kwargs)
-                # Sync wrapper, execute the function call.
-                else:
-                    result = func(*args, **kwargs)
+                result = await func(*args, **kwargs)
                 span.set_status(StatusCode.OK)
                 return result
 
@@ -177,21 +176,38 @@ def trace_function(
                         )
 
     @functools.wraps(func)
-    async def async_wrapper(*args, **kwargs):
-        """Async Wrapper for the decorator."""
-        logger.debug('Start async tracer')
-        return await _invoke_with_tracing(
-            *args,
-            **kwargs,
-        )
-
-    @functools.wraps(func)
     def sync_wrapper(*args, **kwargs):
         """Sync Wrapper for the decorator."""
-        return _invoke_with_tracing(
-            *args,
-            **kwargs,
-        )
+        tracer = trace.get_tracer(INSTRUMENTING_MODULE_NAME)
+        with tracer.start_as_current_span(actual_span_name, kind=kind) as span:
+            if attributes:
+                for k, v in attributes.items():
+                    span.set_attribute(k, v)
+
+            result = None
+            exception = None
+
+            try:
+                # Sync wrapper, execute the function call.
+                result = func(*args, **kwargs)
+                span.set_status(StatusCode.OK)
+                return result
+
+            except Exception as e:
+                exception = e
+                span.record_exception(e)
+                span.set_status(StatusCode.ERROR, description=str(e))
+                raise
+            finally:
+                if attribute_extractor:
+                    try:
+                        attribute_extractor(
+                            span, args, kwargs, result, exception
+                        )
+                    except Exception as attr_e:
+                        logger.error(
+                            f'attribute_extractor error in span {actual_span_name}: {attr_e}'
+                        )
 
     return async_wrapper if is_async_func else sync_wrapper
 
