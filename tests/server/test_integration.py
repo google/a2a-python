@@ -1,8 +1,10 @@
 import asyncio
+
 from typing import Any
 from unittest import mock
 
 import pytest
+
 from starlette.authentication import (
     AuthCredentials,
     AuthenticationBackend,
@@ -40,6 +42,7 @@ from a2a.types import (
     UnsupportedOperationError,
 )
 from a2a.utils.errors import MethodNotImplementedError
+
 
 # === TEST SETUP ===
 

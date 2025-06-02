@@ -14,12 +14,7 @@ from a2a.utils.telemetry import SpanKind, trace_class
 logger = logging.getLogger(__name__)
 
 
-Event = (
-    Message
-    | Task
-    | TaskStatusUpdateEvent
-    | TaskArtifactUpdateEvent
-)
+Event = Message | Task | TaskStatusUpdateEvent | TaskArtifactUpdateEvent
 """Type alias for events that can be enqueued."""
 
 

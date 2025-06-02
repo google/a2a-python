@@ -1491,8 +1491,8 @@ def test_a2a_error_validation_and_serialization() -> None:
 
 def test_subclass_enums() -> None:
     """validate subtype enum types"""
-    assert "cookie" == In.cookie
+    assert In.cookie == 'cookie'
 
-    assert "user" == Role.user
+    assert Role.user == 'user'
 
-    assert "working" == TaskState.working
+    assert TaskState.working == 'working'

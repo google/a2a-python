@@ -583,6 +583,10 @@ class PushNotificationConfig(BaseModel):
     """
 
     authentication: PushNotificationAuthenticationInfo | None = None
+    id: str | None = None
+    """
+    Push Notification ID - created by server to support multiple callbacks
+    """
     token: str | None = None
     """
     Token unique to this task/session.

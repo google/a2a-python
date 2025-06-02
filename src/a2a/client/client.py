@@ -1,25 +1,36 @@
 import json
 import logging
+
 from collections.abc import AsyncGenerator
 from typing import Any
 from uuid import uuid4
 
 import httpx
+
 from httpx_sse import SSEError, aconnect_sse
 from pydantic import ValidationError
 
 from a2a.client.errors import A2AClientHTTPError, A2AClientJSONError
-from a2a.types import (AgentCard, CancelTaskRequest, CancelTaskResponse,
-                       GetTaskPushNotificationConfigRequest,
-                       GetTaskPushNotificationConfigResponse, GetTaskRequest,
-                       GetTaskResponse, SendMessageRequest,
-                       SendMessageResponse, SendStreamingMessageRequest,
-                       SendStreamingMessageResponse,
-                       SetTaskPushNotificationConfigRequest,
-                       SetTaskPushNotificationConfigResponse)
+from a2a.types import (
+    AgentCard,
+    CancelTaskRequest,
+    CancelTaskResponse,
+    GetTaskPushNotificationConfigRequest,
+    GetTaskPushNotificationConfigResponse,
+    GetTaskRequest,
+    GetTaskResponse,
+    SendMessageRequest,
+    SendMessageResponse,
+    SendStreamingMessageRequest,
+    SendStreamingMessageResponse,
+    SetTaskPushNotificationConfigRequest,
+    SetTaskPushNotificationConfigResponse,
+)
 from a2a.utils.telemetry import SpanKind, trace_class
 
+
 logger = logging.getLogger(__name__)
+
 
 class A2ACardResolver:
     """Agent Card resolver."""
@@ -160,6 +171,7 @@ class A2AClient:
             agent_card_path: The path to the agent card endpoint, relative to the base URL.
             http_kwargs: Optional dictionary of keyword arguments to pass to the
                 underlying httpx.get request when fetching the agent card.
+
         Returns:
             An initialized `A2AClient` instance.
 
@@ -169,7 +181,9 @@ class A2AClient:
         """
         agent_card: AgentCard = await A2ACardResolver(
             httpx_client, base_url=base_url, agent_card_path=agent_card_path
-        ).get_agent_card(http_kwargs=http_kwargs) # Fetches public card by default
+        ).get_agent_card(
+            http_kwargs=http_kwargs
+        )  # Fetches public card by default
         return A2AClient(httpx_client=httpx_client, agent_card=agent_card)
 
     async def send_message(
