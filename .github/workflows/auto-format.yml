@@ -1,0 +1,48 @@
+name: Auto-format with Nox
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.A2A_BOT_PAT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install Nox
+        run: pip install nox
+
+      - name: Run Nox formatting session
+        run: nox -s format
+
+      - name: Check for changes and commit if any
+        id: commit_changes
+        run: |
+          git config user.name "a2a-bot"
+          git config user.email "a2a-bot@google.com"
+
+          # Check if there are any changes after running Nox
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::notice file=./.github/workflows/auto-format.yml::Formatting changes detected. Committing..."
+            git add .
+            git commit -m "chore(format): Auto-format code with Nox"
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
+            echo "changes_committed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No formatting changes detected. Repository is clean."
+            echo "changes_committed=false" >> "$GITHUB_OUTPUT"
+          fi
