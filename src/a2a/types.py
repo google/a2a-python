@@ -13,7 +13,7 @@ class A2A(RootModel[Any]):
     root: Any
 
 
-class In(Enum):
+class In(str, Enum):
     """
     The location of the API key. Valid values are "query", "header", or "cookie".
     """
@@ -464,9 +464,9 @@ class JSONRPCRequest(BaseModel):
     """
 
 
-class JSONRPCResult(BaseModel):
+class JSONRPCSuccessResponse(BaseModel):
     """
-    Represents a JSON-RPC 2.0 Result object.
+    Represents a JSON-RPC 2.0 Success Response object.
     """
 
     id: str | int | None = None
@@ -484,7 +484,7 @@ class JSONRPCResult(BaseModel):
     """
 
 
-class Role(Enum):
+class Role(str, Enum):
     """
     Message sender's role
     """
@@ -583,6 +583,10 @@ class PushNotificationConfig(BaseModel):
     """
 
     authentication: PushNotificationAuthenticationInfo | None = None
+    id: str | None = None
+    """
+    Push Notification ID - created by server to support multiple callbacks
+    """
     token: str | None = None
     """
     Token unique to this task/session.
@@ -712,7 +716,7 @@ class TaskResubscriptionRequest(BaseModel):
     JSON-RPC request model for the 'tasks/resubscribe' method.
     """
 
-    id: str | int | None = None
+    id: str | int
     """
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
@@ -731,7 +735,7 @@ class TaskResubscriptionRequest(BaseModel):
     """
 
 
-class TaskState(Enum):
+class TaskState(str, Enum):
     """
     Represents the possible states of a Task.
     """
@@ -821,7 +825,7 @@ class CancelTaskRequest(BaseModel):
     JSON-RPC request model for the 'tasks/cancel' method.
     """
 
-    id: str | int | None = None
+    id: str | int
     """
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
@@ -864,7 +868,7 @@ class GetTaskPushNotificationConfigRequest(BaseModel):
     JSON-RPC request model for the 'tasks/pushNotificationConfig/get' method.
     """
 
-    id: str | int | None = None
+    id: str | int
     """
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
@@ -910,7 +914,7 @@ class GetTaskRequest(BaseModel):
     JSON-RPC request model for the 'tasks/get' method.
     """
 
-    id: str | int | None = None
+    id: str | int
     """
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
@@ -1017,7 +1021,7 @@ class SetTaskPushNotificationConfigRequest(BaseModel):
     JSON-RPC request model for the 'tasks/pushNotificationConfig/set' method.
     """
 
-    id: str | int | None = None
+    id: str | int
     """
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
@@ -1086,9 +1090,7 @@ class Artifact(BaseModel):
 
 
 class GetTaskPushNotificationConfigResponse(
-    RootModel[
-        JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse
-    ]
+    RootModel[JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse]
 ):
     root: JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse
     """
@@ -1195,7 +1197,7 @@ class SendMessageRequest(BaseModel):
     JSON-RPC request model for the 'message/send' method.
     """
 
-    id: str | int | None = None
+    id: str | int
     """
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
@@ -1219,7 +1221,7 @@ class SendStreamingMessageRequest(BaseModel):
     JSON-RPC request model for the 'message/stream' method.
     """
 
-    id: str | int | None = None
+    id: str | int
     """
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
@@ -1239,9 +1241,7 @@ class SendStreamingMessageRequest(BaseModel):
 
 
 class SetTaskPushNotificationConfigResponse(
-    RootModel[
-        JSONRPCErrorResponse | SetTaskPushNotificationConfigSuccessResponse
-    ]
+    RootModel[JSONRPCErrorResponse | SetTaskPushNotificationConfigSuccessResponse]
 ):
     root: JSONRPCErrorResponse | SetTaskPushNotificationConfigSuccessResponse
     """
@@ -1387,6 +1387,10 @@ class AgentCard(BaseModel):
     """
     A URL to documentation for the agent.
     """
+    iconUrl: str | None = None
+    """
+    A URL to an icon for the agent.
+    """
     name: str
     """
     Human readable name of the agent.
@@ -1419,10 +1423,6 @@ class AgentCard(BaseModel):
     version: str
     """
     The version of the agent - format is up to the provider.
-    """
-    supportsAuthenticatedExtendedCard: bool | None = Field(default=None)
-    """
-    Optional field indicating there is an extended card available post authentication at the /agent/authenticatedExtendedCard endpoint.
     """
 
 
@@ -1534,9 +1534,7 @@ class SendStreamingMessageSuccessResponse(BaseModel):
     """
 
 
-class CancelTaskResponse(
-    RootModel[JSONRPCErrorResponse | CancelTaskSuccessResponse]
-):
+class CancelTaskResponse(RootModel[JSONRPCErrorResponse | CancelTaskSuccessResponse]):
     root: JSONRPCErrorResponse | CancelTaskSuccessResponse
     """
     JSON-RPC response for the 'tasks/cancel' method.
@@ -1546,7 +1544,7 @@ class CancelTaskResponse(
 class GetTaskResponse(RootModel[JSONRPCErrorResponse | GetTaskSuccessResponse]):
     root: JSONRPCErrorResponse | GetTaskSuccessResponse
     """
-    JSON-RPC success response for the 'tasks/get' method.
+    JSON-RPC response for the 'tasks/get' method.
     """
 
 
@@ -1575,9 +1573,7 @@ class JSONRPCResponse(
     """
 
 
-class SendMessageResponse(
-    RootModel[JSONRPCErrorResponse | SendMessageSuccessResponse]
-):
+class SendMessageResponse(RootModel[JSONRPCErrorResponse | SendMessageSuccessResponse]):
     root: JSONRPCErrorResponse | SendMessageSuccessResponse
     """
     JSON-RPC response model for the 'message/send' method.

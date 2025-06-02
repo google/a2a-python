@@ -21,8 +21,6 @@ def new_agent_text_message(
         text: The text content of the message.
         context_id: The context ID for the message.
         task_id: The task ID for the message.
-        final: Optional boolean indicating if this is the final message.
-        metadata: Optional metadata for the message.
 
     Returns:
         A new `Message` object with role 'agent'.
@@ -47,8 +45,6 @@ def new_agent_parts_message(
         parts: The list of `Part` objects for the message content.
         context_id: The context ID for the message.
         task_id: The task ID for the message.
-        final: Optional boolean indicating if this is the final message.
-        metadata: Optional metadata for the message.
 
     Returns:
         A new `Message` object with role 'agent'.
