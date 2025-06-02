@@ -212,9 +212,7 @@ class TestTaskUpdater:
         assert message.parts == sample_parts
         assert message.metadata is None
 
-    def test_new_agent_message_with_metadata(
-        self, task_updater, sample_parts
-    ):
+    def test_new_agent_message_with_metadata(self, task_updater, sample_parts):
         """Test creating a new agent message with metadata and final=True."""
         metadata = {'key': 'value'}
 
