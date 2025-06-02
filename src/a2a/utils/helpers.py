@@ -69,7 +69,7 @@ def append_artifact_to_task(task: Task, event: TaskArtifactUpdateEvent) -> None:
 
     # Find existing artifact by its id
     for i, art in enumerate(task.artifacts):
-        if hasattr(art, 'artifactId') and art.artifactId == artifact_id:
+        if art.artifactId == artifact_id:
             existing_artifact = art
             existing_artifact_list_index = i
             break
