@@ -139,7 +139,7 @@ class A2AStarletteApplication:
             log_level,
             f'Request Error (ID: {request_id}): '
             f"Code={error_resp.error.code}, Message='{error_resp.error.message}'"
-            f'{", Data=" + str(error_resp.error.data) if hasattr(error, "data") and error_resp.error.data else ""}',
+            f'{", Data=" + str(error_resp.error.data) if error_resp.error.data else ""}',
         )
         return JSONResponse(
             error_resp.model_dump(mode='json', exclude_none=True),
