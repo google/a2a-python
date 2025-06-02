@@ -52,7 +52,7 @@ def format(session):
     if format_all:
         lint_paths_py = ['.']
     else:
-        target_branch = 'origin/main'
+        target_branch = 'main'
 
         unstaged_files = subprocess.run(
             [
