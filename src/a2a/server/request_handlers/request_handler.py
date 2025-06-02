@@ -22,6 +22,7 @@ class RequestHandler(ABC):
     provide to handle incoming JSON-RPC requests.
     """
 
+
     @abstractmethod
     async def on_get_task(
         self,
