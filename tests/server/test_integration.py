@@ -1,20 +1,48 @@
 import asyncio
+
 from typing import Any
 from unittest import mock
 
 import pytest
+
+from starlette.authentication import (
+    AuthCredentials,
+    AuthenticationBackend,
+    BaseUser,
+    SimpleUser,
+)
+from starlette.middleware import Middleware
+from starlette.middleware.authentication import AuthenticationMiddleware
+from starlette.requests import HTTPConnection
 from starlette.responses import JSONResponse
 from starlette.routing import Route
 from starlette.testclient import TestClient
 
 from a2a.server.apps.starlette_app import A2AStarletteApplication
-from a2a.types import (AgentCapabilities, AgentCard, Artifact, DataPart,
-                       InternalError, InvalidRequestError, JSONParseError,
-                       Part, PushNotificationConfig, Task,
-                       TaskArtifactUpdateEvent, TaskPushNotificationConfig,
-                       TaskState, TaskStatus, TextPart,
-                       UnsupportedOperationError)
+from a2a.types import (
+    AgentCapabilities,
+    AgentCard,
+    Artifact,
+    DataPart,
+    InternalError,
+    InvalidRequestError,
+    JSONParseError,
+    Message,
+    Part,
+    PushNotificationConfig,
+    Role,
+    SendMessageResponse,
+    SendMessageSuccessResponse,
+    Task,
+    TaskArtifactUpdateEvent,
+    TaskPushNotificationConfig,
+    TaskState,
+    TaskStatus,
+    TextPart,
+    UnsupportedOperationError,
+)
 from a2a.utils.errors import MethodNotImplementedError
+
 
 # === TEST SETUP ===
 
@@ -106,9 +134,9 @@ def app(agent_card: AgentCard, handler: mock.AsyncMock):
 
 
 @pytest.fixture
-def client(app: A2AStarletteApplication):
+def client(app: A2AStarletteApplication, **kwargs):
     """Create a test client with the app."""
-    return TestClient(app.build())
+    return TestClient(app.build(**kwargs))
 
 
 # === BASIC FUNCTIONALITY TESTS ===
@@ -135,7 +163,7 @@ def test_authenticated_extended_agent_card_endpoint_not_supported(
     # So, building the app and trying to hit it should result in 404 from Starlette itself
     client = TestClient(app_instance.build())
     response = client.get('/agent/authenticatedExtendedCard')
-    assert response.status_code == 404 # Starlette's default for no route
+    assert response.status_code == 404  # Starlette's default for no route
 
 
 def test_authenticated_extended_agent_card_endpoint_supported_with_specific_extended_card(
@@ -144,7 +172,9 @@ def test_authenticated_extended_agent_card_endpoint_supported_with_specific_exte
     handler: mock.AsyncMock,
 ):
     """Test extended card endpoint returns the specific extended card when provided."""
-    agent_card.supportsAuthenticatedExtendedCard = True # Main card must support it
+    agent_card.supportsAuthenticatedExtendedCard = (
+        True  # Main card must support it
+    )
     app_instance = A2AStarletteApplication(
         agent_card, handler, extended_agent_card=extended_agent_card_fixture
     )
@@ -157,10 +187,9 @@ def test_authenticated_extended_agent_card_endpoint_supported_with_specific_exte
     assert data['name'] == extended_agent_card_fixture.name
     assert data['version'] == extended_agent_card_fixture.version
     assert len(data['skills']) == len(extended_agent_card_fixture.skills)
-    assert any(
-        skill['id'] == 'skill-extended' for skill in data['skills']
-    ), "Extended skill not found in served card"
-
+    assert any(skill['id'] == 'skill-extended' for skill in data['skills']), (
+        'Extended skill not found in served card'
+    )
 
 
 def test_agent_card_custom_url(
@@ -233,7 +262,6 @@ def test_send_message(client: TestClient, handler: mock.AsyncMock):
     mock_task = Task(
         id='task1',
         contextId='session-xyz',
-        state='completed',
         status=task_status,
     )
     handler.on_message_send.return_value = mock_task
@@ -400,6 +428,67 @@ def test_get_push_notification_config(
 
     # Verify handler was called
     handler.on_get_task_push_notification_config.assert_awaited_once()
+
+
+def test_server_auth(app: A2AStarletteApplication, handler: mock.AsyncMock):
+    class TestAuthMiddleware(AuthenticationBackend):
+        async def authenticate(
+            self, conn: HTTPConnection
+        ) -> tuple[AuthCredentials, BaseUser] | None:
+            # For the purposes of this test, all requests are authenticated!
+            return (AuthCredentials(['authenticated']), SimpleUser('test_user'))
+
+    client = TestClient(
+        app.build(
+            middleware=[
+                Middleware(
+                    AuthenticationMiddleware, backend=TestAuthMiddleware()
+                )
+            ]
+        )
+    )
+
+    # Set the output message to be the authenticated user name
+    handler.on_message_send.side_effect = lambda params, context: Message(
+        contextId='session-xyz',
+        messageId='112',
+        role=Role.agent,
+        parts=[
+            Part(TextPart(text=context.user.user_name)),
+        ],
+    )
+
+    # Send request
+    response = client.post(
+        '/',
+        json={
+            'jsonrpc': '2.0',
+            'id': '123',
+            'method': 'message/send',
+            'params': {
+                'message': {
+                    'role': 'agent',
+                    'parts': [{'kind': 'text', 'text': 'Hello'}],
+                    'messageId': '111',
+                    'kind': 'message',
+                    'taskId': 'task1',
+                    'contextId': 'session-xyz',
+                }
+            },
+        },
+    )
+
+    # Verify response
+    assert response.status_code == 200
+    result = SendMessageResponse.model_validate(response.json())
+    assert isinstance(result.root, SendMessageSuccessResponse)
+    assert isinstance(result.root.result, Message)
+    message = result.root.result
+    assert isinstance(message.parts[0].root, TextPart)
+    assert message.parts[0].root.text == 'test_user'
+
+    # Verify handler was called
+    handler.on_message_send.assert_awaited_once()
 
 
 # === STREAMING TESTS ===

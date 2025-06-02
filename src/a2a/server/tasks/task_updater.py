@@ -1,5 +1,6 @@
 import uuid
 
+from datetime import datetime, timezone
 from typing import Any
 
 from a2a.server.events import EventQueue
@@ -34,7 +35,11 @@ class TaskUpdater:
         self.context_id = context_id
 
     def update_status(
-        self, state: TaskState, message: Message | None = None, final=False
+        self,
+        state: TaskState,
+        message: Message | None = None,
+        final=False,
+        timestamp: str | None = None,
     ):
         """Updates the status of the task and publishes a `TaskStatusUpdateEvent`.
 
@@ -42,7 +47,11 @@ class TaskUpdater:
             state: The new state of the task.
             message: An optional message associated with the status update.
             final: If True, indicates this is the final status update for the task.
+            timestamp: Optional ISO 8601 datetime string. Defaults to current time.
         """
+        current_timestamp = (
+            timestamp if timestamp else datetime.now(timezone.utc).isoformat()
+        )
         self.event_queue.enqueue_event(
             TaskStatusUpdateEvent(
                 taskId=self.task_id,
@@ -51,6 +60,7 @@ class TaskUpdater:
                 status=TaskStatus(
                     state=state,
                     message=message,
+                    timestamp=current_timestamp,
                 ),
             )
         )
@@ -96,6 +106,10 @@ class TaskUpdater:
     def failed(self, message: Message | None = None):
         """Marks the task as failed and publishes a final status update."""
         self.update_status(TaskState.failed, message=message, final=True)
+
+    def reject(self, message: Message | None = None):
+        """Marks the task as rejected and publishes a final status update."""
+        self.update_status(TaskState.rejected, message=message, final=True)
 
     def submit(self, message: Message | None = None):
         """Marks the task as submitted and publishes a status update."""
