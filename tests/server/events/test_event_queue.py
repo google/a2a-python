@@ -39,7 +39,7 @@ def event_queue() -> EventQueue:
 async def test_enqueue_and_dequeue_event(event_queue: EventQueue) -> None:
     """Test that an event can be enqueued and dequeued."""
     event = Message(**MESSAGE_PAYLOAD)
-    event_queue.enqueue_event(event)
+    await event_queue.enqueue_event(event)
     dequeued_event = await event_queue.dequeue_event()
     assert dequeued_event == event
 
@@ -48,7 +48,7 @@ async def test_enqueue_and_dequeue_event(event_queue: EventQueue) -> None:
 async def test_dequeue_event_no_wait(event_queue: EventQueue) -> None:
     """Test dequeue_event with no_wait=True."""
     event = Task(**MINIMAL_TASK)
-    event_queue.enqueue_event(event)
+    await event_queue.enqueue_event(event)
     dequeued_event = await event_queue.dequeue_event(no_wait=True)
     assert dequeued_event == event
 
@@ -71,7 +71,7 @@ async def test_dequeue_event_wait(event_queue: EventQueue) -> None:
         status=TaskStatus(state=TaskState.working),
         final=True,
     )
-    event_queue.enqueue_event(event)
+    await event_queue.enqueue_event(event)
     dequeued_event = await event_queue.dequeue_event()
     assert dequeued_event == event
 
@@ -84,7 +84,7 @@ async def test_task_done(event_queue: EventQueue) -> None:
         contextId='session-xyz',
         artifact=Artifact(artifactId='11', parts=[Part(TextPart(text='text'))]),
     )
-    event_queue.enqueue_event(event)
+    await event_queue.enqueue_event(event)
     _ = await event_queue.dequeue_event()
     event_queue.task_done()
 
@@ -99,6 +99,6 @@ async def test_enqueue_different_event_types(
         JSONRPCError(code=111, message='rpc error'),
     ]
     for event in events:
-        event_queue.enqueue_event(event)
+        await event_queue.enqueue_event(event)
         dequeued_event = await event_queue.dequeue_event()
         assert dequeued_event == event

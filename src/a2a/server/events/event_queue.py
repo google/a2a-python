@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 Event = Message | Task | TaskStatusUpdateEvent | TaskArtifactUpdateEvent
 """Type alias for events that can be enqueued."""
 
+DEFAULT_MAX_QUEUE_SIZE = 1024
+
 
 @trace_class(kind=SpanKind.SERVER)
 class EventQueue:
@@ -27,27 +29,38 @@ class EventQueue:
     to create child queues that receive the same events.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, max_queue_size=DEFAULT_MAX_QUEUE_SIZE) -> None:
         """Initializes the EventQueue."""
-        self.queue: asyncio.Queue[Event] = asyncio.Queue()
+
+        # Make sure the `asyncio.Queue` is bounded.
+        # If it's unbounded (maxsize=0), then `queue.put()` never needs to wait,
+        # and so the streaming won't work correctly.
+        if max_queue_size <= 0:
+            raise ValueError('max_queue_size must be greater than 0')
+
+        self.queue: asyncio.Queue[Event] = asyncio.Queue(maxsize=max_queue_size)
         self._children: list[EventQueue] = []
         self._is_closed = False
         self._lock = asyncio.Lock()
         logger.debug('EventQueue initialized.')
 
-    def enqueue_event(self, event: Event):
+    async def enqueue_event(self, event: Event):
         """Enqueues an event to this queue and all its children.
 
         Args:
             event: The event object to enqueue.
         """
-        if self._is_closed:
-            logger.warning('Queue is closed. Event will not be enqueued.')
-            return
+        async with self._lock:
+            if self._is_closed:
+                logger.warning('Queue is closed. Event will not be enqueued.')
+                return
+
         logger.debug(f'Enqueuing event of type: {type(event)}')
-        self.queue.put_nowait(event)
+
+        # Make sure to use put instead of put_nowait to avoid blocking the event loop.
+        await self.queue.put(event)
         for child in self._children:
-            child.enqueue_event(event)
+            await child.enqueue_event(event)
 
     async def dequeue_event(self, no_wait: bool = False) -> Event:
         """Dequeues an event from the queue.
