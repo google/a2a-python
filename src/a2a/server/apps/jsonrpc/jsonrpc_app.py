@@ -5,7 +5,7 @@ import traceback
 
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
-from typing import Any
+from typing import Any, Union
 
 from fastapi import FastAPI
 from pydantic import ValidationError
@@ -385,8 +385,8 @@ class JSONRPCApplication(ABC):
         agent_card_url: str = '/.well-known/agent.json',
         rpc_url: str = '/',
         **kwargs: Any,
-    ) -> Starlette | FastAPI:
-        """Builds and returns the FastAPI application instance.
+    ) -> Union[FastAPI, Starlette]:
+        """Builds and returns the JSONRPC application instance.
 
         Args:
             agent_card_url: The URL for the agent card endpoint.
@@ -394,5 +394,8 @@ class JSONRPCApplication(ABC):
             **kwargs: Additional keyword arguments to pass to the FastAPI constructor.
 
         Returns:
-            A configured FastAPI or Starlette application instance.
+            A configured JSONRPC application instance.
         """
+        raise NotImplementedError(
+            'Subclasses must implement the build method to create the application instance.'
+        )
