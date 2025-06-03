@@ -5,7 +5,7 @@ from typing import Any
 from starlette.applications import Starlette
 from starlette.routing import Route
 
-from a2a.server.apps.jsonrpc import CallContextBuilder, JSONRPCApplication
+from .jsonrpc_app import CallContextBuilder, JSONRPCApplication
 from a2a.server.request_handlers.jsonrpc_handler import RequestHandler
 from a2a.types import AgentCard
 
