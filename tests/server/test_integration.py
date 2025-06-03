@@ -5,6 +5,15 @@ from unittest import mock
 
 import pytest
 
+from starlette.authentication import (
+    AuthCredentials,
+    AuthenticationBackend,
+    BaseUser,
+    SimpleUser,
+)
+from starlette.middleware import Middleware
+from starlette.middleware.authentication import AuthenticationMiddleware
+from starlette.requests import HTTPConnection
 from starlette.responses import JSONResponse
 from starlette.routing import Route
 from starlette.testclient import TestClient
@@ -21,8 +30,12 @@ from a2a.types import (
     InternalError,
     InvalidRequestError,
     JSONParseError,
+    Message,
     Part,
     PushNotificationConfig,
+    Role,
+    SendMessageResponse,
+    SendMessageSuccessResponse,
     Task,
     TaskArtifactUpdateEvent,
     TaskPushNotificationConfig,
@@ -122,21 +135,20 @@ def handler():
 def starlette_app(agent_card: AgentCard, handler: mock.AsyncMock):
     return A2AStarletteApplication(agent_card, handler)
 
-
 @pytest.fixture
-def starlette_client(app: A2AStarletteApplication):
+def starlette_client(app: A2AStarletteApplication, **kwargs):
     """Create a test client with the Starlette app."""
-    return TestClient(app.build())
+    return TestClient(app.build(**kwargs))
+
 
 @pytest.fixture
 def fastapi_app(agent_card: AgentCard, handler: mock.AsyncMock):
     return A2AFastAPIApplication(agent_card, handler)
 
-
 @pytest.fixture
-def fastapi_client(app: A2AFastAPIApplication):
+def fastapi_client(app: A2AFastAPIApplication, **kwargs):
     """Create a test client with the FastAPI app."""
-    return TestClient(app.build())
+    return TestClient(app.build(**kwargs))
 
 
 # === BASIC FUNCTIONALITY TESTS ===
@@ -345,7 +357,6 @@ def test_send_message(client: TestClient, handler: mock.AsyncMock):
     mock_task = Task(
         id='task1',
         contextId='session-xyz',
-        state='completed',
         status=task_status,
     )
     handler.on_message_send.return_value = mock_task
@@ -512,6 +523,67 @@ def test_get_push_notification_config(
 
     # Verify handler was called
     handler.on_get_task_push_notification_config.assert_awaited_once()
+
+
+def test_server_auth(app: A2AStarletteApplication, handler: mock.AsyncMock):
+    class TestAuthMiddleware(AuthenticationBackend):
+        async def authenticate(
+            self, conn: HTTPConnection
+        ) -> tuple[AuthCredentials, BaseUser] | None:
+            # For the purposes of this test, all requests are authenticated!
+            return (AuthCredentials(['authenticated']), SimpleUser('test_user'))
+
+    client = TestClient(
+        app.build(
+            middleware=[
+                Middleware(
+                    AuthenticationMiddleware, backend=TestAuthMiddleware()
+                )
+            ]
+        )
+    )
+
+    # Set the output message to be the authenticated user name
+    handler.on_message_send.side_effect = lambda params, context: Message(
+        contextId='session-xyz',
+        messageId='112',
+        role=Role.agent,
+        parts=[
+            Part(TextPart(text=context.user.user_name)),
+        ],
+    )
+
+    # Send request
+    response = client.post(
+        '/',
+        json={
+            'jsonrpc': '2.0',
+            'id': '123',
+            'method': 'message/send',
+            'params': {
+                'message': {
+                    'role': 'agent',
+                    'parts': [{'kind': 'text', 'text': 'Hello'}],
+                    'messageId': '111',
+                    'kind': 'message',
+                    'taskId': 'task1',
+                    'contextId': 'session-xyz',
+                }
+            },
+        },
+    )
+
+    # Verify response
+    assert response.status_code == 200
+    result = SendMessageResponse.model_validate(response.json())
+    assert isinstance(result.root, SendMessageSuccessResponse)
+    assert isinstance(result.root.result, Message)
+    message = result.root.result
+    assert isinstance(message.parts[0].root, TextPart)
+    assert message.parts[0].root.text == 'test_user'
+
+    # Verify handler was called
+    handler.on_message_send.assert_awaited_once()
 
 
 # === STREAMING TESTS ===

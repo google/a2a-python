@@ -45,8 +45,20 @@ from a2a.utils.errors import MethodNotImplementedError
 
 logger = logging.getLogger(__name__)
 
-# Register Starlette User as an implementation of a2a.auth.user.User
-A2AUser.register(BaseUser)
+
+class StarletteUserProxy(A2AUser):
+    """Adapts the Starlette User class to the A2A user representation."""
+
+    def __init__(self, user: BaseUser):
+        self._user = user
+
+    @property
+    def is_authenticated(self):
+        return self._user.is_authenticated
+
+    @property
+    def user_name(self):
+        return self._user.display_name
 
 
 class CallContextBuilder(ABC):
@@ -64,7 +76,7 @@ class DefaultCallContextBuilder(CallContextBuilder):
         user = UnauthenticatedUser()
         state = {}
         with contextlib.suppress(Exception):
-            user = request.user
+            user = StarletteUserProxy(request.user)
             state['auth'] = request.auth
         return ServerCallContext(user=user, state=state)
 
@@ -139,7 +151,7 @@ class JSONRPCApplication(ABC):
             log_level,
             f'Request Error (ID: {request_id}): '
             f"Code={error_resp.error.code}, Message='{error_resp.error.message}'"
-            f'{", Data=" + str(error_resp.error.data) if hasattr(error, "data") and error_resp.error.data else ""}',
+            f'{", Data=" + str(error_resp.error.data) if error_resp.error.data else ""}',
         )
         return JSONResponse(
             error_resp.model_dump(mode='json', exclude_none=True),
