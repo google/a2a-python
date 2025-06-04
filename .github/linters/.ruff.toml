@@ -82,7 +82,7 @@ exclude = [
     "venv",
     "*/migrations/*",
     "noxfile.py",
-    "src/a2a/grpc/**",
+    "src/a2a/grpc/*.*",
 ]
 
 [lint.isort]
