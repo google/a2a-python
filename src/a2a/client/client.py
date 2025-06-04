@@ -1,33 +1,24 @@
 import json
 import logging
-
 from collections.abc import AsyncGenerator
 from typing import Any
 from uuid import uuid4
 
 import httpx
-
 from httpx_sse import SSEError, aconnect_sse
 from pydantic import ValidationError
 
 from a2a.client.errors import A2AClientHTTPError, A2AClientJSONError
-from a2a.types import (
-    AgentCard,
-    CancelTaskRequest,
-    CancelTaskResponse,
-    GetTaskPushNotificationConfigRequest,
-    GetTaskPushNotificationConfigResponse,
-    GetTaskRequest,
-    GetTaskResponse,
-    SendMessageRequest,
-    SendMessageResponse,
-    SendStreamingMessageRequest,
-    SendStreamingMessageResponse,
-    SetTaskPushNotificationConfigRequest,
-    SetTaskPushNotificationConfigResponse,
-)
+from a2a.client.middleware import ClientCallContext, ClientCallInterceptor
+from a2a.types import (AgentCard, CancelTaskRequest, CancelTaskResponse,
+                       GetTaskPushNotificationConfigRequest,
+                       GetTaskPushNotificationConfigResponse, GetTaskRequest,
+                       GetTaskResponse, SendMessageRequest,
+                       SendMessageResponse, SendStreamingMessageRequest,
+                       SendStreamingMessageResponse,
+                       SetTaskPushNotificationConfigRequest,
+                       SetTaskPushNotificationConfigResponse)
 from a2a.utils.telemetry import SpanKind, trace_class
-
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +120,7 @@ class A2AClient:
         httpx_client: httpx.AsyncClient,
         agent_card: AgentCard | None = None,
         url: str | None = None,
+        interceptors: list[ClientCallInterceptor] | None = None,
     ):
         """Initializes the A2AClient.
 
@@ -150,7 +142,30 @@ class A2AClient:
             raise ValueError('Must provide either agent_card or url')
 
         self.httpx_client = httpx_client
+        self.agent_card = agent_card
+        self.interceptors = interceptors or []
 
+    async def _apply_interceptors(
+        self,
+        method_name: str,
+        request_payload: dict[str, Any],
+        http_kwargs: dict[str, Any] | None,
+        context: ClientCallContext | None,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        """Applies all registered interceptors to the request."""
+        final_http_kwargs = http_kwargs or {}
+        final_request_payload = request_payload
+
+        for interceptor in self.interceptors:
+            final_request_payload, final_http_kwargs = await interceptor.intercept(
+                method_name,
+                final_request_payload,
+                final_http_kwargs,
+                self.agent_card,
+                context,
+            )
+        return final_request_payload, final_http_kwargs
+    
     @staticmethod
     async def get_client_from_agent_card_url(
         httpx_client: httpx.AsyncClient,
@@ -191,6 +206,7 @@ class A2AClient:
         request: SendMessageRequest,
         *,
         http_kwargs: dict[str, Any] | None = None,
+        context: ClientCallContext | None = None,
     ) -> SendMessageResponse:
         """Sends a non-streaming message request to the agent.
 
@@ -208,19 +224,20 @@ class A2AClient:
         """
         if not request.id:
             request.id = str(uuid4())
-
-        return SendMessageResponse(
-            **await self._send_request(
-                request.model_dump(mode='json', exclude_none=True),
-                http_kwargs,
-            )
+        
+        # Apply interceptors before sending
+        payload, modified_kwargs = await self._apply_interceptors(
+            'message/send', request.model_dump(mode='json', exclude_none=True), http_kwargs, context
         )
+        response_data = await self._send_request(payload, modified_kwargs)
+        return SendMessageResponse(response_data)
 
     async def send_message_streaming(
         self,
         request: SendStreamingMessageRequest,
         *,
         http_kwargs: dict[str, Any] | None = None,
+        context: ClientCallContext | None = None,
     ) -> AsyncGenerator[SendStreamingMessageResponse]:
         """Sends a streaming message request to the agent and yields responses as they arrive.
 
@@ -242,22 +259,23 @@ class A2AClient:
         if not request.id:
             request.id = str(uuid4())
 
-        # Default to no timeout for streaming, can be overridden by http_kwargs
-        http_kwargs_with_timeout: dict[str, Any] = {
-            'timeout': None,
-            **(http_kwargs or {}),
-        }
+        # Apply interceptors before sending
+        payload, modified_kwargs = await self._apply_interceptors(
+            'message/stream', request.model_dump(mode='json', exclude_none=True), http_kwargs, context
+        )
+        
+        modified_kwargs.setdefault('timeout', None)
 
         async with aconnect_sse(
             self.httpx_client,
             'POST',
             self.url,
-            json=request.model_dump(mode='json', exclude_none=True),
-            **http_kwargs_with_timeout,
+            json=payload
+            **modified_kwargs,
         ) as event_source:
             try:
                 async for sse in event_source.aiter_sse():
-                    yield SendStreamingMessageResponse(**json.loads(sse.data))
+                    yield SendStreamingMessageResponse(json.loads(sse.data))
             except SSEError as e:
                 raise A2AClientHTTPError(
                     400,
@@ -309,6 +327,7 @@ class A2AClient:
         request: GetTaskRequest,
         *,
         http_kwargs: dict[str, Any] | None = None,
+        context: ClientCallContext | None = None,
     ) -> GetTaskResponse:
         """Retrieves the current state and history of a specific task.
 
@@ -326,6 +345,13 @@ class A2AClient:
         """
         if not request.id:
             request.id = str(uuid4())
+        
+        # Apply interceptors before sending
+        payload, modified_kwargs = await self._apply_interceptors(
+            'tasks/get', request.model_dump(mode='json', exclude_none=True), http_kwargs, context
+        )
+        response_data = await self._send_request(payload, modified_kwargs)
+        return GetTaskResponse(response_data)
 
         return GetTaskResponse(
             **await self._send_request(
@@ -339,6 +365,7 @@ class A2AClient:
         request: CancelTaskRequest,
         *,
         http_kwargs: dict[str, Any] | None = None,
+        context: ClientCallContext | None = None,
     ) -> CancelTaskResponse:
         """Requests the agent to cancel a specific task.
 
@@ -357,18 +384,19 @@ class A2AClient:
         if not request.id:
             request.id = str(uuid4())
 
-        return CancelTaskResponse(
-            **await self._send_request(
-                request.model_dump(mode='json', exclude_none=True),
-                http_kwargs,
-            )
+        # Apply interceptors before sending
+        payload, modified_kwargs = await self._apply_interceptors(
+            'tasks/cancel', request.model_dump(mode='json', exclude_none=True), http_kwargs, context
         )
+        response_data = await self._send_request(payload, modified_kwargs)
+        return CancelTaskResponse(response_data)
 
     async def set_task_callback(
         self,
         request: SetTaskPushNotificationConfigRequest,
         *,
         http_kwargs: dict[str, Any] | None = None,
+        context: ClientCallContext | None = None,
     ) -> SetTaskPushNotificationConfigResponse:
         """Sets or updates the push notification configuration for a specific task.
 
@@ -387,18 +415,19 @@ class A2AClient:
         if not request.id:
             request.id = str(uuid4())
 
-        return SetTaskPushNotificationConfigResponse(
-            **await self._send_request(
-                request.model_dump(mode='json', exclude_none=True),
-                http_kwargs,
-            )
+        # Apply interceptors before sending
+        payload, modified_kwargs = await self._apply_interceptors(
+            'tasks/pushNotificationConfig/set', request.model_dump(mode='json', exclude_none=True), http_kwargs, context
         )
+        response_data = await self._send_request(payload, modified_kwargs)
+        return SetTaskPushNotificationConfigResponse(response_data)
 
     async def get_task_callback(
         self,
         request: GetTaskPushNotificationConfigRequest,
         *,
         http_kwargs: dict[str, Any] | None = None,
+        context: ClientCallContext | None = None,
     ) -> GetTaskPushNotificationConfigResponse:
         """Retrieves the push notification configuration for a specific task.
 
@@ -417,9 +446,9 @@ class A2AClient:
         if not request.id:
             request.id = str(uuid4())
 
-        return GetTaskPushNotificationConfigResponse(
-            **await self._send_request(
-                request.model_dump(mode='json', exclude_none=True),
-                http_kwargs,
-            )
+        # Apply interceptors before sending
+        payload, modified_kwargs = await self._apply_interceptors(
+            'tasks/pushNotificationConfig/get', request.model_dump(mode='json', exclude_none=True), http_kwargs, context
         )
+        response_data = await self._send_request(payload, modified_kwargs)
+        return GetTaskPushNotificationConfigResponse(response_data)
