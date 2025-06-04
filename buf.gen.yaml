@@ -19,9 +19,12 @@ managed:
 plugins:
   # Generate python protobuf related code
   # Generates *_pb2.py files, one for each .proto
-  - remote: buf.build/protocolbuffers/python
+  - remote: buf.build/protocolbuffers/python:v29.3
     out: src/a2a/grpc
   # Generate python service code.
   # Generates *_pb2_grpc.py
   - remote: buf.build/grpc/python
+    out: src/a2a/grpc
+  # Generates *_pb2.pyi files.
+  - remote: buf.build/protocolbuffers/pyi:v29.3
     out: src/a2a/grpc
