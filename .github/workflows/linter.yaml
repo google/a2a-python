@@ -64,3 +64,4 @@ jobs:
           VALIDATE_GIT_COMMITLINT: false
           PYTHON_MYPY_CONFIG_FILE: .mypy.ini
           FILTER_REGEX_INCLUDE: "^src/**"
+          PYTHON_RUFF_CONFIG_FILE: .ruff.toml

@@ -43,22 +43,26 @@ class APIKeySecurityScheme(BaseModel):
     type: Literal['apiKey'] = 'apiKey'
 
 
-class AgentCapabilities(BaseModel):
+class AgentExtension(BaseModel):
     """
-    Defines optional capabilities supported by an agent.
+    A declaration of an extension supported by an Agent.
     """
 
-    pushNotifications: bool | None = None
+    description: str | None = None
     """
-    true if the agent can notify updates to client.
+    A description of how this agent uses this extension.
     """
-    stateTransitionHistory: bool | None = None
+    params: dict[str, Any] | None = None
     """
-    true if the agent exposes status change history for tasks.
+    Optional configuration for the extension.
     """
-    streaming: bool | None = None
+    required: bool | None = None
     """
-    true if the agent supports SSE.
+    Whether the client must follow specific requirements of the extension.
+    """
+    uri: str
+    """
+    The URI of the extension.
     """
 
 
@@ -820,6 +824,29 @@ class A2AError(
     )
 
 
+class AgentCapabilities(BaseModel):
+    """
+    Defines optional capabilities supported by an agent.
+    """
+
+    extensions: list[AgentExtension] | None = None
+    """
+    extensions supported by this agent.
+    """
+    pushNotifications: bool | None = None
+    """
+    true if the agent can notify updates to client.
+    """
+    stateTransitionHistory: bool | None = None
+    """
+    true if the agent exposes status change history for tasks.
+    """
+    streaming: bool | None = None
+    """
+    true if the agent supports SSE.
+    """
+
+
 class CancelTaskRequest(BaseModel):
     """
     JSON-RPC request model for the 'tasks/cancel' method.
@@ -1075,6 +1102,10 @@ class Artifact(BaseModel):
     """
     Optional description for the artifact.
     """
+    extensions: list[str] | None = None
+    """
+    The URIs of extensions that are present or contributed to this Artifact.
+    """
     metadata: dict[str, Any] | None = None
     """
     Extension metadata.
@@ -1106,6 +1137,10 @@ class Message(BaseModel):
     contextId: str | None = None
     """
     The context the message is associated with
+    """
+    extensions: list[str] | None = None
+    """
+    The URIs of extensions that are present or contributed to this Message.
     """
     kind: Literal['message'] = 'message'
     """
