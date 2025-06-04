@@ -58,14 +58,14 @@ import inspect
 import logging
 
 from collections.abc import Callable
-from typing import Any
+from typing import Any, TypeAlias
 
 from opentelemetry import trace
 from opentelemetry.trace import SpanKind as _SpanKind
 from opentelemetry.trace import StatusCode
 
 
-SpanKind = _SpanKind
+SpanKind: TypeAlias = _SpanKind
 __all__ = ['SpanKind']
 INSTRUMENTING_MODULE_NAME = 'a2a-python-sdk'
 INSTRUMENTING_MODULE_VERSION = '1.0.0'
