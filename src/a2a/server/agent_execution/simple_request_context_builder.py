@@ -23,10 +23,6 @@ class SimpleRequestContextBuilder(RequestContextBuilder):
             task_store: The TaskStore instance to use for fetching referred tasks.
                 Required if `should_populate_referred_tasks` is True.
         """
-        if should_populate_referred_tasks and not task_store:
-            raise ValueError(
-                'task_store is required when should_populate_referred_tasks is True'
-            )
         self._task_store = task_store
         self._should_populate_referred_tasks = should_populate_referred_tasks
 
