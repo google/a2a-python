@@ -270,7 +270,7 @@ class A2AClient:
             self.httpx_client,
             'POST',
             self.url,
-            json=payload
+            json=payload,
             **modified_kwargs,
         ) as event_source:
             try:

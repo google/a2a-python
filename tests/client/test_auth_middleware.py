@@ -6,29 +6,15 @@ import httpx
 import pytest
 import respx
 
-from a2a.client import (
-    A2AClient,
-    ClientCallContext,
-    ClientCallInterceptor,
-)
-from a2a.client.auth import (
-    AuthInterceptor,
-    CredentialService,
-    InMemoryContextCredentialStore,
-)
-from a2a.types import (
-    AgentCard,
-    AgentCapabilities,
-    APIKeySecurityScheme,
-    AuthorizationCodeOAuthFlow,
-    HTTPAuthSecurityScheme,
-    In,
-    OAuth2SecurityScheme,
-    OAuthFlows,
-    OpenIdConnectSecurityScheme,
-    SecurityScheme,
-    SendMessageRequest,
-)
+from a2a.client import A2AClient, ClientCallContext, ClientCallInterceptor
+from a2a.client.auth import (AuthInterceptor, CredentialService,
+                             InMemoryContextCredentialStore)
+from a2a.types import (AgentCapabilities, AgentCard, APIKeySecurityScheme,
+                       AuthorizationCodeOAuthFlow, HTTPAuthSecurityScheme, In,
+                       OAuth2SecurityScheme, OAuthFlows,
+                       OpenIdConnectSecurityScheme, SecurityScheme,
+                       SendMessageRequest)
+
 
 # A simple mock interceptor for testing basic middleware functionality
 class HeaderInterceptor(ClientCallInterceptor):
@@ -60,7 +46,6 @@ async def test_client_with_simple_interceptor():
     # Arrange
     test_url = "http://fake-agent.com/rpc"
     header_interceptor = HeaderInterceptor("X-Test-Header", "Test-Value-123")
-    
     async with httpx.AsyncClient() as http_client:
         client = A2AClient(
             httpx_client=http_client,
