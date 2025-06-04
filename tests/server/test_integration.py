@@ -18,7 +18,7 @@ from starlette.responses import JSONResponse
 from starlette.routing import Route
 from starlette.testclient import TestClient
 
-from a2a.server.apps.jsonrpc import (
+from a2a.server.apps import (
     A2AStarletteApplication,
     A2AFastAPIApplication,
 )
