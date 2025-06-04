@@ -22,8 +22,10 @@ class UnauthenticatedUser(User):
 
     @property
     def is_authenticated(self) -> bool:
+        """Returns whether the current user is authenticated."""
         return False
 
     @property
     def user_name(self) -> str:
+        """Returns the user name of the current user."""
         return ''

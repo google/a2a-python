@@ -20,7 +20,7 @@ class RequestContext:
     tasks.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         request: MessageSendParams | None = None,
         task_id: str | None = None,
@@ -37,6 +37,7 @@ class RequestContext:
             context_id: The ID of the context explicitly provided in the request or path.
             task: The existing `Task` object retrieved from the store, if any.
             related_tasks: A list of other tasks related to the current request (e.g., for tool use).
+            call_context: The server call context associated with this request.
         """
         if related_tasks is None:
             related_tasks = []
@@ -64,7 +65,7 @@ class RequestContext:
             else:
                 self._check_or_generate_context_id()
 
-    def get_user_input(self, delimiter='\n') -> str:
+    def get_user_input(self, delimiter: str = '\n') -> str:
         """Extracts text content from the user's message parts.
 
         Args:

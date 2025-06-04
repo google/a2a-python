@@ -131,7 +131,7 @@ class ResultAggregator:
                     'Encountered an auth-required task: breaking synchronous message/send flow.'
                 )
                 # TODO: We should track all outstanding tasks to ensure they eventually complete.
-                asyncio.create_task(self._continue_consuming(event_stream))
+                asyncio.create_task(self._continue_consuming(event_stream))  # noqa: RUF006
                 interrupted = True
                 break
         return await self.task_manager.get_task(), interrupted

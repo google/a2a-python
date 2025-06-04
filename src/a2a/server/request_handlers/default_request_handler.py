@@ -235,7 +235,7 @@ class DefaultRequestHandler(RequestHandler):
         finally:
             if interrupted:
                 # TODO: Track this disconnected cleanup task.
-                asyncio.create_task(
+                asyncio.create_task(  # noqa: RUF006
                     self._cleanup_producer(producer_task, task_id)
                 )
             else:
@@ -427,6 +427,7 @@ class DefaultRequestHandler(RequestHandler):
             yield event
 
     def should_add_push_info(self, params: MessageSendParams) -> bool:
+        """Determines if push notification info should be set for a task."""
         return bool(
             self._push_notifier
             and params.configuration

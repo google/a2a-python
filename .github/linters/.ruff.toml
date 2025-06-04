@@ -28,6 +28,7 @@ ignore = [
     "E501",   # Ignore line length (handled by Ruff's dynamic line length)
     "ANN002",
     "ANN003",
+    "ANN401",
 ]
 
 select = [

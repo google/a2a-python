@@ -14,6 +14,19 @@ class SimpleRequestContextBuilder(RequestContextBuilder):
         should_populate_referred_tasks: bool = False,
         task_store: TaskStore | None = None,
     ) -> None:
+        """Initializes the SimpleRequestContextBuilder.
+
+        Args:
+            should_populate_referred_tasks: If True, the builder will fetch tasks
+                referenced in `params.message.referenceTaskIds` and populate the
+                `related_tasks` field in the RequestContext. Defaults to False.
+            task_store: The TaskStore instance to use for fetching referred tasks.
+                Required if `should_populate_referred_tasks` is True.
+        """
+        if should_populate_referred_tasks and not task_store:
+            raise ValueError(
+                'task_store is required when should_populate_referred_tasks is True'
+            )
         self._task_store = task_store
         self._should_populate_referred_tasks = should_populate_referred_tasks
 
@@ -25,6 +38,23 @@ class SimpleRequestContextBuilder(RequestContextBuilder):
         task: Task | None = None,
         context: ServerCallContext | None = None,
     ) -> RequestContext:
+        """Builds the request context for an agent execution.
+
+        This method assembles the RequestContext object. If the builder was
+        initialized with `should_populate_referred_tasks=True`, it fetches all tasks
+        referenced in `params.message.referenceTaskIds` from the `task_store`.
+
+        Args:
+            params: The parameters of the incoming message send request.
+            task_id: The ID of the task being executed.
+            context_id: The ID of the current execution context.
+            task: The primary task object associated with the request.
+            context: The server call context, containing metadata about the call.
+
+        Returns:
+            An instance of RequestContext populated with the provided information
+            and potentially a list of related tasks.
+        """
         related_tasks: list[Task] | None = None
 
         if (
