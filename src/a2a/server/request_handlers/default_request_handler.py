@@ -3,6 +3,7 @@ import logging
 
 from collections.abc import AsyncGenerator
 from typing import cast
+import uuid
 
 from a2a.server.agent_execution import (
     AgentExecutor,
@@ -364,6 +365,8 @@ class DefaultRequestHandler(RequestHandler):
         if not task:
             raise ServerError(error=TaskNotFoundError())
 
+        # Generate a unique id for the notification
+        params.pushNotificationConfig.id = str(uuid.uuid4())
         await self._push_notifier.set_info(
             params.taskId,
             params.pushNotificationConfig,

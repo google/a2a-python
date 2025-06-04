@@ -1,5 +1,5 @@
 """General utility functions for the A2A Python SDK."""
-
+import functools
 import logging
 
 from collections.abc import Callable
@@ -147,6 +147,37 @@ def validate(
 
     return decorator
 
+def validate_async_generator(
+    expression: Callable[[Any], bool], error_message: str | None = None
+):
+    """Decorator that validates if a given expression evaluates to True.
+
+    Typically used on class methods to check capabilities or configuration
+    before executing the method's logic. If the expression is False,
+    a `ServerError` with an `UnsupportedOperationError` is raised.
+
+    Args:
+        expression: A callable that takes the instance (`self`) as its argument
+                    and returns a boolean.
+        error_message: An optional custom error message for the `UnsupportedOperationError`.
+                       If None, the string representation of the expression will be used.
+    """
+
+    def decorator(function):
+        @functools.wraps(function)
+        async def wrapper(self, *args, **kwargs):
+            if not expression(self):
+                final_message = error_message or str(expression)
+                logger.error(f'Unsupported Operation: {final_message}')
+                raise ServerError(
+                    UnsupportedOperationError(message=final_message)
+                )
+            async for i in function(self, *args, **kwargs):
+                yield i
+
+        return wrapper
+
+    return decorator
 
 def are_modalities_compatible(
     server_output_modes: list[str] | None, client_output_modes: list[str] | None
