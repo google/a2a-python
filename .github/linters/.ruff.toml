@@ -81,6 +81,7 @@ exclude = [
     "venv",
     "*/migrations/*",
     "test_*",
+    "noxfile.py",
 ]
 
 [lint.isort]
@@ -98,7 +99,7 @@ lines-between-types = 1
 
 [lint.pydocstyle]
 convention = "google"
-ignore-decorators = ["typing.overload"]
+ignore-decorators = ["typing.overload", "abc.abstractmethod"]
 ignore-var-parameters = true
 
 [lint.flake8-annotations]
