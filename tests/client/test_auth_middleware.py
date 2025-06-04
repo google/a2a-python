@@ -25,6 +25,7 @@ from a2a.types import (
     In,
     OAuth2SecurityScheme,
     OAuthFlows,
+    OpenIdConnectSecurityScheme,
     SecurityScheme,
     SendMessageRequest,
 )
@@ -303,3 +304,68 @@ async def test_auth_interceptor_with_oauth2_scheme():
         request_sent = respx.calls.last.request
         assert "Authorization" in request_sent.headers
         assert request_sent.headers["Authorization"] == f"Bearer {access_token}"
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_auth_interceptor_with_oidc_scheme():
+    """
+    Tests the AuthInterceptor with an OpenIdConnectSecurityScheme.
+    Ensures it correctly sets the Authorization: Bearer <token> header.
+    """
+    # Arrange
+    test_url = "http://oidc-agent.com/rpc"
+    context_id = "user-session-oidc"
+    scheme_name = "myOidcScheme"
+    id_token = "secret-oidc-id-token" # Or access_token
+
+    cred_store = InMemoryContextCredentialStore()
+    await cred_store.set_credentials(context_id, scheme_name, id_token)
+
+    auth_interceptor = AuthInterceptor(credential_service=cred_store)
+
+    agent_card = AgentCard(
+        url=test_url,
+        name="OidcBot",
+        description="A bot that uses OpenID Connect",
+        version="1.0",
+        defaultInputModes=[],
+        defaultOutputModes=[],
+        skills=[],
+        capabilities=AgentCapabilities(),
+        security=[{scheme_name: []}], # Security requirement referencing the scheme
+        securitySchemes={
+            scheme_name: SecurityScheme(
+                root=OpenIdConnectSecurityScheme(
+                    type="openIdConnect", 
+                    openIdConnectUrl="http://provider.com/.well-known/openid-configuration"
+                )
+            )
+        },
+    )
+
+    async with httpx.AsyncClient() as http_client:
+        client = A2AClient(
+            httpx_client=http_client,
+            agent_card=agent_card,
+            interceptors=[auth_interceptor]
+        )
+        
+        minimal_success_response = {
+            "jsonrpc": "2.0",
+            "id": "oidc_test_1",
+            "result": {"kind": "message", "messageId": "response-msg-oidc", "role": "agent", "parts": []}
+        }
+        respx.post(test_url).mock(return_value=httpx.Response(200, json=minimal_success_response))
+
+        # Act
+        context = ClientCallContext(state={"contextId": context_id})
+        await client.send_message(
+            request=SendMessageRequest(id="oidc_test_1", params={"message": {"messageId": "msg-oidc", "role": "user", "parts": []}}),
+            context=context
+        )
+
+        # Assert
+        assert len(respx.calls) == 1
+        request_sent = respx.calls.last.request
+        assert "Authorization" in request_sent.headers
+        assert request_sent.headers["Authorization"] == f"Bearer {id_token}"

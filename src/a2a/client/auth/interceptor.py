@@ -5,7 +5,7 @@ from typing import Any
 
 from a2a.client.auth.credentials import CredentialService
 from a2a.client.middleware import ClientCallContext, ClientCallInterceptor
-from a2a.types import AgentCard, APIKeySecurityScheme, HTTPAuthSecurityScheme, In, OAuth2SecurityScheme
+from a2a.types import AgentCard, APIKeySecurityScheme, HTTPAuthSecurityScheme, In, OAuth2SecurityScheme, OpenIdConnectSecurityScheme
 
 logger = logging.getLogger(__name__)
 
@@ -31,36 +31,35 @@ class AuthInterceptor(ClientCallInterceptor):
             return request_payload, http_kwargs
 
         for requirement in agent_card.security:
-            for scheme_name in requirement: # Iterate through scheme names in the requirement
+            for scheme_name in requirement: 
                 credential = await self._credential_service.get_credentials(
                     scheme_name, context
                 )
                 if credential and scheme_name in agent_card.securitySchemes:
                     scheme_def_union = agent_card.securitySchemes[scheme_name]
-                    if not scheme_def_union:
-                        continue 
-                    scheme_def = scheme_def_union.root # SecurityScheme is a RootModel
+                    if not scheme_def_union: 
+                        continue
+                    scheme_def = scheme_def_union.root 
 
                     headers = http_kwargs.get('headers', {})
 
-                    if isinstance(scheme_def, HTTPAuthSecurityScheme):
-                        if scheme_def.scheme.lower() == 'bearer':
-                            headers['Authorization'] = f"Bearer {credential}"
-                            logger.debug(f"Added HTTP Bearer Auth for scheme '{scheme_name}'.")
-                            http_kwargs['headers'] = headers
-                            return request_payload, http_kwargs
-                    elif isinstance(scheme_def, OAuth2SecurityScheme): # New condition for OAuth2
-                        # For OAuth2, the credential obtained is the access token, used as a Bearer token.
+                    is_bearer_scheme = False
+                    if isinstance(scheme_def, HTTPAuthSecurityScheme) and scheme_def.scheme.lower() == 'bearer':
+                        is_bearer_scheme = True
+                    elif isinstance(scheme_def, (OAuth2SecurityScheme, OpenIdConnectSecurityScheme)):
+                        is_bearer_scheme = True
+
+                    if is_bearer_scheme:
                         headers['Authorization'] = f"Bearer {credential}"
-                        logger.debug(f"Added OAuth2 Bearer token for scheme '{scheme_name}'.")
+                        logger.debug(f"Added Bearer token for scheme '{scheme_name}' (type: {scheme_def.type}).")
                         http_kwargs['headers'] = headers
                         return request_payload, http_kwargs
                     elif isinstance(scheme_def, APIKeySecurityScheme):
-                        if scheme_def.in_ == In.header: # Use In.header enum member
+                        if scheme_def.in_ == In.header: 
                             headers[scheme_def.name] = credential
                             logger.debug(f"Added API Key Header for scheme '{scheme_name}'.")
                             http_kwargs['headers'] = headers
                             return request_payload, http_kwargs
-                        # Note: API keys in query or cookie are not handled by this interceptor modification.
+                        # Note: API keys in query or cookie are not handled here.
         
         return request_payload, http_kwargs
