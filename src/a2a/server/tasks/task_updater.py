@@ -68,7 +68,7 @@ class TaskUpdater:
     async def add_artifact(
         self,
         parts: list[Part],
-        artifact_id: str = str(uuid.uuid4()),
+        artifact_id: str | None = None,
         name: str | None = None,
         metadata: dict[str, Any] | None = None,
     ):
@@ -82,6 +82,9 @@ class TaskUpdater:
             append: Optional boolean indicating if this chunk appends to a previous one.
             last_chunk: Optional boolean indicating if this is the last chunk.
         """
+        if not artifact_id:
+            artifact_id = str(uuid.uuid4())
+
         await self.event_queue.enqueue_event(
             TaskArtifactUpdateEvent(
                 taskId=self.task_id,
