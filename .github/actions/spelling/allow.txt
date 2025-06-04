@@ -33,6 +33,7 @@ lifecycles
 linting
 oauthoidc
 opensource
+protoc
 pyversions
 socio
 sse
