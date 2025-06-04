@@ -25,6 +25,9 @@ ignore = [
     "TD003",  # Ignore Missing issue link in TODOs (often not required/available)
     "T201",   # Ignore print presence
     "RUF012", # Ignore Mutable class attributes should be annotated with `typing.ClassVar`
+    "E501",   # Ignore line length (handled by Ruff's dynamic line length)
+    "ANN002",
+    "ANN003",
 ]
 
 select = [
@@ -77,6 +80,7 @@ exclude = [
     "node_modules",
     "venv",
     "*/migrations/*",
+    "test_*",
 ]
 
 [lint.isort]
@@ -134,6 +138,7 @@ inline-quotes = "single"
 "types.py" = ["D", "E501", "N815"]  # Ignore docstring and annotation issues in types.py
 
 [format]
+exclude = ["types.py"]
 docstring-code-format = true
 docstring-code-line-length = "dynamic" # Or set to 80
 quote-style = "single"
