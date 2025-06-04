@@ -5,9 +5,10 @@ from typing import Any
 from starlette.applications import Starlette
 from starlette.routing import Route
 
-from .jsonrpc_app import CallContextBuilder, JSONRPCApplication
 from a2a.server.request_handlers.jsonrpc_handler import RequestHandler
 from a2a.types import AgentCard
+
+from .jsonrpc_app import CallContextBuilder, JSONRPCApplication
 
 
 logger = logging.getLogger(__name__)

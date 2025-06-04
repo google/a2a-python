@@ -19,8 +19,8 @@ from starlette.routing import Route
 from starlette.testclient import TestClient
 
 from a2a.server.apps import (
-    A2AStarletteApplication,
     A2AFastAPIApplication,
+    A2AStarletteApplication,
 )
 from a2a.types import (
     AgentCapabilities,
@@ -135,6 +135,7 @@ def handler():
 def app(agent_card: AgentCard, handler: mock.AsyncMock):
     return A2AStarletteApplication(agent_card, handler)
 
+
 @pytest.fixture
 def client(app: A2AStarletteApplication, **kwargs):
     """Create a test client with the Starlette app."""
@@ -166,6 +167,7 @@ def test_authenticated_extended_agent_card_endpoint_not_supported(
     client = TestClient(app_instance.build())
     response = client.get('/agent/authenticatedExtendedCard')
     assert response.status_code == 404  # Starlette's default for no route
+
 
 def test_authenticated_extended_agent_card_endpoint_not_supported_fastapi(
     agent_card: AgentCard, handler: mock.AsyncMock
@@ -207,6 +209,7 @@ def test_authenticated_extended_agent_card_endpoint_supported_with_specific_exte
         'Extended skill not found in served card'
     )
 
+
 def test_authenticated_extended_agent_card_endpoint_supported_with_specific_extended_card_fastapi(
     agent_card: AgentCard,
     extended_agent_card_fixture: AgentCard,
@@ -231,6 +234,7 @@ def test_authenticated_extended_agent_card_endpoint_supported_with_specific_exte
     assert any(skill['id'] == 'skill-extended' for skill in data['skills']), (
         'Extended skill not found in served card'
     )
+
 
 def test_agent_card_custom_url(
     app: A2AStarletteApplication, agent_card: AgentCard
@@ -267,6 +271,7 @@ def test_starlette_rpc_endpoint_custom_url(
     data = response.json()
     assert data['result']['id'] == 'task1'
 
+
 def test_fastapi_rpc_endpoint_custom_url(
     app: A2AFastAPIApplication, handler: mock.AsyncMock
 ):
@@ -291,6 +296,7 @@ def test_fastapi_rpc_endpoint_custom_url(
     data = response.json()
     assert data['result']['id'] == 'task1'
 
+
 def test_starlette_build_with_extra_routes(
     app: A2AStarletteApplication, agent_card: AgentCard
 ):
@@ -313,6 +319,7 @@ def test_starlette_build_with_extra_routes(
     assert response.status_code == 200
     data = response.json()
     assert data['name'] == agent_card.name
+
 
 def test_fastapi_build_with_extra_routes(
     app: A2AFastAPIApplication, agent_card: AgentCard

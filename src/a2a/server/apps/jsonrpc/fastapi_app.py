@@ -4,9 +4,10 @@ from typing import Any
 
 from fastapi import FastAPI, Request
 
-from .jsonrpc_app import CallContextBuilder, JSONRPCApplication
 from a2a.server.request_handlers.jsonrpc_handler import RequestHandler
 from a2a.types import AgentCard
+
+from .jsonrpc_app import CallContextBuilder, JSONRPCApplication
 
 
 logger = logging.getLogger(__name__)
@@ -73,10 +74,13 @@ class A2AFastAPIApplication(JSONRPCApplication):
         @app.get(agent_card_url)
         async def get_agent_card(request: Request):
             return await self._handle_get_agent_card(request)
-        
+
         if self.agent_card.supportsAuthenticatedExtendedCard:
+
             @app.get(extended_agent_card_url)
             async def get_extended_agent_card(request: Request):
-                return await self._handle_get_authenticated_extended_agent_card(request)
+                return await self._handle_get_authenticated_extended_agent_card(
+                    request
+                )
 
         return app

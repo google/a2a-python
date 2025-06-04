@@ -5,7 +5,7 @@ import traceback
 
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
-from typing import Any, Union
+from typing import Any
 
 from fastapi import FastAPI
 from pydantic import ValidationError
@@ -397,7 +397,7 @@ class JSONRPCApplication(ABC):
         agent_card_url: str = '/.well-known/agent.json',
         rpc_url: str = '/',
         **kwargs: Any,
-    ) -> Union[FastAPI, Starlette]:
+    ) -> FastAPI | Starlette:
         """Builds and returns the JSONRPC application instance.
 
         Args:

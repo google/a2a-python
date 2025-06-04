@@ -7,6 +7,7 @@ from .jsonrpc import (
     JSONRPCApplication,
 )
 
+
 __all__ = [
     'A2AFastAPIApplication',
     'A2AStarletteApplication',
