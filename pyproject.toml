@@ -16,6 +16,9 @@ dependencies = [
     "pydantic>=2.11.3",
     "sse-starlette>=2.3.3",
     "starlette>=0.46.2",
+    "grpcio>=1.60",
+    "grpcio-tools>=1.60",
+    "grpcio_reflection>=1.7.0",
 ]
 
 classifiers = [
