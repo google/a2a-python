@@ -53,8 +53,8 @@ class A2AStarletteApplication(JSONRPCApplication):
     def routes(
         self,
         agent_card_url: str = '/.well-known/agent.json',
-        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
         rpc_url: str = '/',
+        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
     ) -> list[Route]:
         """Returns the Starlette Routes for handling A2A requests.
 
@@ -111,7 +111,9 @@ class A2AStarletteApplication(JSONRPCApplication):
             A configured Starlette application instance.
         """
         app_routes = self.routes(
-            agent_card_url, extended_agent_card_url, rpc_url
+            agent_card_url=agent_card_url,
+            rpc_url=rpc_url,
+            extended_agent_card_url=extended_agent_card_url,
         )
         if 'routes' in kwargs:
             kwargs['routes'].extend(app_routes)
