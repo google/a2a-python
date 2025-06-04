@@ -143,7 +143,7 @@ class EventQueue:
         if sys.version_info >= (3, 13):
             self.queue.shutdown()
             for child in self._children:
-                child.close()
+                await child.close()
         # Otherwise, join the queue
         else:
             tasks = [asyncio.create_task(self.queue.join())]
