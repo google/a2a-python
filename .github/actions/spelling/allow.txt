@@ -34,6 +34,7 @@ linting
 oauthoidc
 opensource
 protoc
+pyi
 pyversions
 socio
 sse
