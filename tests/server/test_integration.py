@@ -132,22 +132,12 @@ def handler():
 
 
 @pytest.fixture
-def starlette_app(agent_card: AgentCard, handler: mock.AsyncMock):
+def app(agent_card: AgentCard, handler: mock.AsyncMock):
     return A2AStarletteApplication(agent_card, handler)
 
 @pytest.fixture
-def starlette_client(app: A2AStarletteApplication, **kwargs):
+def client(app: A2AStarletteApplication, **kwargs):
     """Create a test client with the Starlette app."""
-    return TestClient(app.build(**kwargs))
-
-
-@pytest.fixture
-def fastapi_app(agent_card: AgentCard, handler: mock.AsyncMock):
-    return A2AFastAPIApplication(agent_card, handler)
-
-@pytest.fixture
-def fastapi_client(app: A2AFastAPIApplication, **kwargs):
-    """Create a test client with the FastAPI app."""
     return TestClient(app.build(**kwargs))
 
 
@@ -164,7 +154,7 @@ def test_agent_card_endpoint(client: TestClient, agent_card: AgentCard):
     assert 'streaming' in data['capabilities']
 
 
-def test_authenticated_extended_agent_card_endpoint_not_supported_starlette(
+def test_authenticated_extended_agent_card_endpoint_not_supported(
     agent_card: AgentCard, handler: mock.AsyncMock
 ):
     """Test extended card endpoint returns 404 if not supported by main card."""
@@ -200,6 +190,7 @@ def test_authenticated_extended_agent_card_endpoint_supported_with_specific_exte
     agent_card.supportsAuthenticatedExtendedCard = (
         True  # Main card must support it
     )
+    print(agent_card)
     app_instance = A2AStarletteApplication(
         agent_card, handler, extended_agent_card=extended_agent_card_fixture
     )

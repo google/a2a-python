@@ -50,6 +50,7 @@ class A2AStarletteApplication(JSONRPCApplication):
     def routes(
         self,
         agent_card_url: str = '/.well-known/agent.json',
+        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
         rpc_url: str = '/',
     ) -> list[Route]:
         """Returns the Starlette Routes for handling A2A requests.
@@ -57,11 +58,12 @@ class A2AStarletteApplication(JSONRPCApplication):
         Args:
             agent_card_url: The URL path for the agent card endpoint.
             rpc_url: The URL path for the A2A JSON-RPC endpoint (POST requests).
+            extended_agent_card_url: The URL for the authenticated extended agent card endpoint.
 
         Returns:
             A list of Starlette Route objects.
         """
-        return [
+        app_routes = [
             Route(
                 rpc_url,
                 self._handle_requests,
@@ -76,9 +78,21 @@ class A2AStarletteApplication(JSONRPCApplication):
             ),
         ]
 
+        if self.agent_card.supportsAuthenticatedExtendedCard:
+            app_routes.append(
+                Route(
+                    extended_agent_card_url,
+                    self._handle_get_authenticated_extended_agent_card,
+                    methods=['GET'],
+                    name='authenticated_extended_agent_card',
+                )
+            )
+        return app_routes
+
     def build(
         self,
         agent_card_url: str = '/.well-known/agent.json',
+        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
         rpc_url: str = '/',
         **kwargs: Any,
     ) -> Starlette:
@@ -87,16 +101,19 @@ class A2AStarletteApplication(JSONRPCApplication):
         Args:
             agent_card_url: The URL path for the agent card endpoint.
             rpc_url: The URL path for the A2A JSON-RPC endpoint (POST requests).
+            extended_agent_card_url: The URL for the authenticated extended agent card endpoint.
             **kwargs: Additional keyword arguments to pass to the Starlette
               constructor.
 
         Returns:
             A configured Starlette application instance.
         """
-        routes = self.routes(agent_card_url, rpc_url)
+        app_routes = self.routes(
+            agent_card_url, extended_agent_card_url, rpc_url
+        )
         if 'routes' in kwargs:
-            kwargs['routes'] += routes
+            kwargs['routes'].extend(app_routes)
         else:
-            kwargs['routes'] = routes
+            kwargs['routes'] = app_routes
 
         return Starlette(**kwargs)
