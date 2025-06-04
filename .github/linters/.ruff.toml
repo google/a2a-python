@@ -81,7 +81,6 @@ exclude = [
     "node_modules",
     "venv",
     "*/migrations/*",
-    "test_*",
     "noxfile.py",
 ]
 
@@ -123,19 +122,19 @@ inline-quotes = "single"
 "__init__.py" = ["F401", "D", "ANN"]  # Ignore unused imports in __init__.py
 "*_test.py" = [
     "D",      # All pydocstyle rules
-    "ANN001", # Missing type annotation for function argument
-    "ANN201", # Missing return type annotation for public function
-    "ANN204", # Missing return type annotation for special method
+    "ANN",    # Missing type annotation for function argument
     "RUF013", # Implicit optional type in test function signatures
     "S101",   # Use of `assert` detected (expected in tests)
+    "PLR2004",
+    "SLF001",
 ]
 "test_*.py" = [
     "D",
-    "ANN001",
-    "ANN201",
-    "ANN204",
+    "ANN",
     "RUF013",
     "S101",
+    "PLR2004",
+    "SLF001",
 ]
 "types.py" = ["D", "E501", "N815"]  # Ignore docstring and annotation issues in types.py
 
