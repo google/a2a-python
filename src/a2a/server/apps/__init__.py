@@ -1,6 +1,6 @@
 """HTTP application components for the A2A server."""
 
-from .jsonrpc import (
+from a2a.server.apps.jsonrpc import (
     A2AFastAPIApplication,
     A2AStarletteApplication,
     CallContextBuilder,

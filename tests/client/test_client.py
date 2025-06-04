@@ -63,15 +63,15 @@ AGENT_CARD = AgentCard(
 AGENT_CARD_EXTENDED = AGENT_CARD.model_copy(
     update={
         'name': 'Hello World Agent - Extended Edition',
-        'skills': AGENT_CARD.skills
-        + [
+        'skills': [
+            *AGENT_CARD.skills,
             AgentSkill(
                 id='extended_skill',
                 name='Super Greet',
                 description='A more enthusiastic greeting.',
                 tags=['extended'],
                 examples=['super hi'],
-            )
+            ),
         ],
         'version': '1.0.1',
     }

@@ -1,21 +1,25 @@
 import asyncio
+
+from typing import Any
+
 import pytest
+
 from a2a.server.events.event_queue import EventQueue
 from a2a.types import (
     A2AError,
+    Artifact,
     JSONRPCError,
     Message,
+    Part,
     Task,
     TaskArtifactUpdateEvent,
-    TaskStatusUpdateEvent,
-    TaskStatus,
-    TaskState,
-    Artifact,
-    Part,
-    TextPart,
     TaskNotFoundError,
+    TaskState,
+    TaskStatus,
+    TaskStatusUpdateEvent,
+    TextPart,
 )
-from typing import Any
+
 
 MINIMAL_TASK: dict[str, Any] = {
     'id': '123',

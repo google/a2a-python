@@ -43,7 +43,7 @@ class EventQueue:
         self._lock = asyncio.Lock()
         logger.debug('EventQueue initialized.')
 
-    async def enqueue_event(self, event: Event):
+    async def enqueue_event(self, event: Event) -> None:
         """Enqueues an event to this queue and all its children.
 
         Args:
@@ -127,7 +127,7 @@ class EventQueue:
         self._children.append(queue)
         return queue
 
-    async def close(self):
+    async def close(self) -> None:
         """Closes the queue for future push events.
 
         Once closed, `dequeue_event` will eventually raise `asyncio.QueueShutDown`

@@ -105,8 +105,7 @@ class ResultAggregator:
         Returns:
             A tuple containing:
             - The current aggregated result (`Task` or `Message`) at the point of completion or interruption.
-            - A boolean indicating whether the consumption was interrupted (`True`)
-              or completed naturally (`False`).
+            - A boolean indicating whether the consumption was interrupted (`True`) or completed naturally (`False`).
 
         Raises:
             BaseException: If the `EventConsumer` raises an exception during consumption.

@@ -1,8 +1,11 @@
 """A2A JSON-RPC Applications."""
 
-from .fastapi_app import A2AFastAPIApplication
-from .jsonrpc_app import CallContextBuilder, JSONRPCApplication
-from .starlette_app import A2AStarletteApplication
+from a2a.server.apps.jsonrpc.fastapi_app import A2AFastAPIApplication
+from a2a.server.apps.jsonrpc.jsonrpc_app import (
+    CallContextBuilder,
+    JSONRPCApplication,
+)
+from a2a.server.apps.jsonrpc.starlette_app import A2AStarletteApplication
 
 
 __all__ = [

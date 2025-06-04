@@ -7,7 +7,7 @@ from a2a.types import MessageSendParams, Task
 
 
 class SimpleRequestContextBuilder(RequestContextBuilder):
-    """Builds request context and populates referred tasks"""
+    """Builds request context and populates referred tasks."""
 
     def __init__(
         self,

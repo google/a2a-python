@@ -80,7 +80,7 @@ class RequestContext:
 
         return get_message_text(self._params.message, delimiter)
 
-    def attach_related_task(self, task: Task):
+    def attach_related_task(self, task: Task) -> None:
         """Attaches a related task to the context.
 
         This is useful for scenarios like tool execution where a new task

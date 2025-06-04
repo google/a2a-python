@@ -139,6 +139,7 @@ async def test_consume_all_multiple_events(
             event = events[cursor]
             cursor += 1
             return event
+        return None
 
     mock_event_queue.dequeue_event = mock_dequeue
     consumed_events: list[Any] = []
@@ -181,6 +182,7 @@ async def test_consume_until_message(
             event = events[cursor]
             cursor += 1
             return event
+        return None
 
     mock_event_queue.dequeue_event = mock_dequeue
     consumed_events: list[Any] = []
@@ -210,6 +212,7 @@ async def test_consume_message_events(
             event = events[cursor]
             cursor += 1
             return event
+        return None
 
     mock_event_queue.dequeue_event = mock_dequeue
     consumed_events: list[Any] = []

@@ -26,7 +26,7 @@ class InMemoryQueueManager(QueueManager):
         self._task_queue: dict[str, EventQueue] = {}
         self._lock = asyncio.Lock()
 
-    async def add(self, task_id: str, queue: EventQueue):
+    async def add(self, task_id: str, queue: EventQueue) -> None:
         """Adds a new event queue for a task ID.
 
         Raises:
@@ -59,7 +59,7 @@ class InMemoryQueueManager(QueueManager):
                 return None
             return self._task_queue[task_id].tap()
 
-    async def close(self, task_id: str):
+    async def close(self, task_id: str) -> None:
         """Closes and removes the event queue for a task ID.
 
         Raises:

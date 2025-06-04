@@ -57,6 +57,8 @@ import functools
 import inspect
 import logging
 
+from collections.abc import Callable
+
 from opentelemetry import trace
 from opentelemetry.trace import SpanKind as _SpanKind
 from opentelemetry.trace import StatusCode
@@ -77,7 +79,7 @@ def trace_function(
     kind=SpanKind.INTERNAL,
     attributes=None,
     attribute_extractor=None,
-):
+) -> Callable:
     """A decorator to automatically trace a function call with OpenTelemetry.
 
     This decorator can be used to wrap both sync and async functions.
@@ -216,7 +218,7 @@ def trace_class(
     include_list: list[str] | None = None,
     exclude_list: list[str] | None = None,
     kind=SpanKind.INTERNAL,
-):
+) -> Callable:
     """A class decorator to automatically trace specified methods of a class.
 
     This decorator iterates over the methods of a class and applies the

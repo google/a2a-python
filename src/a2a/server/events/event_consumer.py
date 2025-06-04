@@ -135,7 +135,7 @@ class EventConsumer:
                 if self.queue.is_closed():
                     break
 
-    def agent_task_callback(self, agent_task: asyncio.Task[None]):
+    def agent_task_callback(self, agent_task: asyncio.Task[None]) -> None:
         """Callback to handle exceptions from the agent's execution task.
 
         If the agent's asyncio task raises an exception, this callback is

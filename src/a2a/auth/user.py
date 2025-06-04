@@ -21,7 +21,7 @@ class UnauthenticatedUser(User):
     """A representation that no user has been authenticated in the request."""
 
     @property
-    def is_authenticated(self):
+    def is_authenticated(self) -> bool:
         return False
 
     @property
