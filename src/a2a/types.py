@@ -100,7 +100,7 @@ class AgentSkill(BaseModel):
     """
     The set of interaction modes that the skill supports
     (if different than the default).
-    Supported mime types for input.
+    Supported media types for input.
     """
     name: str
     """
@@ -108,7 +108,7 @@ class AgentSkill(BaseModel):
     """
     outputModes: list[str] | None = None
     """
-    Supported mime types for output.
+    Supported media types for output.
     """
     tags: list[str]
     """
@@ -1372,11 +1372,11 @@ class AgentCard(BaseModel):
     defaultInputModes: list[str]
     """
     The set of interaction modes that the agent supports across all skills. This can be overridden per-skill.
-    Supported mime types for input.
+    Supported media types for input.
     """
     defaultOutputModes: list[str]
     """
-    Supported mime types for output.
+    Supported media types for output.
     """
     description: str
     """

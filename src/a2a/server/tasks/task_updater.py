@@ -34,7 +34,7 @@ class TaskUpdater:
         self.task_id = task_id
         self.context_id = context_id
 
-    def update_status(
+    async def update_status(
         self,
         state: TaskState,
         message: Message | None = None,
@@ -52,7 +52,7 @@ class TaskUpdater:
         current_timestamp = (
             timestamp if timestamp else datetime.now(timezone.utc).isoformat()
         )
-        self.event_queue.enqueue_event(
+        await self.event_queue.enqueue_event(
             TaskStatusUpdateEvent(
                 taskId=self.task_id,
                 contextId=self.context_id,
@@ -65,7 +65,7 @@ class TaskUpdater:
             )
         )
 
-    def add_artifact(
+    async def add_artifact(
         self,
         parts: list[Part],
         artifact_id: str = str(uuid.uuid4()),
@@ -82,7 +82,7 @@ class TaskUpdater:
             append: Optional boolean indicating if this chunk appends to a previous one.
             last_chunk: Optional boolean indicating if this is the last chunk.
         """
-        self.event_queue.enqueue_event(
+        await self.event_queue.enqueue_event(
             TaskArtifactUpdateEvent(
                 taskId=self.task_id,
                 contextId=self.context_id,
@@ -95,32 +95,34 @@ class TaskUpdater:
             )
         )
 
-    def complete(self, message: Message | None = None):
+    async def complete(self, message: Message | None = None):
         """Marks the task as completed and publishes a final status update."""
-        self.update_status(
+        await self.update_status(
             TaskState.completed,
             message=message,
             final=True,
         )
 
-    def failed(self, message: Message | None = None):
+    async def failed(self, message: Message | None = None):
         """Marks the task as failed and publishes a final status update."""
-        self.update_status(TaskState.failed, message=message, final=True)
+        await self.update_status(TaskState.failed, message=message, final=True)
 
-    def reject(self, message: Message | None = None):
+    async def reject(self, message: Message | None = None):
         """Marks the task as rejected and publishes a final status update."""
-        self.update_status(TaskState.rejected, message=message, final=True)
+        await self.update_status(
+            TaskState.rejected, message=message, final=True
+        )
 
-    def submit(self, message: Message | None = None):
+    async def submit(self, message: Message | None = None):
         """Marks the task as submitted and publishes a status update."""
-        self.update_status(
+        await self.update_status(
             TaskState.submitted,
             message=message,
         )
 
-    def start_work(self, message: Message | None = None):
+    async def start_work(self, message: Message | None = None):
         """Marks the task as working and publishes a status update."""
-        self.update_status(
+        await self.update_status(
             TaskState.working,
             message=message,
         )
