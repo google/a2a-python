@@ -18,11 +18,7 @@ ignore = [
     "FBT002",
     "D203",
     "D213",
-    "ANN001",
-    "ANN201",
-    "ANN204",
     "D100", # Ignore Missing docstring in public module (often desired at top level __init__.py)
-    "D102", # Ignore return type annotation in public method
     "D104", # Ignore Missing docstring in public package (often desired at top level __init__.py)
     "D107", # Ignore Missing docstring in __init__ (use class docstring)
     "TD002", # Ignore Missing author in TODOs (often not required)
@@ -116,7 +112,7 @@ docstring-quotes = "double"
 inline-quotes = "single"
 
 [lint.per-file-ignores]
-"__init__.py" = ["F401"]  # Ignore unused imports in __init__.py
+"__init__.py" = ["F401", "D", "ANN"]  # Ignore unused imports in __init__.py
 "*_test.py" = ["D", "ANN"]  # Ignore docstring and annotation issues in test files
 "test_*.py" = ["D", "ANN"]  # Ignore docstring and annotation issues in test files
 "types.py" = ["D", "E501", "N815"]  # Ignore docstring and annotation issues in types.py
