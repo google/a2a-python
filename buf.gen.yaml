@@ -20,8 +20,8 @@ plugins:
   # Generate python protobuf related code
   # Generates *_pb2.py files, one for each .proto
   - remote: buf.build/protocolbuffers/python
-    out: src/python
+    out: src/a2a/grpc
   # Generate python service code.
   # Generates *_pb2_grpc.py
   - remote: buf.build/grpc/python
-    out: src/python
+    out: src/a2a/grpc
