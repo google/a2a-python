@@ -20,8 +20,11 @@ from a2a.types import (
     AgentCard,
     AgentCapabilities,
     APIKeySecurityScheme,
+    AuthorizationCodeOAuthFlow,
     HTTPAuthSecurityScheme,
     In,
+    OAuth2SecurityScheme,
+    OAuthFlows,
     SecurityScheme,
     SendMessageRequest,
 )
@@ -231,3 +234,72 @@ async def test_auth_interceptor_with_api_key():
         request = respx.calls.last.request
         assert "x-api-key" in request.headers
         assert request.headers["x-api-key"] == api_key
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_auth_interceptor_with_oauth2_scheme():
+    """
+    Tests the AuthInterceptor with an OAuth2 security scheme defined in AgentCard.
+    Ensures it correctly sets the Authorization: Bearer <token> header.
+    """
+    test_url = "http://oauth-agent.com/rpc"
+    context_id = "user-session-oauth"
+    scheme_name = "myOAuthScheme" 
+    access_token = "secret-oauth-access-token"
+
+    cred_store = InMemoryContextCredentialStore()
+    await cred_store.set_credentials(context_id, scheme_name, access_token)
+
+    auth_interceptor = AuthInterceptor(credential_service=cred_store)
+
+    # Define a minimal OAuth2 flow
+    oauth_flows = OAuthFlows(
+        authorizationCode=AuthorizationCodeOAuthFlow(
+            authorizationUrl="http://provider.com/auth",
+            tokenUrl="http://provider.com/token",
+            scopes={"read": "Read scope"}
+        )
+    )
+
+    agent_card = AgentCard(
+        url=test_url,
+        name="OAuthBot",
+        description="A bot that uses OAuth2",
+        version="1.0",
+        defaultInputModes=[],
+        defaultOutputModes=[],
+        skills=[],
+        capabilities=AgentCapabilities(),
+        security=[{scheme_name: ["read"]}], 
+        securitySchemes={
+            scheme_name: SecurityScheme(root=OAuth2SecurityScheme(type="oauth2", flows=oauth_flows))
+        },
+    )
+
+    async with httpx.AsyncClient() as http_client:
+        client = A2AClient(
+            httpx_client=http_client,
+            agent_card=agent_card,
+            interceptors=[auth_interceptor]
+        )
+        
+        minimal_success_response = {
+            "jsonrpc": "2.0",
+            "id": "oauth_test_1",
+            "result": {"kind": "message", "messageId": "response-msg-oauth", "role": "agent", "parts": []}
+        }
+        respx.post(test_url).mock(return_value=httpx.Response(200, json=minimal_success_response))
+
+        # Act
+        context = ClientCallContext(state={"contextId": context_id})
+        await client.send_message(
+            request=SendMessageRequest(id="oauth_test_1", params={"message": {"messageId": "msg-oauth", "role": "user", "parts": []}}),
+            context=context
+        )
+
+        # Assert
+        assert len(respx.calls) == 1
+        request_sent = respx.calls.last.request
+        assert "Authorization" in request_sent.headers
+        assert request_sent.headers["Authorization"] == f"Bearer {access_token}"

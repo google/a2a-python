@@ -5,7 +5,7 @@ from typing import Any
 
 from a2a.client.auth.credentials import CredentialService
 from a2a.client.middleware import ClientCallContext, ClientCallInterceptor
-from a2a.types import AgentCard, APIKeySecurityScheme, HTTPAuthSecurityScheme
+from a2a.types import AgentCard, APIKeySecurityScheme, HTTPAuthSecurityScheme, In, OAuth2SecurityScheme
 
 logger = logging.getLogger(__name__)
 
@@ -27,35 +27,40 @@ class AuthInterceptor(ClientCallInterceptor):
         agent_card: AgentCard | None,
         context: ClientCallContext | None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
-        """
-        Adds authentication headers to the request if credentials can be found.
-        """
         if not agent_card or not agent_card.security or not agent_card.securitySchemes:
             return request_payload, http_kwargs
 
         for requirement in agent_card.security:
-            for scheme_name in requirement:
+            for scheme_name in requirement: # Iterate through scheme names in the requirement
                 credential = await self._credential_service.get_credentials(
                     scheme_name, context
                 )
                 if credential and scheme_name in agent_card.securitySchemes:
-                    scheme_def = agent_card.securitySchemes[scheme_name].root
+                    scheme_def_union = agent_card.securitySchemes[scheme_name]
+                    if not scheme_def_union:
+                        continue 
+                    scheme_def = scheme_def_union.root # SecurityScheme is a RootModel
+
                     headers = http_kwargs.get('headers', {})
 
                     if isinstance(scheme_def, HTTPAuthSecurityScheme):
-                        headers['Authorization'] = f"{scheme_def.scheme} {credential}"
+                        if scheme_def.scheme.lower() == 'bearer':
+                            headers['Authorization'] = f"Bearer {credential}"
+                            logger.debug(f"Added HTTP Bearer Auth for scheme '{scheme_name}'.")
+                            http_kwargs['headers'] = headers
+                            return request_payload, http_kwargs
+                    elif isinstance(scheme_def, OAuth2SecurityScheme): # New condition for OAuth2
+                        # For OAuth2, the credential obtained is the access token, used as a Bearer token.
+                        headers['Authorization'] = f"Bearer {credential}"
+                        logger.debug(f"Added OAuth2 Bearer token for scheme '{scheme_name}'.")
                         http_kwargs['headers'] = headers
-                        logger.debug(f"Added HTTP Auth for scheme '{scheme_name}'.")
                         return request_payload, http_kwargs
                     elif isinstance(scheme_def, APIKeySecurityScheme):
-                        if scheme_def.in_ == 'header':
+                        if scheme_def.in_ == In.header: # Use In.header enum member
                             headers[scheme_def.name] = credential
-                            http_kwargs['headers'] = headers
                             logger.debug(f"Added API Key Header for scheme '{scheme_name}'.")
+                            http_kwargs['headers'] = headers
                             return request_payload, http_kwargs
-                        else:
-                            logger.warning(
-                                f"API Key in '{scheme_def.in_}' not supported by this interceptor."
-                            )
-
+                        # Note: API keys in query or cookie are not handled by this interceptor modification.
+        
         return request_payload, http_kwargs
