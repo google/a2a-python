@@ -57,12 +57,15 @@ import functools
 import inspect
 import logging
 
+from collections.abc import Callable
+from typing import Any, TypeAlias
+
 from opentelemetry import trace
 from opentelemetry.trace import SpanKind as _SpanKind
 from opentelemetry.trace import StatusCode
 
 
-SpanKind = _SpanKind
+SpanKind: TypeAlias = _SpanKind
 __all__ = ['SpanKind']
 INSTRUMENTING_MODULE_NAME = 'a2a-python-sdk'
 INSTRUMENTING_MODULE_VERSION = '1.0.0'
@@ -70,14 +73,14 @@ INSTRUMENTING_MODULE_VERSION = '1.0.0'
 logger = logging.getLogger(__name__)
 
 
-def trace_function(
-    func=None,
+def trace_function(  # noqa: PLR0915
+    func: Callable | None = None,
     *,
-    span_name=None,
-    kind=SpanKind.INTERNAL,
-    attributes=None,
-    attribute_extractor=None,
-):
+    span_name: str | None = None,
+    kind: SpanKind = SpanKind.INTERNAL,
+    attributes: dict[str, Any] | None = None,
+    attribute_extractor: Callable | None = None,
+) -> Callable:
     """A decorator to automatically trace a function call with OpenTelemetry.
 
     This decorator can be used to wrap both sync and async functions.
@@ -139,7 +142,7 @@ def trace_function(
     )
 
     @functools.wraps(func)
-    async def async_wrapper(*args, **kwargs) -> any:
+    async def async_wrapper(*args, **kwargs) -> Any:
         """Async Wrapper for the decorator."""
         logger.debug('Start async tracer')
         tracer = trace.get_tracer(
@@ -176,7 +179,7 @@ def trace_function(
                         )
 
     @functools.wraps(func)
-    def sync_wrapper(*args, **kwargs):
+    def sync_wrapper(*args, **kwargs) -> Any:
         """Sync Wrapper for the decorator."""
         tracer = trace.get_tracer(INSTRUMENTING_MODULE_NAME)
         with tracer.start_as_current_span(actual_span_name, kind=kind) as span:
@@ -215,8 +218,8 @@ def trace_function(
 def trace_class(
     include_list: list[str] | None = None,
     exclude_list: list[str] | None = None,
-    kind=SpanKind.INTERNAL,
-):
+    kind: SpanKind = SpanKind.INTERNAL,
+) -> Callable:
     """A class decorator to automatically trace specified methods of a class.
 
     This decorator iterates over the methods of a class and applies the
@@ -269,7 +272,7 @@ def trace_class(
     logger.debug(f'Trace all class {include_list}, {exclude_list}')
     exclude_list = exclude_list or []
 
-    def decorator(cls):
+    def decorator(cls: Any) -> Any:
         all_methods = {}
         for name, method in inspect.getmembers(cls, inspect.isfunction):
             # Skip Dunders

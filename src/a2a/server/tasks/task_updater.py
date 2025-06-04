@@ -38,9 +38,9 @@ class TaskUpdater:
         self,
         state: TaskState,
         message: Message | None = None,
-        final=False,
+        final: bool = False,
         timestamp: str | None = None,
-    ):
+    ) -> None:
         """Updates the status of the task and publishes a `TaskStatusUpdateEvent`.
 
         Args:
@@ -71,7 +71,7 @@ class TaskUpdater:
         artifact_id: str | None = None,
         name: str | None = None,
         metadata: dict[str, Any] | None = None,
-    ):
+    ) -> None:
         """Adds an artifact chunk to the task and publishes a `TaskArtifactUpdateEvent`.
 
         Args:
@@ -79,8 +79,6 @@ class TaskUpdater:
             artifact_id: The ID of the artifact. A new UUID is generated if not provided.
             name: Optional name for the artifact.
             metadata: Optional metadata for the artifact.
-            append: Optional boolean indicating if this chunk appends to a previous one.
-            last_chunk: Optional boolean indicating if this is the last chunk.
         """
         if not artifact_id:
             artifact_id = str(uuid.uuid4())
@@ -98,7 +96,7 @@ class TaskUpdater:
             )
         )
 
-    async def complete(self, message: Message | None = None):
+    async def complete(self, message: Message | None = None) -> None:
         """Marks the task as completed and publishes a final status update."""
         await self.update_status(
             TaskState.completed,
@@ -106,24 +104,24 @@ class TaskUpdater:
             final=True,
         )
 
-    async def failed(self, message: Message | None = None):
+    async def failed(self, message: Message | None = None) -> None:
         """Marks the task as failed and publishes a final status update."""
         await self.update_status(TaskState.failed, message=message, final=True)
 
-    async def reject(self, message: Message | None = None):
+    async def reject(self, message: Message | None = None) -> None:
         """Marks the task as rejected and publishes a final status update."""
         await self.update_status(
             TaskState.rejected, message=message, final=True
         )
 
-    async def submit(self, message: Message | None = None):
+    async def submit(self, message: Message | None = None) -> None:
         """Marks the task as submitted and publishes a status update."""
         await self.update_status(
             TaskState.submitted,
             message=message,
         )
 
-    async def start_work(self, message: Message | None = None):
+    async def start_work(self, message: Message | None = None) -> None:
         """Marks the task as working and publishes a status update."""
         await self.update_status(
             TaskState.working,
@@ -142,7 +140,6 @@ class TaskUpdater:
 
         Args:
             parts: A list of `Part` objects for the message content.
-            final: Optional boolean indicating if this is the final message in a stream.
             metadata: Optional metadata for the message.
 
         Returns:

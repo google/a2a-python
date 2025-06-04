@@ -36,7 +36,7 @@ nox.options.error_on_missing_interpreters = True
 
 
 @nox.session(python=DEFAULT_PYTHON_VERSION)
-def format(session):
+def format(session) -> None:
     """Format Python code using autoflake, pyupgrade, and ruff."""
     # Sort Spelling Allowlist
     spelling_allow_file = '.github/actions/spelling/allow.txt'
@@ -141,10 +141,14 @@ def format(session):
             'ruff',
             'check',
             '--fix-only',
+            '--config',
+            '.github/linters/.ruff.toml',
             *lint_paths_py,
         )
         session.run(
             'ruff',
             'format',
+            '--config',
+            '.github/linters/.ruff.toml',
             *lint_paths_py,
         )

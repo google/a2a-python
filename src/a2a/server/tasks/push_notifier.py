@@ -9,7 +9,7 @@ class PushNotifier(ABC):
     @abstractmethod
     async def set_info(
         self, task_id: str, notification_config: PushNotificationConfig
-    ):
+    ) -> None:
         """Sets or updates the push notification configuration for a task."""
 
     @abstractmethod
@@ -17,9 +17,9 @@ class PushNotifier(ABC):
         """Retrieves the push notification configuration for a task."""
 
     @abstractmethod
-    async def delete_info(self, task_id: str):
+    async def delete_info(self, task_id: str) -> None:
         """Deletes the push notification configuration for a task."""
 
     @abstractmethod
-    async def send_notification(self, task: Task):
+    async def send_notification(self, task: Task) -> None:
         """Sends a push notification containing the latest task state."""

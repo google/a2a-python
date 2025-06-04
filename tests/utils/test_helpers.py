@@ -160,7 +160,7 @@ def test_validate_decorator():
         condition = True
 
         @validate(lambda self: self.condition, 'Condition not met')
-        def test_method(self):
+        def test_method(self) -> str:
             return 'Success'
 
     obj = TestClass()

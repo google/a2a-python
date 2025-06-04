@@ -119,7 +119,7 @@ def build_text_artifact(text: str, artifact_id: str) -> Artifact:
 
 def validate(
     expression: Callable[[Any], bool], error_message: str | None = None
-):
+) -> Callable:
     """Decorator that validates if a given expression evaluates to True.
 
     Typically used on class methods to check capabilities or configuration
@@ -133,8 +133,8 @@ def validate(
                        If None, the string representation of the expression will be used.
     """
 
-    def decorator(function):
-        def wrapper(self, *args, **kwargs):
+    def decorator(function: Callable) -> Callable:
+        def wrapper(self: Any, *args, **kwargs) -> Any:
             if not expression(self):
                 final_message = error_message or str(expression)
                 logger.error(f'Unsupported Operation: {final_message}')

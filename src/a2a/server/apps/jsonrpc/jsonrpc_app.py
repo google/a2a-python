@@ -53,11 +53,13 @@ class StarletteUserProxy(A2AUser):
         self._user = user
 
     @property
-    def is_authenticated(self):
+    def is_authenticated(self) -> bool:
+        """Returns whether the current user is authenticated."""
         return self._user.is_authenticated
 
     @property
-    def user_name(self):
+    def user_name(self) -> str:
+        """Returns the user name of the current user."""
         return self._user.display_name
 
 
@@ -73,7 +75,16 @@ class DefaultCallContextBuilder(CallContextBuilder):
     """A default implementation of CallContextBuilder."""
 
     def build(self, request: Request) -> ServerCallContext:
-        user = UnauthenticatedUser()
+        """Builds a ServerCallContext from a Starlette Request.
+
+        Args:
+            request: The incoming Starlette Request object.
+
+        Returns:
+            A ServerCallContext instance populated with user and state
+            information from the request.
+        """
+        user: A2AUser = UnauthenticatedUser()
         state = {}
         with contextlib.suppress(Exception):
             user = StarletteUserProxy(request.user)
@@ -232,6 +243,7 @@ class JSONRPCApplication(ABC):
         Args:
             request_id: The ID of the request.
             a2a_request: The validated A2ARequest object.
+            context: The ServerCallContext for the request.
 
         Returns:
             An `EventSourceResponse` object to stream results to the client.
@@ -263,6 +275,7 @@ class JSONRPCApplication(ABC):
         Args:
             request_id: The ID of the request.
             a2a_request: The validated A2ARequest object.
+            context: The ServerCallContext for the request.
 
         Returns:
             A `JSONResponse` object containing the result or error.

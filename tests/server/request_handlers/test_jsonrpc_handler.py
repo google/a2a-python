@@ -1,7 +1,8 @@
 import unittest
 import unittest.async_case
+
 from collections.abc import AsyncGenerator
-from typing import Any
+from typing import Any, NoReturn
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
 import httpx
@@ -56,6 +57,7 @@ from a2a.types import (
     UnsupportedOperationError,
 )
 from a2a.utils.errors import ServerError
+
 
 MINIMAL_TASK: dict[str, Any] = {
     'id': 'task_123',
@@ -711,7 +713,6 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
             async for _ in handler.on_message_send_stream(request):
                 pass
 
-        aaa = context.exception
         self.assertEqual(
             str(context.exception.error.message),
             'Streaming is not supported by the agent',
@@ -822,7 +823,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         handler = JSONRPCHandler(self.mock_agent_card, request_handler)
 
         # Make the request handler raise an Internal error without specifying an error type
-        async def raise_server_error(*args, **kwargs):
+        async def raise_server_error(*args, **kwargs) -> NoReturn:
             raise ServerError(InternalError(message='Internal Error'))
 
         # Patch the method to raise an error
@@ -920,7 +921,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         mock_task_store.get.return_value = mock_task
 
         # Set up consume_and_break_on_interrupt to raise ServerError
-        async def consume_raises_error(*args, **kwargs):
+        async def consume_raises_error(*args, **kwargs) -> NoReturn:
             raise ServerError(error=UnsupportedOperationError())
 
         with patch(
