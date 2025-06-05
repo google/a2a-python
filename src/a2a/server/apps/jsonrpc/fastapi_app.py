@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request, Response
 
 from a2a.server.apps.jsonrpc.jsonrpc_app import (
     CallContextBuilder,
-    JSONRPCApplication,
+    JSONRPCApplicationAspect,
 )
 from a2a.server.request_handlers.jsonrpc_handler import RequestHandler
 from a2a.types import AgentCard
@@ -15,7 +15,7 @@ from a2a.types import AgentCard
 logger = logging.getLogger(__name__)
 
 
-class A2AFastAPIApplication(JSONRPCApplication):
+class A2AFastAPIApplication(JSONRPCApplicationAspect):
     """A FastAPI application implementing the A2A protocol server endpoints.
 
     Handles incoming JSON-RPC requests, routes them to the appropriate
