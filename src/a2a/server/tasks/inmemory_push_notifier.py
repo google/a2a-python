@@ -29,7 +29,7 @@ class InMemoryPushNotifier(PushNotifier):
 
     async def set_info(
         self, task_id: str, notification_config: PushNotificationConfig
-    ):
+    ) -> None:
         """Sets or updates the push notification configuration for a task in memory."""
         async with self.lock:
             self._push_notification_infos[task_id] = notification_config
@@ -39,13 +39,13 @@ class InMemoryPushNotifier(PushNotifier):
         async with self.lock:
             return self._push_notification_infos.get(task_id)
 
-    async def delete_info(self, task_id: str):
+    async def delete_info(self, task_id: str) -> None:
         """Deletes the push notification configuration for a task from memory."""
         async with self.lock:
             if task_id in self._push_notification_infos:
                 del self._push_notification_infos[task_id]
 
-    async def send_notification(self, task: Task):
+    async def send_notification(self, task: Task) -> None:
         """Sends a push notification for a task if configuration exists."""
         push_info = await self.get_info(task.id)
         if not push_info:

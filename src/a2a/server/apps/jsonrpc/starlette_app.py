@@ -5,10 +5,12 @@ from typing import Any
 from starlette.applications import Starlette
 from starlette.routing import Route
 
+from a2a.server.apps.jsonrpc.jsonrpc_app import (
+    CallContextBuilder,
+    JSONRPCApplication,
+)
 from a2a.server.request_handlers.jsonrpc_handler import RequestHandler
 from a2a.types import AgentCard
-
-from .jsonrpc_app import CallContextBuilder, JSONRPCApplication
 
 
 logger = logging.getLogger(__name__)
@@ -51,8 +53,8 @@ class A2AStarletteApplication(JSONRPCApplication):
     def routes(
         self,
         agent_card_url: str = '/.well-known/agent.json',
-        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
         rpc_url: str = '/',
+        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
     ) -> list[Route]:
         """Returns the Starlette Routes for handling A2A requests.
 
@@ -93,8 +95,8 @@ class A2AStarletteApplication(JSONRPCApplication):
     def build(
         self,
         agent_card_url: str = '/.well-known/agent.json',
-        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
         rpc_url: str = '/',
+        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
         **kwargs: Any,
     ) -> Starlette:
         """Builds and returns the Starlette application instance.
@@ -103,14 +105,15 @@ class A2AStarletteApplication(JSONRPCApplication):
             agent_card_url: The URL path for the agent card endpoint.
             rpc_url: The URL path for the A2A JSON-RPC endpoint (POST requests).
             extended_agent_card_url: The URL for the authenticated extended agent card endpoint.
-            **kwargs: Additional keyword arguments to pass to the Starlette
-              constructor.
+            **kwargs: Additional keyword arguments to pass to the Starlette constructor.
 
         Returns:
             A configured Starlette application instance.
         """
         app_routes = self.routes(
-            agent_card_url, extended_agent_card_url, rpc_url
+            agent_card_url=agent_card_url,
+            rpc_url=rpc_url,
+            extended_agent_card_url=extended_agent_card_url,
         )
         if 'routes' in kwargs:
             kwargs['routes'].extend(app_routes)

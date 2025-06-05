@@ -198,7 +198,7 @@ class DefaultRequestHandler(RequestHandler):
             context=context,
         )
 
-        task_id = cast(str, request_context.task_id)
+        task_id = cast('str', request_context.task_id)
         # Always assign a task ID. We may not actually upgrade to a task, but
         # dictating the task ID at this layer is useful for tracking running
         # agents.
@@ -236,7 +236,7 @@ class DefaultRequestHandler(RequestHandler):
         finally:
             if interrupted:
                 # TODO: Track this disconnected cleanup task.
-                asyncio.create_task(
+                asyncio.create_task(  # noqa: RUF006
                     self._cleanup_producer(producer_task, task_id)
                 )
             else:
@@ -288,7 +288,7 @@ class DefaultRequestHandler(RequestHandler):
             context=context,
         )
 
-        task_id = cast(str, request_context.task_id)
+        task_id = cast('str', request_context.task_id)
         queue = await self._queue_manager.create_or_tap(task_id)
         producer_task = asyncio.create_task(
             self._run_event_stream(
@@ -430,6 +430,7 @@ class DefaultRequestHandler(RequestHandler):
             yield event
 
     def should_add_push_info(self, params: MessageSendParams) -> bool:
+        """Determines if push notification info should be set for a task."""
         return bool(
             self._push_notifier
             and params.configuration

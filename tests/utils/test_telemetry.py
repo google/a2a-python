@@ -1,5 +1,6 @@
 import asyncio
 
+from typing import NoReturn
 from unittest import mock
 
 import pytest
@@ -40,7 +41,7 @@ def test_trace_function_sync_success(mock_span):
 
 def test_trace_function_sync_exception(mock_span):
     @trace_function
-    def bar():
+    def bar() -> NoReturn:
         raise ValueError('fail')
 
     with pytest.raises(ValueError):
@@ -52,14 +53,14 @@ def test_trace_function_sync_exception(mock_span):
 def test_trace_function_sync_attribute_extractor_called(mock_span):
     called = {}
 
-    def attr_extractor(span, args, kwargs, result, exception):
+    def attr_extractor(span, args, kwargs, result, exception) -> None:
         called['called'] = True
         assert span is mock_span
         assert exception is None
         assert result == 42
 
     @trace_function(attribute_extractor=attr_extractor)
-    def foo():
+    def foo() -> int:
         return 42
 
     foo()
@@ -69,11 +70,11 @@ def test_trace_function_sync_attribute_extractor_called(mock_span):
 def test_trace_function_sync_attribute_extractor_error_logged(mock_span):
     with mock.patch('a2a.utils.telemetry.logger') as logger:
 
-        def attr_extractor(span, args, kwargs, result, exception):
+        def attr_extractor(span, args, kwargs, result, exception) -> NoReturn:
             raise RuntimeError('attr fail')
 
         @trace_function(attribute_extractor=attr_extractor)
-        def foo():
+        def foo() -> int:
             return 1
 
         foo()
@@ -96,7 +97,7 @@ async def test_trace_function_async_success(mock_span):
 @pytest.mark.asyncio
 async def test_trace_function_async_exception(mock_span):
     @trace_function
-    async def bar():
+    async def bar() -> NoReturn:
         await asyncio.sleep(0)
         raise RuntimeError('async fail')
 
@@ -110,13 +111,13 @@ async def test_trace_function_async_exception(mock_span):
 async def test_trace_function_async_attribute_extractor_called(mock_span):
     called = {}
 
-    def attr_extractor(span, args, kwargs, result, exception):
+    def attr_extractor(span, args, kwargs, result, exception) -> None:
         called['called'] = True
         assert exception is None
         assert result == 99
 
     @trace_function(attribute_extractor=attr_extractor)
-    async def foo():
+    async def foo() -> int:
         return 99
 
     await foo()
@@ -125,7 +126,7 @@ async def test_trace_function_async_attribute_extractor_called(mock_span):
 
 def test_trace_function_with_args_and_attributes(mock_span):
     @trace_function(span_name='custom.span', attributes={'foo': 'bar'})
-    def foo():
+    def foo() -> int:
         return 1
 
     foo()
@@ -135,10 +136,10 @@ def test_trace_function_with_args_and_attributes(mock_span):
 def test_trace_class_exclude_list(mock_span):
     @trace_class(exclude_list=['skip_me'])
     class MyClass:
-        def a(self):
+        def a(self) -> str:
             return 'a'
 
-        def skip_me(self):
+        def skip_me(self) -> str:
             return 'skip'
 
         def __str__(self):
@@ -155,10 +156,10 @@ def test_trace_class_exclude_list(mock_span):
 def test_trace_class_include_list(mock_span):
     @trace_class(include_list=['only_this'])
     class MyClass:
-        def only_this(self):
+        def only_this(self) -> str:
             return 'yes'
 
-        def not_this(self):
+        def not_this(self) -> str:
             return 'no'
 
     obj = MyClass()
@@ -174,7 +175,7 @@ def test_trace_class_dunder_not_traced(mock_span):
         def __init__(self):
             self.x = 1
 
-        def foo(self):
+        def foo(self) -> str:
             return 'foo'
 
     obj = MyClass()
