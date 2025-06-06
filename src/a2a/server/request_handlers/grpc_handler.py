@@ -102,6 +102,7 @@ dler.
             return proto_utils.ToProto.task_or_message(task_or_message)
         except ServerError as e:
             await self.abort_context(e, context)
+        return a2a_pb2.SendMessageResponse()
 
     @validate_async_generator(
         lambda self: self.agent_card.capabilities.streaming,
@@ -162,9 +163,12 @@ dler.
             )
             if task:
                 return proto_utils.ToProto.task(task)
-            self.abort_context(ServerError(error=TaskNotFoundError()), context)
+            await self.abort_context(
+                ServerError(error=TaskNotFoundError()), context
+            )
         except ServerError as e:
             await self.abort_context(e, context)
+        return a2a_pb2.Task()
 
     @validate_async_generator(
         lambda self: self.agent_card.capabilities.streaming,
@@ -221,6 +225,7 @@ dler.
             return proto_utils.ToProto.task_push_notification_config(config)
         except ServerError as e:
             await self.abort_context(e, context)
+        return a2a_pb2.TaskPushNotificationConfig()
 
     @validate(
         lambda self: self.agent_card.capabilities.pushNotifications,
@@ -230,7 +235,7 @@ dler.
         self,
         request: a2a_pb2.CreateTaskPushNotificationRequest,
         context: grpc.aio.ServicerContext,
-    ) -> TaskPushNotificationConfig:
+    ) -> a2a_pb2.TaskPushNotificationConfig:
         """Handles the 'CreateTaskPushNotification' gRPC method.
 
         Requires the agent to support push notifications.
@@ -259,6 +264,7 @@ dler.
             return proto_utils.ToProto.task_push_notification_config(config)
         except ServerError as e:
             await self.abort_context(e, context)
+        return a2a_pb2.TaskPushNotificationConfig()
 
     async def GetTask(
         self,
@@ -281,9 +287,12 @@ dler.
             )
             if task:
                 return proto_utils.ToProto.task(task)
-            self.abort_context(ServerError(error=TaskNotFoundError()), context)
+            await self.abort_context(
+                ServerError(error=TaskNotFoundError()), context
+            )
         except ServerError as e:
             await self.abort_context(e, context)
+        return a2a_pb2.Task()
 
     async def GetAgentCard(
         self,
