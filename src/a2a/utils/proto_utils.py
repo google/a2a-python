@@ -85,7 +85,7 @@ class ToProto:
                 else None
             ),
             history=(
-                [ToProto.message(h) for h in task.history] if task.history else None
+                [ToProto.message(h) for h in task.history] if task.history else None # type: ignore[misc]
             ),
         )
 
@@ -374,20 +374,20 @@ class ToProto:
                     scopes={
                         k: v for (k, v) in flows.clientCredentials.scopes.items()
                 },
-                    token_url=flows.client_credentials.tokenUrl,
+                    token_url=flows.clientCredentials.tokenUrl,
                 ),
             )
         if flows.implicit:
             return a2a_pb2.OAuthFlows(
                 implicit=a2a_pb2.ImplicitOAuthFlow(
-                    authorization_url=flows.implicit.authorization_Url,
+                    authorization_url=flows.implicit.authorizationUrl,
                     refresh_url=flows.implicit.refreshUrl,
                     scopes={k: v for (k, v) in flows.implicit.scopes.items()},
                 ),
             )
         if flows.password:
             return a2a_pb2.OAuthFlows(
-                password=types.PasswordOAuthFlow(
+                password=a2a_pb2.PasswordOAuthFlow(
                     refresh_url=flows.password.refreshUrl,
                     scopes={k: v for (k, v) in flows.password.scopes.items()},
                     token_url=flows.password.tokenUrl,
@@ -598,7 +598,9 @@ class FromProto:
         m = re.match(_TASK_NAME_MATCH, request.name)
         if not m:
             raise ServerError(
-                error=types.InvalidParamsError(message=f"No task for {task.name}")
+                error=types.InvalidParamsError(
+                    message=f"No task for {request.name}"
+                )
             )
         return types.TaskIdParams(id=m.group(1))
 
@@ -695,18 +697,26 @@ class FromProto:
         )
 
     @classmethod
+    def security_schemes(
+        cls,
+        schemes: dict[str, a2a_pb2.SecurityScheme]
+    ) -> dict[str, types.SecurityScheme]:
+        return {k: cls.security_scheme(v) for (k, v) in schemes.items()}
+
+    @classmethod
     def security_scheme(
         cls,
         scheme: a2a_pb2.SecurityScheme,
     ) -> types.SecurityScheme:
         if scheme.HasField("api_key_security_scheme"):
-            return types.SecurityScheme(
+            ss = types.SecurityScheme(
                 root=types.APIKeySecurityScheme(
                     description=scheme.api_key_security_scheme.description,
-                    in_=scheme.api_key_security_scheme.location,
                     name=scheme.api_key_security_scheme.name,
+                    in_= scheme.api_key_security_scheme.location,   # type: ignore[call-arg]
                 )
             )
+            return ss
         if scheme.HasField("http_auth_security_scheme"):
             return types.SecurityScheme(
                 root=types.HTTPAuthSecurityScheme(
@@ -733,7 +743,7 @@ class FromProto:
     def oauth2_flows(cls, flows: a2a_pb2.OAuthFlows) -> types.OAuthFlows:
         if flows.HasField("authorization_code"):
             return types.OAuthFlows(
-                authorizationCode=types.AuthorizationCodeAuthFlow(
+                authorizationCode=types.AuthorizationCodeOAuthFlow(
                     authorizationUrl=flows.authorization_code.authorization_url,
                     refreshUrl=flows.authorization_code.refresh_url,
                     scopes={
@@ -744,7 +754,7 @@ class FromProto:
             )
         if flows.HasField("client_credentials"):
             return types.OAuthFlows(
-                clientCredentials=types.ClientCredentialsAuthFlow(
+                clientCredentials=types.ClientCredentialsOAuthFlow(
                     refreshUrl=flows.client_credentials.refresh_url,
                     scopes={
                         k: v for (k, v) in flows.client_credentials.scopes.items()
