@@ -40,6 +40,7 @@ class DefaultCallContextBuilder(CallContextBuilder):
     """A default implementation of CallContextBuilder."""
 
     def build(self, context: grpc.ServicerContext) -> ServerCallContext:
+        """Builds the ServerCallContext."""
         user = UnauthenticatedUser()
         state = {}
         with contextlib.suppress(Exception):
@@ -48,9 +49,7 @@ class DefaultCallContextBuilder(CallContextBuilder):
 
 
 class GrpcHandler(a2a_grpc.A2AServiceServicer):
-    """Maps incoming gRPC requests to the appropriate request handler method
-    and formats responses.
-    """
+    """Maps incoming gRPC requests to the appropriate request handler method."""
 
     def __init__(
         self,
@@ -64,6 +63,8 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
             agent_card: The AgentCard describing the agent's capabilities.
             request_handler: The underlying `RequestHandler` instance to
                              delegate requests to.
+            context_builder: The CallContextBuilder object. If none the
+                             DefaultCallContextBuilder is used.
         """
         self.agent_card = agent_card
         self.request_handler = request_handler

@@ -89,9 +89,9 @@ class ToProto:
                 else None
             ),
             history=(
-                [ToProto.message(h) for h in task.history]
+                [ToProto.message(h) for h in task.history]  # type: ignore[misc]
                 if task.history
-                else None  # type: ignore[misc]
+                else None
             ),
         )
 
@@ -103,7 +103,7 @@ class ToProto:
         )
 
     @classmethod
-    def task_state(cls, state: types.TaskState) -> a2a_pb2.TaskState:
+    def task_state(cls, state: types.TaskState) -> a2a_pb2.TaskState: # ruff: noqa: PLR0911
         match state:
             case types.TaskState.submitted:
                 return a2a_pb2.TaskState.TASK_STATE_SUBMITTED
@@ -488,7 +488,7 @@ class FromProto:
         )
 
     @classmethod
-    def task_state(cls, state: a2a_pb2.TaskState) -> types.TaskState:
+    def task_state(cls, state: a2a_pb2.TaskState) -> types.TaskState: # ruff: noqa: PLR0911
         match state:
             case a2a_pb2.TaskState.TASK_STATE_SUBMITTED:
                 return types.TaskState.submitted
