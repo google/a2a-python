@@ -299,7 +299,7 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
 
     async def abort_context(
         self, error: ServerError, context: grpc.ServicerContext
-    ):
+    ) -> None:
         match error.error:
             case types.JSONParseError():
                 await context.abort(

@@ -368,10 +368,7 @@ class ToProto:
                 authorization_code=a2a_pb2.AuthorizationCodeOAuthFlow(
                     authorization_url=flows.authorizationCode.authorizationUrl,
                     refresh_url=flows.authorizationCode.refreshUrl,
-                    scopes={
-                        k: v
-                        for (k, v) in flows.authorizationCode.scopes.items()
-                    },
+                    scopes=dict(flows.authorizationCode.scopes.items()),
                     token_url=flows.authorizationCode.tokenUrl,
                 ),
             )
@@ -379,10 +376,7 @@ class ToProto:
             return a2a_pb2.OAuthFlows(
                 client_credentials=a2a_pb2.ClientCredentialsOAuthFlow(
                     refresh_url=flows.clientCredentials.refreshUrl,
-                    scopes={
-                        k: v
-                        for (k, v) in flows.clientCredentials.scopes.items()
-                    },
+                    scopes=dict(flows.clientCredentials.scopes.items()),
                     token_url=flows.clientCredentials.tokenUrl,
                 ),
             )
@@ -391,14 +385,14 @@ class ToProto:
                 implicit=a2a_pb2.ImplicitOAuthFlow(
                     authorization_url=flows.implicit.authorizationUrl,
                     refresh_url=flows.implicit.refreshUrl,
-                    scopes={k: v for (k, v) in flows.implicit.scopes.items()},
+                    scopes=dict(flows.implicit.scopes.items()),
                 ),
             )
         if flows.password:
             return a2a_pb2.OAuthFlows(
                 password=a2a_pb2.PasswordOAuthFlow(
                     refresh_url=flows.password.refreshUrl,
-                    scopes={k: v for (k, v) in flows.password.scopes.items()},
+                    scopes=dict(flows.password.scopes.items()),
                     token_url=flows.password.tokenUrl,
                 ),
             )
@@ -722,14 +716,13 @@ class FromProto:
         scheme: a2a_pb2.SecurityScheme,
     ) -> types.SecurityScheme:
         if scheme.HasField('api_key_security_scheme'):
-            ss = types.SecurityScheme(
+            return types.SecurityScheme(
                 root=types.APIKeySecurityScheme(
                     description=scheme.api_key_security_scheme.description,
                     name=scheme.api_key_security_scheme.name,
                     in_=scheme.api_key_security_scheme.location,  # type: ignore[call-arg]
                 )
             )
-            return ss
         if scheme.HasField('http_auth_security_scheme'):
             return types.SecurityScheme(
                 root=types.HTTPAuthSecurityScheme(
@@ -759,10 +752,7 @@ class FromProto:
                 authorizationCode=types.AuthorizationCodeOAuthFlow(
                     authorizationUrl=flows.authorization_code.authorization_url,
                     refreshUrl=flows.authorization_code.refresh_url,
-                    scopes={
-                        k: v
-                        for (k, v) in flows.authorization_code.scopes.items()
-                    },
+                    scopes=dict(flows.authorization_code.scopes.items()),
                     tokenUrl=flows.authorization_code.token_url,
                 ),
             )
@@ -770,10 +760,7 @@ class FromProto:
             return types.OAuthFlows(
                 clientCredentials=types.ClientCredentialsOAuthFlow(
                     refreshUrl=flows.client_credentials.refresh_url,
-                    scopes={
-                        k: v
-                        for (k, v) in flows.client_credentials.scopes.items()
-                    },
+                    scopes=dict(flows.client_credentials.scopes.items()),
                     tokenUrl=flows.client_credentials.token_url,
                 ),
             )
@@ -782,13 +769,13 @@ class FromProto:
                 implicit=types.ImplicitOAuthFlow(
                     authorizationUrl=flows.implicit.authorization_url,
                     refreshUrl=flows.implicit.refresh_url,
-                    scopes={k: v for (k, v) in flows.implicit.scopes.items()},
+                    scopes=dict(flows.implicit.scopes.items()),
                 ),
             )
         return types.OAuthFlows(
             password=types.PasswordOAuthFlow(
                 refreshUrl=flows.password.refresh_url,
-                scopes={k: v for (k, v) in flows.password.scopes.items()},
+                scopes=dict(flows.password.scopes.items()),
                 tokenUrl=flows.password.token_url,
             ),
         )
