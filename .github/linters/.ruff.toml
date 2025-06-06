@@ -82,7 +82,7 @@ exclude = [
     "venv",
     "*/migrations/*",
     "noxfile.py",
-    "src/a2a/grpc/*.*",
+    "src/a2a/grpc/**",
 ]
 
 [lint.isort]
@@ -140,7 +140,10 @@ inline-quotes = "single"
 "types.py" = ["D", "E501", "N815"]  # Ignore docstring and annotation issues in types.py
 
 [format]
-exclude = ["types.py", "src/a2a/grpc/**"]
+exclude = [
+    "types.py",
+    "src/a2a/grpc/**",
+]
 docstring-code-format = true
 docstring-code-line-length = "dynamic" # Or set to 80
 quote-style = "single"

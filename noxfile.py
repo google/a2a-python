@@ -103,7 +103,9 @@ def format(session) -> None:
             }
         )
 
-        lint_paths_py = [f for f in changed_files if f.endswith('.py')]
+        lint_paths_py = [
+            f for f in changed_files if f.endswith('.py') and 'grpc/' not in f
+        ]
 
         if not lint_paths_py:
             session.log('No changed Python files to lint.')
@@ -111,6 +113,7 @@ def format(session) -> None:
 
     session.install(
         'types-requests',
+        'types-protobuf',
         'pyupgrade',
         'autoflake',
         'ruff',
