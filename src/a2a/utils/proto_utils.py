@@ -138,7 +138,7 @@ class ToProto:
         cls, config: types.PushNotificationConfig
     ) -> a2a_pb2.PushNotificationConfig:
         return a2a_pb2.PushNotificationConfig(
-            id=config.id or "",
+            id=config.id or '',
             url=config.url,
             token=config.token,
             authentication=ToProto.authentication_info(config.authentication),

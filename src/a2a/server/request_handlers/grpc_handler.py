@@ -65,8 +65,8 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
 
         Args:
             agent_card: The AgentCard describing the agent's capabilities.
-            request_handler: The underlying `RequestHandler` instance to delegat
-e requests to.
+            request_handler: The underlying `RequestHandler` instance to
+                             delegate requests to.
         """
         self.agent_card = agent_card
         self.request_handler = request_handler
@@ -84,10 +84,9 @@ e requests to.
             context: Context provided by the server.
 
         Returns:
-            A `SendMessageResponse` object containing the result (Task or Messag
-e)
-            or throws an error response if a `ServerError` is raised by the han
-dler.
+            A `SendMessageResponse` object containing the result (Task or
+            Message) or throws an error response if a `ServerError` is raised
+            by the handler.
         """
         try:
             # Construct the server context object
