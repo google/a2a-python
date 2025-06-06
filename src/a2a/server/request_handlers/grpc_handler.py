@@ -1,3 +1,4 @@
+# ruff: noqa: N802
 import contextlib
 import logging
 
@@ -55,7 +56,7 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
         self,
         agent_card: AgentCard,
         request_handler: RequestHandler,
-        context_builder: CallContextBuilder = DefaultCallContextBuilder(),
+        context_builder: CallContextBuilder | None = None
     ):
         """Initializes the GrpcHandler.
 
@@ -66,7 +67,7 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
         """
         self.agent_card = agent_card
         self.request_handler = request_handler
-        self.context_builder = context_builder
+        self.context_builder = context_builder or DefaultCallContextBuilder()
 
     async def SendMessage(
         self,
@@ -295,11 +296,13 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
         request: a2a_pb2.GetAgentCardRequest,
         context: grpc.aio.ServicerContext,
     ) -> a2a_pb2.AgentCard:
+        """Get the agent card for the agent served."""
         return proto_utils.ToProto.agent_card(self.agent_card)
 
     async def abort_context(
         self, error: ServerError, context: grpc.ServicerContext
     ) -> None:
+        """Sets the grpc errors appropriately in the context."""
         match error.error:
             case types.JSONParseError():
                 await context.abort(
