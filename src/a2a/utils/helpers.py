@@ -1,4 +1,5 @@
 """General utility functions for the A2A Python SDK."""
+
 import functools
 import logging
 
@@ -147,6 +148,7 @@ def validate(
 
     return decorator
 
+
 def validate_async_generator(
     expression: Callable[[Any], bool], error_message: str | None = None
 ):
@@ -178,6 +180,7 @@ def validate_async_generator(
         return wrapper
 
     return decorator
+
 
 def are_modalities_compatible(
     server_output_modes: list[str] | None, client_output_modes: list[str] | None

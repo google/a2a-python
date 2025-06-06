@@ -1,26 +1,24 @@
-import json
 import logging
+
 from collections.abc import AsyncGenerator
-from typing import Any
-from uuid import uuid4
+
 import grpc
 
-from a2a.client.errors import A2AClientHTTPError, A2AClientJSONError
+from a2a.grpc import a2a_pb2, a2a_pb2_grpc
 from a2a.types import (
     AgentCard,
+    Message,
     MessageSendParams,
     Task,
-    TaskStatusUpdateEvent,
     TaskArtifactUpdateEvent,
-    TaskPushNotificationConfig,
     TaskIdParams,
+    TaskPushNotificationConfig,
     TaskQueryParams,
-    Message,
+    TaskStatusUpdateEvent,
 )
-from a2a.utils.telemetry import SpanKind, trace_class
 from a2a.utils import proto_utils
-from a2a.grpc import a2a_pb2_grpc
-from a2a.grpc import a2a_pb2
+from a2a.utils.telemetry import SpanKind, trace_class
+
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +46,7 @@ class A2AGrpcClient:
     async def send_message(
         self,
         request: MessageSendParams,
-    ) -> Task | Message :
+    ) -> Task | Message:
         """Sends a non-streaming message request to the agent.
 
         Args:
@@ -174,7 +172,7 @@ class A2AGrpcClient:
 
     async def get_task_callback(
         self,
-        request: TaskIdParams, # TODO: Update to a push id params
+        request: TaskIdParams,  # TODO: Update to a push id params
     ) -> TaskPushNotificationConfig:
         """Retrieves the push notification configuration for a specific task.
 

@@ -2,19 +2,20 @@
 """Utils for converting between proto and Python types."""
 
 import json
-from typing import Any, Dict
 import re
 
-from a2a.grpc import a2a_pb2
+from typing import Any
+
+from google.protobuf import json_format, struct_pb2
+
 from a2a import types
+from a2a.grpc import a2a_pb2
 from a2a.utils.errors import ServerError
-from google.protobuf import struct_pb2
-from google.protobuf import json_format
 
 
 # Regexp patterns for matching
-_TASK_NAME_MATCH = r"tasks/(\w+)"
-_TASK_PUSH_CONFIG_NAME_MATCH = r"tasks/(\w+)/pushNotifications/(\w+)"
+_TASK_NAME_MATCH = r'tasks/(\w+)'
+_TASK_PUSH_CONFIG_NAME_MATCH = r'tasks/(\w+)/pushNotifications/(\w+)'
 
 
 class ToProto:
@@ -34,7 +35,9 @@ class ToProto:
         )
 
     @classmethod
-    def metadata(cls, metadata: Dict[str, Any] | None) -> struct_pb2.Struct | None:
+    def metadata(
+        cls, metadata: dict[str, Any] | None
+    ) -> struct_pb2.Struct | None:
         if metadata is None:
             return None
         return struct_pb2.Struct(
@@ -50,15 +53,14 @@ class ToProto:
     def part(cls, part: types.Part) -> a2a_pb2.Part:
         if isinstance(part.root, types.TextPart):
             return a2a_pb2.Part(text=part.root.text)
-        elif isinstance(part.root, types.FilePart):
+        if isinstance(part.root, types.FilePart):
             return a2a_pb2.Part(file=ToProto.file(part.root.file))
-        elif isinstance(part.root, types.DataPart):
+        if isinstance(part.root, types.DataPart):
             return a2a_pb2.Part(data=ToProto.data(part.root.data))
-        else:
-            raise ValueError(f"Unsupported part type: {part.root}")
+        raise ValueError(f'Unsupported part type: {part.root}')
 
     @classmethod
-    def data(cls, data: Dict[str, Any]) -> a2a_pb2.DataPart:
+    def data(cls, data: dict[str, Any]) -> a2a_pb2.DataPart:
         json_data = json.dumps(data)
         return a2a_pb2.DataPart(
             data=json_format.Parse(
@@ -68,10 +70,12 @@ class ToProto:
         )
 
     @classmethod
-    def file(cls, file: types.FileWithUri | types.FileWithBytes) -> a2a_pb2.FilePart:
+    def file(
+        cls, file: types.FileWithUri | types.FileWithBytes
+    ) -> a2a_pb2.FilePart:
         if isinstance(file, types.FileWithUri):
             return a2a_pb2.FilePart(file_with_uri=file.uri)
-        return a2a_pb2.FilePart(file_with_bytes=file.bytes.encode("utf-8"))
+        return a2a_pb2.FilePart(file_with_bytes=file.bytes.encode('utf-8'))
 
     @classmethod
     def task(cls, task: types.Task) -> a2a_pb2.Task:
@@ -85,7 +89,9 @@ class ToProto:
                 else None
             ),
             history=(
-                [ToProto.message(h) for h in task.history] if task.history else None # type: ignore[misc]
+                [ToProto.message(h) for h in task.history]
+                if task.history
+                else None  # type: ignore[misc]
             ),
         )
 
@@ -197,16 +203,15 @@ class ToProto:
             return a2a_pb2.StreamResponse(
                 status_update=ToProto.task_status_update_event(event)
             )
-        elif isinstance(event, types.TaskArtifactUpdateEvent):
+        if isinstance(event, types.TaskArtifactUpdateEvent):
             return a2a_pb2.StreamResponse(
                 artifact_update=ToProto.task_artifact_update_event(event)
             )
-        elif isinstance(event, types.Message):
+        if isinstance(event, types.Message):
             return a2a_pb2.StreamResponse(msg=ToProto.message(event))
-        elif isinstance(event, types.Task):
+        if isinstance(event, types.Task):
             return a2a_pb2.StreamResponse(task=ToProto.task(event))
-        else:
-            raise ValueError(f"Unsupported event type: {type(event)}")
+        raise ValueError(f'Unsupported event type: {type(event)}')
 
     @classmethod
     def task_or_message(
@@ -232,9 +237,9 @@ class ToProto:
     ) -> a2a_pb2.StreamResponse:
         if isinstance(event, types.Message):
             return a2a_pb2.StreamResponse(msg=cls.message(event))
-        elif isinstance(event, types.Task):
+        if isinstance(event, types.Task):
             return a2a_pb2.StreamResponse(task=cls.task(event))
-        elif isinstance(event, types.TaskStatusUpdateEvent):
+        if isinstance(event, types.TaskStatusUpdateEvent):
             return a2a_pb2.StreamResponse(
                 status_update=cls.task_status_update_event(event),
             )
@@ -247,7 +252,7 @@ class ToProto:
         cls, config: types.TaskPushNotificationConfig
     ) -> a2a_pb2.TaskPushNotificationConfig:
         return a2a_pb2.TaskPushNotificationConfig(
-            name=f"tasks/{config.taskId}/pushNotifications/{config.taskId}",
+            name=f'tasks/{config.taskId}/pushNotifications/{config.taskId}',
             push_notification_config=cls.push_notification_config(
                 config.pushNotificationConfig,
             ),
@@ -305,7 +310,9 @@ class ToProto:
         for s in security:
             rval.append(
                 a2a_pb2.Security(
-                    schemes={k: a2a_pb2.StringList(list=v) for (k, v) in s.items()}
+                    schemes={
+                        k: a2a_pb2.StringList(list=v) for (k, v) in s.items()
+                    }
                 )
             )
         return rval
@@ -362,18 +369,20 @@ class ToProto:
                     authorization_url=flows.authorizationCode.authorizationUrl,
                     refresh_url=flows.authorizationCode.refreshUrl,
                     scopes={
-                        k: v for (k, v) in flows.authorizationCode.scopes.items()
+                        k: v
+                        for (k, v) in flows.authorizationCode.scopes.items()
                     },
-                        token_url=flows.authorizationCode.tokenUrl,
-            ),
+                    token_url=flows.authorizationCode.tokenUrl,
+                ),
             )
         if flows.clientCredentials:
             return a2a_pb2.OAuthFlows(
                 client_credentials=a2a_pb2.ClientCredentialsOAuthFlow(
                     refresh_url=flows.clientCredentials.refreshUrl,
                     scopes={
-                        k: v for (k, v) in flows.clientCredentials.scopes.items()
-                },
+                        k: v
+                        for (k, v) in flows.clientCredentials.scopes.items()
+                    },
                     token_url=flows.clientCredentials.tokenUrl,
                 ),
             )
@@ -393,7 +402,7 @@ class ToProto:
                     token_url=flows.password.tokenUrl,
                 ),
             )
-        raise ValueError("Unknown oauth flow definition")
+        raise ValueError('Unknown oauth flow definition')
 
     @classmethod
     def skill(cls, skill: types.AgentSkill) -> a2a_pb2.AgentSkill:
@@ -433,7 +442,7 @@ class FromProto:
         )
 
     @classmethod
-    def metadata(cls, metadata: struct_pb2.Struct) -> Dict[str, Any]:
+    def metadata(cls, metadata: struct_pb2.Struct) -> dict[str, Any]:
         return {
             key: value.string_value
             for key, value in metadata.fields.items()
@@ -442,25 +451,30 @@ class FromProto:
 
     @classmethod
     def part(cls, part: a2a_pb2.Part) -> types.Part:
-        if part.HasField("text"):
+        if part.HasField('text'):
             return types.Part(root=types.TextPart(text=part.text))
-        elif part.HasField("file"):
-            return types.Part(root=types.FilePart(file=FromProto.file(part.file)))
-        elif part.HasField("data"):
-            return types.Part(root=types.DataPart(data=FromProto.data(part.data)))
-        else:
-            raise ValueError(f"Unsupported part type: {part}")
+        if part.HasField('file'):
+            return types.Part(
+                root=types.FilePart(file=FromProto.file(part.file))
+            )
+        if part.HasField('data'):
+            return types.Part(
+                root=types.DataPart(data=FromProto.data(part.data))
+            )
+        raise ValueError(f'Unsupported part type: {part}')
 
     @classmethod
-    def data(cls, data: a2a_pb2.DataPart) -> Dict[str, Any]:
+    def data(cls, data: a2a_pb2.DataPart) -> dict[str, Any]:
         json_data = json_format.MessageToJson(data.data)
         return json.loads(json_data)
 
     @classmethod
-    def file(cls, file: a2a_pb2.FilePart) -> types.FileWithUri | types.FileWithBytes:
-        if file.HasField("file_with_uri"):
+    def file(
+        cls, file: a2a_pb2.FilePart
+    ) -> types.FileWithUri | types.FileWithBytes:
+        if file.HasField('file_with_uri'):
             return types.FileWithUri(uri=file.file_with_uri)
-        return types.FileWithBytes(bytes=file.file_with_bytes.decode("utf-8"))
+        return types.FileWithBytes(bytes=file.file_with_bytes.decode('utf-8'))
 
     @classmethod
     def task(cls, task: a2a_pb2.Task) -> types.Task:
@@ -591,7 +605,7 @@ class FromProto:
             if not m:
                 raise ServerError(
                     error=types.InvalidParamsError(
-                        message=f"No task for {request.name}"
+                        message=f'No task for {request.name}'
                     )
                 )
             return types.TaskIdParams(id=m.group(1))
@@ -599,7 +613,7 @@ class FromProto:
         if not m:
             raise ServerError(
                 error=types.InvalidParamsError(
-                    message=f"No task for {request.name}"
+                    message=f'No task for {request.name}'
                 )
             )
         return types.TaskIdParams(id=m.group(1))
@@ -613,7 +627,7 @@ class FromProto:
         if not m:
             raise ServerError(
                 error=types.InvalidParamsError(
-                    message=f"No task for {request.parent}"
+                    message=f'No task for {request.parent}'
                 )
             )
         return types.TaskPushNotificationConfig(
@@ -653,7 +667,7 @@ class FromProto:
         if not m:
             raise ServerError(
                 error=types.InvalidParamsError(
-                    message=f"No task for {request.name}"
+                    message=f'No task for {request.name}'
                 )
             )
         return types.TaskQueryParams(
@@ -698,8 +712,7 @@ class FromProto:
 
     @classmethod
     def security_schemes(
-        cls,
-        schemes: dict[str, a2a_pb2.SecurityScheme]
+        cls, schemes: dict[str, a2a_pb2.SecurityScheme]
     ) -> dict[str, types.SecurityScheme]:
         return {k: cls.security_scheme(v) for (k, v) in schemes.items()}
 
@@ -708,16 +721,16 @@ class FromProto:
         cls,
         scheme: a2a_pb2.SecurityScheme,
     ) -> types.SecurityScheme:
-        if scheme.HasField("api_key_security_scheme"):
+        if scheme.HasField('api_key_security_scheme'):
             ss = types.SecurityScheme(
                 root=types.APIKeySecurityScheme(
                     description=scheme.api_key_security_scheme.description,
                     name=scheme.api_key_security_scheme.name,
-                    in_= scheme.api_key_security_scheme.location,   # type: ignore[call-arg]
+                    in_=scheme.api_key_security_scheme.location,  # type: ignore[call-arg]
                 )
             )
             return ss
-        if scheme.HasField("http_auth_security_scheme"):
+        if scheme.HasField('http_auth_security_scheme'):
             return types.SecurityScheme(
                 root=types.HTTPAuthSecurityScheme(
                     description=scheme.http_auth_security_scheme.description,
@@ -725,7 +738,7 @@ class FromProto:
                     bearerFormat=scheme.http_auth_security_scheme.bearer_format,
                 )
             )
-        if scheme.HasField("oauth2_security_scheme"):
+        if scheme.HasField('oauth2_security_scheme'):
             return types.SecurityScheme(
                 root=types.OAuth2SecurityScheme(
                     description=scheme.oauth2_security_scheme.description,
@@ -741,28 +754,30 @@ class FromProto:
 
     @classmethod
     def oauth2_flows(cls, flows: a2a_pb2.OAuthFlows) -> types.OAuthFlows:
-        if flows.HasField("authorization_code"):
+        if flows.HasField('authorization_code'):
             return types.OAuthFlows(
                 authorizationCode=types.AuthorizationCodeOAuthFlow(
                     authorizationUrl=flows.authorization_code.authorization_url,
                     refreshUrl=flows.authorization_code.refresh_url,
                     scopes={
-                        k: v for (k, v) in flows.authorization_code.scopes.items()
+                        k: v
+                        for (k, v) in flows.authorization_code.scopes.items()
                     },
                     tokenUrl=flows.authorization_code.token_url,
                 ),
             )
-        if flows.HasField("client_credentials"):
+        if flows.HasField('client_credentials'):
             return types.OAuthFlows(
                 clientCredentials=types.ClientCredentialsOAuthFlow(
                     refreshUrl=flows.client_credentials.refresh_url,
                     scopes={
-                        k: v for (k, v) in flows.client_credentials.scopes.items()
+                        k: v
+                        for (k, v) in flows.client_credentials.scopes.items()
                     },
                     tokenUrl=flows.client_credentials.token_url,
                 ),
             )
-        if flows.HasField("implicit"):
+        if flows.HasField('implicit'):
             return types.OAuthFlows(
                 implicit=types.ImplicitOAuthFlow(
                     authorizationUrl=flows.implicit.authorization_url,

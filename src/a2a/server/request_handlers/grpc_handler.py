@@ -1,36 +1,31 @@
-import logging
-import grpc
 import contextlib
+import logging
 
-from typing import AsyncIterable
 from abc import ABC, abstractmethod
+from collections.abc import AsyncIterable
 
+import grpc
+
+import a2a.grpc.a2a_pb2_grpc as a2a_grpc
+
+from a2a import types
+from a2a.auth.user import UnauthenticatedUser
+from a2a.grpc import a2a_pb2
 from a2a.server.context import ServerCallContext
 from a2a.server.request_handlers.request_handler import RequestHandler
 from a2a.types import (
     AgentCard,
-    InternalError,
-    Message,
-    Task,
-    TaskArtifactUpdateEvent,
     TaskNotFoundError,
-    TaskPushNotificationConfig,
-    TaskStatusUpdateEvent,
 )
-from a2a import types
-from a2a.auth.user import User as A2AUser
-from a2a.auth.user import UnauthenticatedUser
-from a2a.server.context import ServerCallContext
+from a2a.utils import proto_utils
 from a2a.utils.errors import ServerError
 from a2a.utils.helpers import validate, validate_async_generator
-from a2a.utils import proto_utils
-import a2a.grpc.a2a_pb2 as a2a_pb2
-import a2a.grpc.a2a_pb2_grpc as a2a_grpc
 
 
 logger = logging.getLogger(__name__)
 
 # For now we use a trivial wrapper on the grpc context object
+
 
 class CallContextBuilder(ABC):
     """A class for building ServerCallContexts using the Starlette Request."""
@@ -53,7 +48,8 @@ class DefaultCallContextBuilder(CallContextBuilder):
 
 class GrpcHandler(a2a_grpc.A2AServiceServicer):
     """Maps incoming gRPC requests to the appropriate request handler method
- and formats responses."""
+    and formats responses.
+    """
 
     def __init__(
         self,
@@ -115,7 +111,7 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
         """Handles the 'StreamMessage' gRPC method.
 
         Yields response objects as they are produced by the underlying handler's
- stream.
+        stream.
 
         Args:
             request: The incoming `SendMessageRequest` object.
@@ -181,7 +177,7 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
         """Handles the 'TaskSubscription' gRPC method.
 
         Yields response objects as they are produced by the underlying handler's
- stream.
+        stream.
 
         Args:
             request: The incoming `TaskSubscriptionRequest` object.
@@ -193,7 +189,8 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
         try:
             server_context = self.context_builder.build(context)
             async for event in self.request_handler.on_resubscribe_to_task(
-                proto_utils.FromProto.task_id_params(request), server_context,
+                proto_utils.FromProto.task_id_params(request),
+                server_context,
             ):
                 yield proto_utils.ToProto.stream_response(event)
         except ServerError as e:
