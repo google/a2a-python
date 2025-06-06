@@ -103,7 +103,7 @@ class ToProto:
         )
 
     @classmethod
-    def task_state(cls, state: types.TaskState) -> a2a_pb2.TaskState: # ruff: noqa: PLR0911
+    def task_state(cls, state: types.TaskState) -> a2a_pb2.TaskState:
         match state:
             case types.TaskState.submitted:
                 return a2a_pb2.TaskState.TASK_STATE_SUBMITTED
@@ -488,7 +488,7 @@ class FromProto:
         )
 
     @classmethod
-    def task_state(cls, state: a2a_pb2.TaskState) -> types.TaskState: # ruff: noqa: PLR0911
+    def task_state(cls, state: a2a_pb2.TaskState) -> types.TaskState:
         match state:
             case a2a_pb2.TaskState.TASK_STATE_SUBMITTED:
                 return types.TaskState.submitted

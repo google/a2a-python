@@ -138,7 +138,8 @@ inline-quotes = "single"
     "SLF001",
 ]
 "types.py" = ["D", "E501", "N815"]  # Ignore docstring and annotation issues in types.py
-"proto_utils.py" = ["D102"]
+"proto_utils.py" = ["D102", "PLR0911"]
+"helpers.py" = ["ANN001"]
 
 [format]
 exclude = [
