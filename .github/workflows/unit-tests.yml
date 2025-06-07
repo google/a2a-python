@@ -40,8 +40,11 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev
 
-      - name: Run tests
-        run: uv run pytest
+      - name: Run tests and check coverage
+        run: uv run pytest --cov=a2a --cov-report=xml --cov-fail-under=90
+
+      - name: Show coverage summary in log
+        run: uv run coverage report
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
