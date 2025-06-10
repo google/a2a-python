@@ -139,6 +139,7 @@ async def test_consume_all_multiple_events(
             event = events[cursor]
             cursor += 1
             return event
+        return None
 
     mock_event_queue.dequeue_event = mock_dequeue
     consumed_events: list[Any] = []
@@ -181,6 +182,7 @@ async def test_consume_until_message(
             event = events[cursor]
             cursor += 1
             return event
+        return None
 
     mock_event_queue.dequeue_event = mock_dequeue
     consumed_events: list[Any] = []
@@ -210,6 +212,7 @@ async def test_consume_message_events(
             event = events[cursor]
             cursor += 1
             return event
+        return None
 
     mock_event_queue.dequeue_event = mock_dequeue
     consumed_events: list[Any] = []
@@ -219,3 +222,22 @@ async def test_consume_message_events(
     assert len(consumed_events) == 1
     assert consumed_events[0] == events[0]
     assert mock_event_queue.task_done.call_count == 1
+
+@pytest.mark.asyncio
+async def test_consume_task_input_required(
+    event_consumer: MagicMock,
+    mock_event_queue: MagicMock,
+):
+    task = Task(**MINIMAL_TASK)
+    task.status = TaskStatus(state=TaskState.input_required)
+
+    async def mock_dequeue() -> Any:
+        return task
+
+    mock_event_queue.dequeue_event = mock_dequeue
+    consumed_events: list[Any] = []
+    #consumer should terminate on input_required task
+    async for event in event_consumer.consume_all():
+        consumed_events.append(event)
+    assert len(consumed_events) == 1
+    assert consumed_events[0] == task

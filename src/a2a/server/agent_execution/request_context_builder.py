@@ -6,7 +6,7 @@ from a2a.types import MessageSendParams, Task
 
 
 class RequestContextBuilder(ABC):
-    """Builds request context to be supplied to agent executor"""
+    """Builds request context to be supplied to agent executor."""
 
     @abstractmethod
     async def build(

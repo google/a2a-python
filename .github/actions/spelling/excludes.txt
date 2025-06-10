@@ -85,7 +85,6 @@
 \.zip$
 ^\.github/actions/spelling/
 ^\.github/workflows/
-^\Qsrc/a2a/auth/__init__.py\E$
-^\Qsrc/a2a/server/request_handlers/context.py\E$
 CHANGELOG.md
 noxfile.py
+^src/a2a/grpc/

@@ -63,4 +63,6 @@ jobs:
           VALIDATE_TYPESCRIPT_STANDARD: false
           VALIDATE_GIT_COMMITLINT: false
           PYTHON_MYPY_CONFIG_FILE: .mypy.ini
-          FILTER_REGEX_INCLUDE: "^src/**"
+          FILTER_REGEX_INCLUDE: ".*src/**/*"
+          FILTER_REGEX_EXCLUDE: ".*src/a2a/grpc/**/*"
+          PYTHON_RUFF_CONFIG_FILE: .ruff.toml
