@@ -12,6 +12,7 @@ from a2a.types import (
     GetTaskSuccessResponse,
     InvalidAgentResponseError,
     InvalidParamsError,
+    JSONRPCError,
     JSONRPCErrorResponse,
     Task,
     TaskNotFoundError,
