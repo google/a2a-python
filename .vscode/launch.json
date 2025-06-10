@@ -47,7 +47,7 @@
         "-s"
       ],
       "console": "integratedTerminal",
-      "justMyCode": true // Or false if you need to step into library code
+      "justMyCode": true
     }
   ]
 }
