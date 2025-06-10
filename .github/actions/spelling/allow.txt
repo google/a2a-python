@@ -29,12 +29,14 @@ coro
 datamodel
 dunders
 genai
+getkwargs
 gle
 inmemory
 kwarg
 langgraph
 lifecycles
 linting
+lstrips
 oauthoidc
 opensource
 protoc
@@ -43,4 +45,6 @@ pyversions
 socio
 sse
 tagwords
+taskupdate
+testuuid
 vulnz

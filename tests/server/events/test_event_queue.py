@@ -1,10 +1,15 @@
 import asyncio
 
 from typing import Any
+from unittest.mock import (
+    AsyncMock,
+    MagicMock,
+    patch,
+)
 
 import pytest
 
-from a2a.server.events.event_queue import EventQueue
+from a2a.server.events.event_queue import DEFAULT_MAX_QUEUE_SIZE, EventQueue
 from a2a.types import (
     A2AError,
     Artifact,
@@ -37,6 +42,31 @@ MESSAGE_PAYLOAD: dict[str, Any] = {
 @pytest.fixture
 def event_queue() -> EventQueue:
     return EventQueue()
+
+
+def test_constructor_default_max_queue_size():
+    """Test that the queue is created with the default max size."""
+    eq = EventQueue()
+    assert eq.queue.maxsize == DEFAULT_MAX_QUEUE_SIZE
+
+
+def test_constructor_max_queue_size():
+    """Test that the asyncio.Queue is created with the specified max_queue_size."""
+    custom_size = 123
+    eq = EventQueue(max_queue_size=custom_size)
+    assert eq.queue.maxsize == custom_size
+
+
+def test_constructor_invalid_max_queue_size():
+    """Test that a ValueError is raised for non-positive max_queue_size."""
+    with pytest.raises(
+        ValueError, match='max_queue_size must be greater than 0'
+    ):
+        EventQueue(max_queue_size=0)
+    with pytest.raises(
+        ValueError, match='max_queue_size must be greater than 0'
+    ):
+        EventQueue(max_queue_size=-10)
 
 
 @pytest.mark.asyncio
@@ -106,3 +136,220 @@ async def test_enqueue_different_event_types(
         await event_queue.enqueue_event(event)
         dequeued_event = await event_queue.dequeue_event()
         assert dequeued_event == event
+
+
+@pytest.mark.asyncio
+async def test_enqueue_event_propagates_to_children(
+    event_queue: EventQueue,
+) -> None:
+    """Test that events are enqueued to tapped child queues."""
+    child_queue1 = event_queue.tap()
+    child_queue2 = event_queue.tap()
+
+    event1 = Message(**MESSAGE_PAYLOAD)
+    event2 = Task(**MINIMAL_TASK)
+
+    await event_queue.enqueue_event(event1)
+    await event_queue.enqueue_event(event2)
+
+    # Check parent queue
+    assert await event_queue.dequeue_event(no_wait=True) == event1
+    assert await event_queue.dequeue_event(no_wait=True) == event2
+
+    # Check child queue 1
+    assert await child_queue1.dequeue_event(no_wait=True) == event1
+    assert await child_queue1.dequeue_event(no_wait=True) == event2
+
+    # Check child queue 2
+    assert await child_queue2.dequeue_event(no_wait=True) == event1
+    assert await child_queue2.dequeue_event(no_wait=True) == event2
+
+
+@pytest.mark.asyncio
+async def test_enqueue_event_when_closed(event_queue: EventQueue) -> None:
+    """Test that no event is enqueued if the parent queue is closed."""
+    await event_queue.close()  # Close the queue first
+
+    event = Message(**MESSAGE_PAYLOAD)
+    # Attempt to enqueue, should do nothing or log a warning as per implementation
+    await event_queue.enqueue_event(event)
+
+    # Verify the queue is still empty
+    with pytest.raises(asyncio.QueueEmpty):
+        await event_queue.dequeue_event(no_wait=True)
+
+    # Also verify child queues are not affected directly by parent's enqueue attempt when closed
+    # (though they would be closed too by propagation)
+    child_queue = (
+        event_queue.tap()
+    )  # Tap after close might be weird, but let's see
+    # The current implementation would add it to _children
+    # and then child.close() would be called.
+    # A more robust test for child propagation is in test_close_propagates
+    await (
+        child_queue.close()
+    )  # ensure child is also seen as closed for this test's purpose
+    with pytest.raises(asyncio.QueueEmpty):
+        await child_queue.dequeue_event(no_wait=True)
+
+
+@pytest.mark.asyncio
+async def test_dequeue_event_closed_and_empty_no_wait(
+    event_queue: EventQueue,
+) -> None:
+    """Test dequeue_event raises QueueEmpty when closed, empty, and no_wait=True."""
+    await event_queue.close()
+    assert event_queue.is_closed()
+    # Ensure queue is actually empty (e.g. by trying a non-blocking get on internal queue)
+    with pytest.raises(asyncio.QueueEmpty):
+        event_queue.queue.get_nowait()
+
+    with pytest.raises(asyncio.QueueEmpty, match='Queue is closed.'):
+        await event_queue.dequeue_event(no_wait=True)
+
+
+@pytest.mark.asyncio
+async def test_dequeue_event_closed_and_empty_waits_then_raises(
+    event_queue: EventQueue,
+) -> None:
+    """Test dequeue_event raises QueueEmpty eventually when closed, empty, and no_wait=False."""
+    await event_queue.close()
+    assert event_queue.is_closed()
+    with pytest.raises(
+        asyncio.QueueEmpty
+    ):  # Should still raise QueueEmpty as per current implementation
+        event_queue.queue.get_nowait()  # verify internal queue is empty
+
+    # This test is tricky because await event_queue.dequeue_event() would hang if not for the close check.
+    # The current implementation's dequeue_event checks `is_closed` first.
+    # If closed and empty, it raises QueueEmpty immediately.
+    # The "waits_then_raises" scenario described in the subtask implies the `get()` might wait.
+    # However, the current code:
+    # async with self._lock:
+    #     if self._is_closed and self.queue.empty():
+    #         logger.warning('Queue is closed. Event will not be dequeued.')
+    #         raise asyncio.QueueEmpty('Queue is closed.')
+    # event = await self.queue.get() -> this line is not reached if closed and empty.
+
+    # So, for the current implementation, it will raise QueueEmpty immediately.
+    with pytest.raises(asyncio.QueueEmpty, match='Queue is closed.'):
+        await event_queue.dequeue_event(no_wait=False)
+
+    # If the implementation were to change to allow `await self.queue.get()`
+    # to be called even when closed (to drain it), then a timeout test would be needed.
+    # For now, testing the current behavior.
+    # Example of a timeout test if it were to wait:
+    # with pytest.raises(asyncio.TimeoutError): # Or QueueEmpty if that's what join/shutdown causes get() to raise
+    #     await asyncio.wait_for(event_queue.dequeue_event(no_wait=False), timeout=0.01)
+
+
+@pytest.mark.asyncio
+async def test_tap_creates_child_queue(event_queue: EventQueue) -> None:
+    """Test that tap creates a new EventQueue and adds it to children."""
+    initial_children_count = len(event_queue._children)
+
+    child_queue = event_queue.tap()
+
+    assert isinstance(child_queue, EventQueue)
+    assert child_queue != event_queue  # Ensure it's a new instance
+    assert len(event_queue._children) == initial_children_count + 1
+    assert child_queue in event_queue._children
+
+    # Test that the new child queue has the default max size (or specific if tap could configure it)
+    assert child_queue.queue.maxsize == DEFAULT_MAX_QUEUE_SIZE
+
+
+@pytest.mark.asyncio
+@patch(
+    'asyncio.wait'
+)  # To monitor calls to asyncio.wait for older Python versions
+@patch(
+    'asyncio.create_task'
+)  # To monitor calls to asyncio.create_task for older Python versions
+async def test_close_sets_flag_and_handles_internal_queue_old_python(
+    mock_create_task: MagicMock,
+    mock_asyncio_wait: AsyncMock,
+    event_queue: EventQueue,
+) -> None:
+    """Test close behavior on Python < 3.13 (using queue.join)."""
+    with patch('sys.version_info', (3, 12, 0)):  # Simulate older Python
+        # Mock queue.join as it's called in older versions
+        event_queue.queue.join = AsyncMock()
+
+        await event_queue.close()
+
+        assert event_queue.is_closed() is True
+        event_queue.queue.join.assert_called_once()  # specific to <3.13
+        mock_create_task.assert_called_once()  # create_task for join
+        mock_asyncio_wait.assert_called_once()  # wait for join
+
+
+@pytest.mark.asyncio
+async def test_close_sets_flag_and_handles_internal_queue_new_python(
+    event_queue: EventQueue,
+) -> None:
+    """Test close behavior on Python >= 3.13 (using queue.shutdown)."""
+    with patch('sys.version_info', (3, 13, 0)):  # Simulate Python 3.13+
+        # Mock queue.shutdown as it's called in newer versions
+        event_queue.queue.shutdown = MagicMock()  # shutdown is not async
+
+        await event_queue.close()
+
+        assert event_queue.is_closed() is True
+        event_queue.queue.shutdown.assert_called_once()  # specific to >=3.13
+
+
+@pytest.mark.asyncio
+async def test_close_propagates_to_children(event_queue: EventQueue) -> None:
+    """Test that close() is called on all child queues."""
+    child_queue1 = event_queue.tap()
+    child_queue2 = event_queue.tap()
+
+    # Mock the close method of children to verify they are called
+    child_queue1.close = AsyncMock()
+    child_queue2.close = AsyncMock()
+
+    await event_queue.close()
+
+    child_queue1.close.assert_awaited_once()
+    child_queue2.close.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_close_idempotent(event_queue: EventQueue) -> None:
+    """Test that calling close() multiple times doesn't cause errors and only acts once."""
+    # Mock the internal queue's join or shutdown to see how many times it's effectively called
+    with patch(
+        'sys.version_info', (3, 12, 0)
+    ):  # Test with older version logic first
+        event_queue.queue.join = AsyncMock()
+        await event_queue.close()
+        assert event_queue.is_closed() is True
+        event_queue.queue.join.assert_called_once()  # Called first time
+
+        # Call close again
+        await event_queue.close()
+        assert event_queue.is_closed() is True
+        event_queue.queue.join.assert_called_once()  # Still only called once
+
+    # Reset for new Python version test
+    event_queue_new = EventQueue()  # New queue for fresh state
+    with patch('sys.version_info', (3, 13, 0)):  # Test with newer version logic
+        event_queue_new.queue.shutdown = MagicMock()
+        await event_queue_new.close()
+        assert event_queue_new.is_closed() is True
+        event_queue_new.queue.shutdown.assert_called_once()
+
+        await event_queue_new.close()
+        assert event_queue_new.is_closed() is True
+        event_queue_new.queue.shutdown.assert_called_once()  # Still only called once
+
+
+@pytest.mark.asyncio
+async def test_is_closed_reflects_state(event_queue: EventQueue) -> None:
+    """Test that is_closed() returns the correct state before and after closing."""
+    assert event_queue.is_closed() is False  # Initially open
+
+    await event_queue.close()
+
+    assert event_queue.is_closed() is True  # Closed after calling close()
