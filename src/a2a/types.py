@@ -744,15 +744,15 @@ class TaskState(str, Enum):
     Represents the possible states of a Task.
     """
 
-    submitted = 'submitted'
-    working = 'working'
-    input_required = 'input-required'
-    completed = 'completed'
-    canceled = 'canceled'
-    failed = 'failed'
-    rejected = 'rejected'
-    auth_required = 'auth-required'
-    unknown = 'unknown'
+    SUBMITTED = 'submitted'
+    WORKING = 'working'
+    INPUT_REQUIRED = 'input-required'
+    COMPLETED = 'completed'
+    CANCELED = 'canceled'
+    FAILED = 'failed'
+    REJECTED = 'rejected'
+    AUTH_REQUIRED = 'auth-required'
+    UNKNOWN = 'unknown'
 
 
 class TextPart(BaseModel):
