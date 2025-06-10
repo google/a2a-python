@@ -96,7 +96,7 @@ class TestInMemoryPushNotifier(unittest.IsolatedAsyncioTestCase):
             await self.notifier.delete_info(task_id)
         except Exception as e:
             self.fail(
-                f'delete_info raised {e} unexpectedly for non-existent task_id'
+                f'delete_info raised {e} unexpectedly for nonexistent task_id'
             )
         self.assertNotIn(
             task_id, self.notifier._push_notification_infos
