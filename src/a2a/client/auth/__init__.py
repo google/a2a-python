@@ -3,8 +3,9 @@
 from .credentials import CredentialService, InMemoryContextCredentialStore
 from .interceptor import AuthInterceptor
 
+
 __all__ = [
+    'AuthInterceptor',
     'CredentialService',
     'InMemoryContextCredentialStore',
-    'AuthInterceptor',
 ]

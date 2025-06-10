@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Any, MutableMapping
+from collections.abc import MutableMapping
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -7,17 +8,16 @@ from a2a.types import AgentCard
 
 
 class ClientCallContext(BaseModel):
-    """
-    A context passed with each client call, allowing for call-specific
+    """A context passed with each client call, allowing for call-specific
     configuration and data passing, such as authentication details or
     request deadlines.
     """
+
     state: MutableMapping[str, Any] = Field(default_factory=dict)
 
 
 class ClientCallInterceptor(ABC):
-    """
-    An abstract base class for client-side call interceptors.
+    """An abstract base class for client-side call interceptors.
 
     Interceptors can inspect and modify requests before they are sent,
     which is ideal for concerns like authentication, logging, or tracing.
@@ -29,8 +29,8 @@ class ClientCallInterceptor(ABC):
         method_name: str,
         request_payload: dict[str, Any],
         http_kwargs: dict[str, Any],
-        agent_card: "AgentCard | None",
-        context: "ClientCallContext | None",
+        agent_card: 'AgentCard | None',
+        context: 'ClientCallContext | None',
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         """
         Intercepts a client call before the request is sent.
@@ -46,4 +46,3 @@ class ClientCallInterceptor(ABC):
             A tuple containing the (potentially modified) request_payload
             and http_kwargs.
         """
-        pass

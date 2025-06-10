@@ -17,12 +17,10 @@ class CredentialService(ABC):
         """
         Retrieves a credential (e.g., token) for a security scheme.
         """
-        pass
 
 
 class InMemoryContextCredentialStore(CredentialService):
-    """
-    A simple in-memory store for session-keyed credentials.
+    """A simple in-memory store for session-keyed credentials.
 
     This class uses the 'sessionId' from the ClientCallContext state to
     store and retrieve credentials...
