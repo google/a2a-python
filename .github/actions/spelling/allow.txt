@@ -39,6 +39,7 @@ linting
 lstrips
 mockurl
 oauthoidc
+oidc
 opensource
 protoc
 pyi
