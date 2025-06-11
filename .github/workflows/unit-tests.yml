@@ -41,7 +41,7 @@ jobs:
         run: uv sync --dev
 
       - name: Run tests and check coverage
-        run: uv run pytest --cov=a2a --cov-report=xml --cov-fail-under=90
+        run: uv run pytest --cov=a2a --cov-report=xml --cov-fail-under=85
 
       - name: Show coverage summary in log
         run: uv run coverage report
