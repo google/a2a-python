@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.7](https://github.com/google-a2a/a2a-python/compare/v0.2.6...v0.2.7) (2025-06-11)
+
+
+### Features
+
+* Update A2A types from specification 🤖 ([#179](https://github.com/google-a2a/a2a-python/issues/179)) ([3ef4240](https://github.com/google-a2a/a2a-python/commit/3ef42405f6096281fe90b1df399731bd009bde12))
+
 ## [0.2.6](https://github.com/google-a2a/a2a-python/compare/v0.2.5...v0.2.6) (2025-06-09)
 
 
