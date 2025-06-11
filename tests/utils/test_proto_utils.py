@@ -1,0 +1,261 @@
+import pytest
+
+from a2a import types
+from a2a.grpc import a2a_pb2
+from a2a.utils import proto_utils
+from a2a.utils.errors import ServerError
+
+
+# --- Test Data ---
+
+
+@pytest.fixture
+def sample_message() -> types.Message:
+    return types.Message(
+        messageId='msg-1',
+        contextId='ctx-1',
+        taskId='task-1',
+        role=types.Role.user,
+        parts=[
+            types.Part(root=types.TextPart(text='Hello')),
+            types.Part(
+                root=types.FilePart(
+                    file=types.FileWithUri(uri='file:///test.txt')
+                )
+            ),
+            types.Part(root=types.DataPart(data={'key': 'value'})),
+        ],
+        metadata={'source': 'test'},
+    )
+
+
+@pytest.fixture
+def sample_task(sample_message: types.Message) -> types.Task:
+    return types.Task(
+        id='task-1',
+        contextId='ctx-1',
+        status=types.TaskStatus(
+            state=types.TaskState.working, message=sample_message
+        ),
+        history=[sample_message],
+        artifacts=[
+            types.Artifact(
+                artifactId='art-1',
+                parts=[
+                    types.Part(root=types.TextPart(text='Artifact content'))
+                ],
+            )
+        ],
+    )
+
+
+@pytest.fixture
+def sample_agent_card() -> types.AgentCard:
+    return types.AgentCard(
+        name='Test Agent',
+        description='A test agent',
+        url='http://localhost',
+        version='1.0.0',
+        capabilities=types.AgentCapabilities(
+            streaming=True, pushNotifications=True
+        ),
+        defaultInputModes=['text/plain'],
+        defaultOutputModes=['text/plain'],
+        skills=[
+            types.AgentSkill(
+                id='skill1',
+                name='Test Skill',
+                description='A test skill',
+                tags=['test'],
+            )
+        ],
+        provider=types.AgentProvider(
+            organization='Test Org', url='http://test.org'
+        ),
+        security=[{'oauth_scheme': ['read', 'write']}],
+        securitySchemes={
+            'oauth_scheme': types.SecurityScheme(
+                root=types.OAuth2SecurityScheme(
+                    flows=types.OAuthFlows(
+                        clientCredentials=types.ClientCredentialsOAuthFlow(
+                            tokenUrl='http://token.url',
+                            scopes={
+                                'read': 'Read access',
+                                'write': 'Write access',
+                            },
+                        )
+                    )
+                )
+            ),
+            'apiKey': types.SecurityScheme(
+                root=types.APIKeySecurityScheme(
+                    name='X-API-KEY', in_=types.In.header
+                )
+            ),
+            'httpAuth': types.SecurityScheme(
+                root=types.HTTPAuthSecurityScheme(scheme='bearer')
+            ),
+            'oidc': types.SecurityScheme(
+                root=types.OpenIdConnectSecurityScheme(
+                    openIdConnectUrl='http://oidc.url'
+                )
+            ),
+        },
+    )
+
+
+# --- Test Cases ---
+
+
+class TestProtoUtils:
+    def test_roundtrip_message(self, sample_message: types.Message):
+        """Test conversion of Message to proto and back."""
+        proto_msg = proto_utils.ToProto.message(sample_message)
+        assert isinstance(proto_msg, a2a_pb2.Message)
+
+        # Test file part handling
+        assert proto_msg.content[1].file.file_with_uri == 'file:///test.txt'
+
+        roundtrip_msg = proto_utils.FromProto.message(proto_msg)
+        assert roundtrip_msg == sample_message
+
+    def test_roundtrip_task(self, sample_task: types.Task):
+        """Test conversion of Task to proto and back."""
+        proto_task = proto_utils.ToProto.task(sample_task)
+        assert isinstance(proto_task, a2a_pb2.Task)
+
+        roundtrip_task = proto_utils.FromProto.task(proto_task)
+        assert roundtrip_task == sample_task
+
+    def test_roundtrip_agent_card(self, sample_agent_card: types.AgentCard):
+        """Test conversion of AgentCard to proto and back."""
+        proto_card = proto_utils.ToProto.agent_card(sample_agent_card)
+        assert isinstance(proto_card, a2a_pb2.AgentCard)
+
+        roundtrip_card = proto_utils.FromProto.agent_card(proto_card)
+        # Pydantic models with nested dicts/lists might not be equal after roundtrip, so check fields
+        assert roundtrip_card.name == sample_agent_card.name
+        assert roundtrip_card.provider == sample_agent_card.provider
+        assert roundtrip_card.skills == sample_agent_card.skills
+
+    def test_enum_conversions(self):
+        """Test conversions for all enum types."""
+        assert (
+            proto_utils.ToProto.role(types.Role.agent)
+            == a2a_pb2.Role.ROLE_AGENT
+        )
+        assert (
+            proto_utils.FromProto.role(a2a_pb2.Role.ROLE_USER)
+            == types.Role.user
+        )
+
+        for state in types.TaskState:
+            if (
+                state != types.TaskState.unknown
+                and state != types.TaskState.rejected
+                and state != types.TaskState.auth_required
+            ):
+                proto_state = proto_utils.ToProto.task_state(state)
+                assert proto_utils.FromProto.task_state(proto_state) == state
+
+        # Test unknown state case
+        assert (
+            proto_utils.FromProto.task_state(
+                a2a_pb2.TaskState.TASK_STATE_UNSPECIFIED
+            )
+            == types.TaskState.unknown
+        )
+        assert (
+            proto_utils.ToProto.task_state(types.TaskState.unknown)
+            == a2a_pb2.TaskState.TASK_STATE_UNSPECIFIED
+        )
+
+    def test_task_id_params_parsing(self):
+        """Test parsing of task and push notification config names."""
+        cancel_req = a2a_pb2.CancelTaskRequest(name='tasks/task-123')
+        params = proto_utils.FromProto.task_id_params(cancel_req)
+        assert params.id == 'task-123'
+
+        push_req = a2a_pb2.GetTaskPushNotificationRequest(
+            name='tasks/task-456/pushNotifications/config-789'
+        )
+        params_push = proto_utils.FromProto.task_id_params(push_req)
+        assert params_push.id == 'task-456'
+
+        with pytest.raises(ServerError):
+            proto_utils.FromProto.task_id_params(
+                a2a_pb2.CancelTaskRequest(name='invalid/name')
+            )
+
+        with pytest.raises(ServerError):
+            proto_utils.FromProto.task_id_params(
+                a2a_pb2.GetTaskPushNotificationRequest(name='invalid/name')
+            )
+
+    def test_task_query_params_parsing(self):
+        """Test parsing of GetTaskRequest."""
+        get_req = a2a_pb2.GetTaskRequest(
+            name='tasks/task-abc', history_length=10
+        )
+        params = proto_utils.FromProto.task_query_params(get_req)
+        assert params.id == 'task-abc'
+        assert params.historyLength == 10
+
+        with pytest.raises(ServerError):
+            proto_utils.FromProto.task_query_params(
+                a2a_pb2.GetTaskRequest(name='invalid/name')
+            )
+
+    def test_oauth_flows_conversion(self):
+        """Test conversion of different OAuth2 flows."""
+        # Test password flow
+        password_flow = types.OAuthFlows(
+            password=types.PasswordOAuthFlow(
+                tokenUrl='http://token.url', scopes={'read': 'Read'}
+            )
+        )
+        proto_password_flow = proto_utils.ToProto.oauth2_flows(password_flow)
+        assert proto_password_flow.HasField('password')
+
+        # Test implicit flow
+        implicit_flow = types.OAuthFlows(
+            implicit=types.ImplicitOAuthFlow(
+                authorizationUrl='http://auth.url', scopes={'read': 'Read'}
+            )
+        )
+        proto_implicit_flow = proto_utils.ToProto.oauth2_flows(implicit_flow)
+        assert proto_implicit_flow.HasField('implicit')
+
+        # Test authorization code flow
+        auth_code_flow = types.OAuthFlows(
+            authorizationCode=types.AuthorizationCodeOAuthFlow(
+                authorizationUrl='http://auth.url',
+                tokenUrl='http://token.url',
+                scopes={'read': 'read'},
+            )
+        )
+        proto_auth_code_flow = proto_utils.ToProto.oauth2_flows(auth_code_flow)
+        assert proto_auth_code_flow.HasField('authorization_code')
+
+        # Test invalid flow
+        with pytest.raises(ValueError):
+            proto_utils.ToProto.oauth2_flows(types.OAuthFlows())
+
+        # Test FromProto
+        roundtrip_password = proto_utils.FromProto.oauth2_flows(
+            proto_password_flow
+        )
+        assert roundtrip_password.password is not None
+
+        roundtrip_implicit = proto_utils.FromProto.oauth2_flows(
+            proto_implicit_flow
+        )
+        assert roundtrip_implicit.implicit is not None
+
+    def test_none_handling(self):
+        """Test that None inputs are handled gracefully."""
+        assert proto_utils.ToProto.message(None) is None
+        assert proto_utils.ToProto.metadata(None) is None
+        assert proto_utils.ToProto.provider(None) is None
+        assert proto_utils.ToProto.security(None) is None
+        assert proto_utils.ToProto.security_schemes(None) is None
