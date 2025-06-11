@@ -62,6 +62,15 @@ jobs:
             --use-subclass-enum
           echo "Codegen finished."
 
+      - name: Run buf generate
+        run: |
+          set -euo pipefail # Exit immediately if a command exits with a non-zero status
+
+          echo "Running buf generate..."
+          buf generate
+          uv run scripts/grpc_gen_post_processor.py
+          echo "Buf generate finished."
+
       - name: Create Pull Request with Updates
         uses: peter-evans/create-pull-request@v6
         with:
