@@ -89,4 +89,6 @@ jobs:
           labels: |
             automated
             dependencies
-          add-paths: ${{ steps.vars.outputs.GENERATED_FILE }}
+          add-paths: | 
+            ${{ steps.vars.outputs.GENERATED_FILE }}
+            src/a2a/grpc/
