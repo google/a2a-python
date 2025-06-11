@@ -59,7 +59,7 @@ class AuthInterceptor(ClientCallInterceptor):
                         and scheme_def.scheme.lower() == 'bearer'
                     ) or isinstance(
                         scheme_def,
-                        (OAuth2SecurityScheme, OpenIdConnectSecurityScheme),
+                        OAuth2SecurityScheme | OpenIdConnectSecurityScheme,
                     ):
                         is_bearer_scheme = True
 

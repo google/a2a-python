@@ -24,7 +24,7 @@ class InMemoryContextCredentialStore(CredentialService):
     store and retrieve credentials...
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # {session_id: {scheme_name: credential}}
         self._store: dict[str, dict[str, str]] = {}
 
@@ -40,7 +40,7 @@ class InMemoryContextCredentialStore(CredentialService):
 
     async def set_credential(
         self, session_id: str, security_scheme_name: str, credential: str
-    ):
+    ) -> None:
         """Method to populate the store."""
         if session_id not in self._store:
             self._store[session_id] = {}

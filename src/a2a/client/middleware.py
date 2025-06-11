@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 from collections.abc import MutableMapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
-from a2a.types import AgentCard
+
+if TYPE_CHECKING:
+    from a2a.types import AgentCard
 
 
 class ClientCallContext(BaseModel):
