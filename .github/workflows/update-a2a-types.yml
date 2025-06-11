@@ -62,14 +62,26 @@ jobs:
             --use-subclass-enum
           echo "Codegen finished."
 
+      - name: Install Buf
+        uses: bufbuild/buf-setup-action@v1
+
+      - name: Run buf generate
+        run: |
+          set -euo pipefail # Exit immediately if a command exits with a non-zero status
+
+          echo "Running buf generate..."
+          buf generate
+          uv run scripts/grpc_gen_post_processor.py
+          echo "Buf generate finished."
+
       - name: Create Pull Request with Updates
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.A2A_BOT_PAT }}
           committer: "a2a-bot <a2a-bot@google.com>"
           author: "a2a-bot <a2a-bot@google.com>"
-          commit-message: "chore: Update A2A types from specification 🤖"
-          title: "chore: Update A2A types from specification 🤖"
+          commit-message: "feat: Update A2A types from specification 🤖"
+          title: "feat: Update A2A types from specification 🤖"
           body: |
             This PR updates `src/a2a/types.py` based on the latest `specification/json/a2a.json` from [google-a2a/A2A](https://github.com/google-a2a/A2A/commit/${{ github.event.client_payload.sha }}).
           branch: "auto-update-a2a-types-${{ github.event.client_payload.sha }}"
@@ -77,4 +89,6 @@ jobs:
           labels: |
             automated
             dependencies
-          add-paths: ${{ steps.vars.outputs.GENERATED_FILE }}
+          add-paths: |
+            ${{ steps.vars.outputs.GENERATED_FILE }}
+            src/a2a/grpc/
