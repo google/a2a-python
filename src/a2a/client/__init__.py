@@ -1,5 +1,3 @@
-# a2a/client/__init__.py
-
 """Client-side components for interacting with an A2A agent."""
 
 from a2a.client.auth import (
