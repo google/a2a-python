@@ -1,20 +1,10 @@
-# a2a/client/auth/interceptor.py
-
 import logging
-
 from typing import Any
 
 from a2a.client.auth.credentials import CredentialService
 from a2a.client.middleware import ClientCallContext, ClientCallInterceptor
-from a2a.types import (
-    APIKeySecurityScheme,
-    AgentCard,
-    HTTPAuthSecurityScheme,
-    In,
-    OAuth2SecurityScheme,
-    OpenIdConnectSecurityScheme,
-)
-
+from a2a.types import (AgentCard, APIKeySecurityScheme, HTTPAuthSecurityScheme,
+                       In, OAuth2SecurityScheme, OpenIdConnectSecurityScheme)
 
 logger = logging.getLogger(__name__)
 

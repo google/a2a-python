@@ -1,5 +1,3 @@
-# a2a/client/auth/credentials.py
-
 from abc import ABC, abstractmethod
 
 from a2a.client.middleware import ClientCallContext
