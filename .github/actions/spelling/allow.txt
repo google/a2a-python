@@ -36,10 +36,12 @@ langgraph
 lifecycles
 linting
 oauthoidc
+oidc
 opensource
 protoc
 pyi
 pyversions
+respx
 socio
 sse
 tagwords
