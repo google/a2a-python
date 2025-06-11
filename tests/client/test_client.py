@@ -389,7 +389,7 @@ class TestA2AClient:
         self, mock_httpx_client: AsyncMock, mock_agent_card: MagicMock
     ):
         base_url = 'http://example.com'
-        custom_agent_card_path = '/custom/path/agent.json'  # Non-default path
+        agent_card_path = '/.well-known/custom-agent.json'
         resolver_kwargs = {'timeout': 30}
 
         mock_resolver_instance = AsyncMock(spec=A2ACardResolver)
@@ -402,14 +402,14 @@ class TestA2AClient:
             client = await A2AClient.get_client_from_agent_card_url(
                 httpx_client=mock_httpx_client,
                 base_url=base_url,
-                agent_card_path=custom_agent_card_path,  # Use the custom path
+                agent_card_path=agent_card_path,
                 http_kwargs=resolver_kwargs,
             )
 
             mock_resolver_class.assert_called_once_with(
                 mock_httpx_client,
                 base_url=base_url,
-                agent_card_path=custom_agent_card_path,  # Verify custom path is passed
+                agent_card_path=agent_card_path,
             )
             mock_resolver_instance.get_agent_card.assert_called_once_with(
                 http_kwargs=resolver_kwargs,
