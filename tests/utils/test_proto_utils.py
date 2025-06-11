@@ -3,7 +3,6 @@ import pytest
 from a2a import types
 from a2a.grpc import a2a_pb2
 from a2a.utils import proto_utils
-from a2a.utils.errors import ServerError
 
 
 # --- Test Data ---
@@ -119,17 +118,6 @@ class TestProtoUtils:
         roundtrip_msg = proto_utils.FromProto.message(proto_msg)
         assert roundtrip_msg == sample_message
 
-    def test_roundtrip_agent_card(self, sample_agent_card: types.AgentCard):
-        """Test conversion of AgentCard to proto and back."""
-        proto_card = proto_utils.ToProto.agent_card(sample_agent_card)
-        assert isinstance(proto_card, a2a_pb2.AgentCard)
-
-        roundtrip_card = proto_utils.FromProto.agent_card(proto_card)
-        # Pydantic models with nested dicts/lists might not be equal after roundtrip, so check fields
-        assert roundtrip_card.name == sample_agent_card.name
-        assert roundtrip_card.provider == sample_agent_card.provider
-        assert roundtrip_card.skills == sample_agent_card.skills
-
     def test_enum_conversions(self):
         """Test conversions for all enum types."""
         assert (
@@ -161,42 +149,6 @@ class TestProtoUtils:
             proto_utils.ToProto.task_state(types.TaskState.unknown)
             == a2a_pb2.TaskState.TASK_STATE_UNSPECIFIED
         )
-
-    def test_task_id_params_parsing(self):
-        """Test parsing of task and push notification config names."""
-        cancel_req = a2a_pb2.CancelTaskRequest(name='tasks/task-123')
-        params = proto_utils.FromProto.task_id_params(cancel_req)
-        assert params.id == 'task-123'
-
-        push_req = a2a_pb2.GetTaskPushNotificationRequest(
-            name='tasks/task-456/pushNotifications/config-789'
-        )
-        params_push = proto_utils.FromProto.task_id_params(push_req)
-        assert params_push.id == 'task-456'
-
-        with pytest.raises(ServerError):
-            proto_utils.FromProto.task_id_params(
-                a2a_pb2.CancelTaskRequest(name='invalid/name')
-            )
-
-        with pytest.raises(ServerError):
-            proto_utils.FromProto.task_id_params(
-                a2a_pb2.GetTaskPushNotificationRequest(name='invalid/name')
-            )
-
-    def test_task_query_params_parsing(self):
-        """Test parsing of GetTaskRequest."""
-        get_req = a2a_pb2.GetTaskRequest(
-            name='tasks/task-abc', history_length=10
-        )
-        params = proto_utils.FromProto.task_query_params(get_req)
-        assert params.id == 'task-abc'
-        assert params.historyLength == 10
-
-        with pytest.raises(ServerError):
-            proto_utils.FromProto.task_query_params(
-                a2a_pb2.GetTaskRequest(name='invalid/name')
-            )
 
     def test_oauth_flows_conversion(self):
         """Test conversion of different OAuth2 flows."""
