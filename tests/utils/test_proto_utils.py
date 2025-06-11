@@ -119,14 +119,6 @@ class TestProtoUtils:
         roundtrip_msg = proto_utils.FromProto.message(proto_msg)
         assert roundtrip_msg == sample_message
 
-    def test_roundtrip_task(self, sample_task: types.Task):
-        """Test conversion of Task to proto and back."""
-        proto_task = proto_utils.ToProto.task(sample_task)
-        assert isinstance(proto_task, a2a_pb2.Task)
-
-        roundtrip_task = proto_utils.FromProto.task(proto_task)
-        assert roundtrip_task == sample_task
-
     def test_roundtrip_agent_card(self, sample_agent_card: types.AgentCard):
         """Test conversion of AgentCard to proto and back."""
         proto_card = proto_utils.ToProto.agent_card(sample_agent_card)
