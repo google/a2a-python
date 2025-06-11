@@ -62,6 +62,9 @@ jobs:
             --use-subclass-enum
           echo "Codegen finished."
 
+      - name: Install Buf
+        uses: bufbuild/buf-setup-action@v1
+
       - name: Run buf generate
         run: |
           set -euo pipefail # Exit immediately if a command exits with a non-zero status
