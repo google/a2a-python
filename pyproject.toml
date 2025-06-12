@@ -20,6 +20,7 @@ dependencies = [
     "grpcio>=1.60",
     "grpcio-tools>=1.60",
     "grpcio_reflection>=1.7.0",
+    "protobuf==6.31.1",
 ]
 
 classifiers = [
