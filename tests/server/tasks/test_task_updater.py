@@ -132,6 +132,23 @@ async def test_add_artifact_with_custom_id_and_name(
 
 
 @pytest.mark.asyncio
+async def test_add_artifact_generates_id(
+    task_updater, event_queue, sample_parts
+):
+    """Test add_artifact generates an ID if artifact_id is None."""
+    known_uuid = uuid.UUID('12345678-1234-5678-1234-567812345678')
+    with patch('uuid.uuid4', return_value=known_uuid):
+        await task_updater.add_artifact(parts=sample_parts, artifact_id=None)
+
+    event_queue.enqueue_event.assert_called_once()
+    event = event_queue.enqueue_event.call_args[0][0]
+
+    assert isinstance(event, TaskArtifactUpdateEvent)
+    assert event.artifact.artifactId == str(known_uuid)
+    assert event.artifact.parts == sample_parts
+
+
+@pytest.mark.asyncio
 async def test_complete_without_message(task_updater, event_queue):
     """Test marking a task as completed without a message."""
     await task_updater.complete()
@@ -251,3 +268,59 @@ def test_new_agent_message_with_metadata(task_updater, sample_parts):
     assert message.messageId == '12345678-1234-5678-1234-567812345678'
     assert message.parts == sample_parts
     assert message.metadata == metadata
+
+
+@pytest.mark.asyncio
+async def test_failed_without_message(task_updater, event_queue):
+    """Test marking a task as failed without a message."""
+    await task_updater.failed()
+
+    event_queue.enqueue_event.assert_called_once()
+    event = event_queue.enqueue_event.call_args[0][0]
+
+    assert isinstance(event, TaskStatusUpdateEvent)
+    assert event.status.state == TaskState.failed
+    assert event.final is True
+    assert event.status.message is None
+
+
+@pytest.mark.asyncio
+async def test_failed_with_message(task_updater, event_queue, sample_message):
+    """Test marking a task as failed with a message."""
+    await task_updater.failed(message=sample_message)
+
+    event_queue.enqueue_event.assert_called_once()
+    event = event_queue.enqueue_event.call_args[0][0]
+
+    assert isinstance(event, TaskStatusUpdateEvent)
+    assert event.status.state == TaskState.failed
+    assert event.final is True
+    assert event.status.message == sample_message
+
+
+@pytest.mark.asyncio
+async def test_reject_without_message(task_updater, event_queue):
+    """Test marking a task as rejected without a message."""
+    await task_updater.reject()
+
+    event_queue.enqueue_event.assert_called_once()
+    event = event_queue.enqueue_event.call_args[0][0]
+
+    assert isinstance(event, TaskStatusUpdateEvent)
+    assert event.status.state == TaskState.rejected
+    assert event.final is True
+    assert event.status.message is None
+
+
+@pytest.mark.asyncio
+async def test_reject_with_message(task_updater, event_queue, sample_message):
+    """Test marking a task as rejected with a message."""
+    await task_updater.reject(message=sample_message)
+
+    event_queue.enqueue_event.assert_called_once()
+    event = event_queue.enqueue_event.call_args[0][0]
+
+    assert isinstance(event, TaskStatusUpdateEvent)
+    assert event.status.state == TaskState.rejected
+    assert event.final is True
+    assert event.status.message == sample_message
