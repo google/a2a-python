@@ -65,12 +65,14 @@ class TaskUpdater:
             )
         )
 
-    async def add_artifact(
+    async def add_artifact(  # noqa: PLR0913
         self,
         parts: list[Part],
         artifact_id: str | None = None,
         name: str | None = None,
         metadata: dict[str, Any] | None = None,
+        append: bool | None = None,
+        last_chunk: bool | None = None,
     ) -> None:
         """Adds an artifact chunk to the task and publishes a `TaskArtifactUpdateEvent`.
 
@@ -79,6 +81,8 @@ class TaskUpdater:
             artifact_id: The ID of the artifact. A new UUID is generated if not provided.
             name: Optional name for the artifact.
             metadata: Optional metadata for the artifact.
+            append: Optional boolean indicating if this chunk appends to a previous one.
+            last_chunk: Optional boolean indicating if this is the last chunk.
         """
         if not artifact_id:
             artifact_id = str(uuid.uuid4())
@@ -93,6 +97,8 @@ class TaskUpdater:
                     parts=parts,
                     metadata=metadata,
                 ),
+                append=append,
+                last_chunk=last_chunk
             )
         )
 
