@@ -91,6 +91,28 @@ class A2AStarletteApplication(JSONRPCApplication):
                 )
             )
         return app_routes
+    
+    def add_routes_to_app(
+        self,
+        app: Starlette,
+        agent_card_url: str = '/.well-known/agent.json',
+        rpc_url: str = '/',
+        extended_agent_card_url: str = '/agent/authenticatedExtendedCard'
+    ):
+        """Adds the routes to the Starlette application.
+
+        Args:
+            app: The Starlette application to add the routes to.
+            agent_card_url: The URL path for the agent card endpoint.
+            rpc_url: The URL path for the A2A JSON-RPC endpoint (POST requests).
+            extended_agent_card_url: The URL for the authenticated extended agent card endpoint.
+        """
+        routes = self.routes(
+            agent_card_url=agent_card_url,
+            rpc_url=rpc_url,
+            extended_agent_card_url=extended_agent_card_url,
+        )
+        app.routes.extend(routes)
 
     def build(
         self,
@@ -110,14 +132,8 @@ class A2AStarletteApplication(JSONRPCApplication):
         Returns:
             A configured Starlette application instance.
         """
-        app_routes = self.routes(
-            agent_card_url=agent_card_url,
-            rpc_url=rpc_url,
-            extended_agent_card_url=extended_agent_card_url,
-        )
-        if 'routes' in kwargs:
-            kwargs['routes'].extend(app_routes)
-        else:
-            kwargs['routes'] = app_routes
+        app = Starlette(**kwargs)
 
-        return Starlette(**kwargs)
+        self.add_routes_to_app(app, agent_card_url, rpc_url, extended_agent_card_url)
+
+        return app
