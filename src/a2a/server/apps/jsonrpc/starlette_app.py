@@ -91,14 +91,14 @@ class A2AStarletteApplication(JSONRPCApplication):
                 )
             )
         return app_routes
-    
+
     def add_routes_to_app(
         self,
         app: Starlette,
         agent_card_url: str = '/.well-known/agent.json',
         rpc_url: str = '/',
         extended_agent_card_url: str = '/agent/authenticatedExtendedCard'
-    ):
+    ) -> None:
         """Adds the routes to the Starlette application.
 
         Args:
