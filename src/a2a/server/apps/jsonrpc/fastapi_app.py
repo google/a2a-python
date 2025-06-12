@@ -54,7 +54,7 @@ class A2AFastAPIApplication(JSONRPCApplication):
         app: FastAPI,
         agent_card_url: str = '/.well-known/agent.json',
         rpc_url: str = '/',
-        extended_agent_card_url: str = '/agent/authenticatedExtendedCard'
+        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
     ) -> None:
         """Adds the routes to the FastAPI application.
 
@@ -64,6 +64,7 @@ class A2AFastAPIApplication(JSONRPCApplication):
             rpc_url: The URL for the A2A JSON-RPC endpoint.
             extended_agent_card_url: The URL for the authenticated extended agent card endpoint.
         """
+
         @app.post(rpc_url)
         async def handle_a2a_request(request: Request) -> Response:
             return await self._handle_requests(request)
@@ -79,7 +80,7 @@ class A2AFastAPIApplication(JSONRPCApplication):
                 return await self._handle_get_authenticated_extended_agent_card(
                     request
                 )
-    
+
     def build(
         self,
         agent_card_url: str = '/.well-known/agent.json',
@@ -100,6 +101,8 @@ class A2AFastAPIApplication(JSONRPCApplication):
         """
         app = FastAPI(**kwargs)
 
-        self.add_routes_to_app(app, agent_card_url, rpc_url, extended_agent_card_url)
+        self.add_routes_to_app(
+            app, agent_card_url, rpc_url, extended_agent_card_url
+        )
 
         return app
