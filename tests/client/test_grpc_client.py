@@ -1,8 +1,9 @@
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import grpc
 import pytest
 
+from a2a import types
 from a2a.client import A2AGrpcClient
 from a2a.grpc import a2a_pb2, a2a_pb2_grpc
 from a2a.types import (
@@ -29,8 +30,15 @@ from a2a.utils import proto_utils
 # Fixtures
 @pytest.fixture
 def mock_grpc_stub() -> AsyncMock:
-    """Provides a mock gRPC stub."""
-    return AsyncMock(spec=a2a_pb2_grpc.A2AServiceStub)
+    """Provides a mock gRPC stub with methods mocked."""
+    stub = AsyncMock(spec=a2a_pb2_grpc.A2AServiceStub)
+    stub.SendMessage = AsyncMock()
+    stub.SendStreamingMessage = AsyncMock()
+    stub.GetTask = AsyncMock()
+    stub.CancelTask = AsyncMock()
+    stub.CreateTaskPushNotification = AsyncMock()
+    stub.GetTaskPushNotification = AsyncMock()
+    return stub
 
 
 @pytest.fixture
@@ -144,7 +152,10 @@ async def test_send_message_streaming(
     artifact_update = TaskArtifactUpdateEvent(
         taskId='task-stream',
         contextId='ctx-stream',
-        artifact=MagicMock(spec=types.Artifact),
+        artifact=types.Artifact(
+            artifactId='art-stream',
+            parts=[types.Part(root=types.TextPart(text='data'))],
+        ),
     )
     final_task = Task(
         id='task-stream',
@@ -233,8 +244,14 @@ async def test_set_task_callback(
             url='http://my.callback/push', token='secret'
         ),
     )
-    proto_config = proto_utils.ToProto.task_push_notification_config(config)
-    mock_grpc_stub.CreateTaskPushNotification.return_value = proto_config
+    # The gRPC method returns the proto version of TaskPushNotificationConfig, not the inner config
+    proto_response = a2a_pb2.TaskPushNotificationConfig(
+        name=f'tasks/{task_id}/pushNotifications/{config.pushNotificationConfig.id or "some_id"}',
+        push_notification_config=proto_utils.ToProto.push_notification_config(
+            config.pushNotificationConfig
+        ),
+    )
+    mock_grpc_stub.CreateTaskPushNotification.return_value = proto_response
 
     response = await grpc_client.set_task_callback(config)
 
@@ -256,14 +273,20 @@ async def test_get_task_callback(
     push_id = 'undefined'  # As per current implementation
     resource_name = f'tasks/{task_id}/pushNotification/{push_id}'
 
-    config = TaskPushNotificationConfig(
+    config_model = TaskPushNotificationConfig(
         taskId=task_id,
         pushNotificationConfig=PushNotificationConfig(
-            url='http://my.callback/get', token='secret-get'
+            id=push_id, url='http://my.callback/get', token='secret-get'
         ),
     )
-    proto_config = proto_utils.ToProto.task_push_notification_config(config)
-    mock_grpc_stub.GetTaskPushNotification.return_value = proto_config
+
+    proto_response = a2a_pb2.TaskPushNotificationConfig(
+        name=resource_name,
+        push_notification_config=proto_utils.ToProto.push_notification_config(
+            config_model.pushNotificationConfig
+        ),
+    )
+    mock_grpc_stub.GetTaskPushNotification.return_value = proto_response
 
     params = TaskIdParams(id=task_id)
     response = await grpc_client.get_task_callback(params)

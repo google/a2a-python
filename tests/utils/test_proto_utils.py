@@ -1,3 +1,5 @@
+from unittest import mock
+
 import pytest
 
 from a2a import types
@@ -111,12 +113,15 @@ class TestToProto:
     def test_part_unsupported_type(self):
         """Test that ToProto.part raises ValueError for an unsupported Part type."""
 
-        class FakePart(types.PartBase):
-            kind: str = 'fake'
+        class FakePartType:
+            kind = 'fake'
 
-        unsupported_part = types.Part(root=FakePart())
+        # Create a mock Part object that has a .root attribute pointing to the fake type
+        mock_part = mock.MagicMock(spec=types.Part)
+        mock_part.root = FakePartType()
+
         with pytest.raises(ValueError, match='Unsupported part type'):
-            proto_utils.ToProto.part(unsupported_part)
+            proto_utils.ToProto.part(mock_part)
 
 
 class TestFromProto:
