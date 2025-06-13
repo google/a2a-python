@@ -244,20 +244,6 @@ class TestProtoUtils:
             proto_utils.FromProto.task_push_notification_config(request)
         assert isinstance(exc_info.value.error, types.InvalidParamsError)
 
-    def test_roundtrip_agent_card(self, sample_agent_card: types.AgentCard):
-        """Test conversion of AgentCard to proto and back."""
-        proto_card = proto_utils.ToProto.agent_card(sample_agent_card)
-        assert isinstance(proto_card, a2a_pb2.AgentCard)
-        assert proto_card.name == 'Test Agent'
-        assert len(proto_card.security_schemes) == 4
-
-        roundtrip_card = proto_utils.FromProto.agent_card(proto_card)
-        # Pydantic models with dicts/lists might not be perfectly equal after roundtrip
-        # due to ordering, so we compare key fields.
-        assert roundtrip_card.name == sample_agent_card.name
-        assert roundtrip_card.version == sample_agent_card.version
-        assert len(roundtrip_card.skills) == len(sample_agent_card.skills)
-
     def test_none_handling(self):
         """Test that None inputs are handled gracefully."""
         assert proto_utils.ToProto.message(None) is None

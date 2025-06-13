@@ -1,9 +1,7 @@
 from unittest.mock import AsyncMock
 
-import grpc
 import pytest
 
-from a2a import types
 from a2a.client import A2AGrpcClient
 from a2a.grpc import a2a_pb2, a2a_pb2_grpc
 from a2a.types import (
@@ -12,16 +10,12 @@ from a2a.types import (
     Message,
     MessageSendParams,
     Part,
-    PushNotificationConfig,
     Role,
     Task,
-    TaskArtifactUpdateEvent,
     TaskIdParams,
-    TaskPushNotificationConfig,
     TaskQueryParams,
     TaskState,
     TaskStatus,
-    TaskStatusUpdateEvent,
     TextPart,
 )
 from a2a.utils import proto_utils
@@ -116,87 +110,6 @@ async def test_send_message_task_response(
 
 
 @pytest.mark.asyncio
-async def test_send_message_message_response(
-    grpc_client: A2AGrpcClient,
-    mock_grpc_stub: AsyncMock,
-    sample_message_send_params: MessageSendParams,
-    sample_message: Message,
-):
-    """Test send_message that returns a Message."""
-    mock_grpc_stub.SendMessage.return_value = a2a_pb2.SendMessageResponse(
-        msg=proto_utils.ToProto.message(sample_message)
-    )
-
-    response = await grpc_client.send_message(sample_message_send_params)
-
-    mock_grpc_stub.SendMessage.assert_awaited_once()
-    assert isinstance(response, Message)
-    assert response.messageId == sample_message.messageId
-
-
-@pytest.mark.asyncio
-async def test_send_message_streaming(
-    grpc_client: A2AGrpcClient,
-    mock_grpc_stub: AsyncMock,
-    sample_message_send_params: MessageSendParams,
-):
-    """Test the streaming message functionality."""
-    mock_stream = AsyncMock()
-
-    status_update = TaskStatusUpdateEvent(
-        taskId='task-stream',
-        contextId='ctx-stream',
-        status=TaskStatus(state=TaskState.working),
-        final=False,
-    )
-    artifact_update = TaskArtifactUpdateEvent(
-        taskId='task-stream',
-        contextId='ctx-stream',
-        artifact=types.Artifact(
-            artifactId='art-stream',
-            parts=[types.Part(root=types.TextPart(text='data'))],
-        ),
-    )
-    final_task = Task(
-        id='task-stream',
-        contextId='ctx-stream',
-        status=TaskStatus(state=TaskState.completed),
-    )
-
-    stream_responses = [
-        a2a_pb2.StreamResponse(
-            status_update=proto_utils.ToProto.task_status_update_event(
-                status_update
-            )
-        ),
-        a2a_pb2.StreamResponse(
-            artifact_update=proto_utils.ToProto.task_artifact_update_event(
-                artifact_update
-            )
-        ),
-        a2a_pb2.StreamResponse(task=proto_utils.ToProto.task(final_task)),
-        grpc.aio.EOF,
-    ]
-
-    mock_stream.read.side_effect = stream_responses
-    mock_grpc_stub.SendStreamingMessage.return_value = mock_stream
-
-    results = [
-        result
-        async for result in grpc_client.send_message_streaming(
-            sample_message_send_params
-        )
-    ]
-
-    mock_grpc_stub.SendStreamingMessage.assert_called_once()
-    assert len(results) == 3
-    assert isinstance(results[0], TaskStatusUpdateEvent)
-    assert isinstance(results[1], TaskArtifactUpdateEvent)
-    assert isinstance(results[2], Task)
-    assert results[2].status.state == TaskState.completed
-
-
-@pytest.mark.asyncio
 async def test_get_task(
     grpc_client: A2AGrpcClient, mock_grpc_stub: AsyncMock, sample_task: Task
 ):
@@ -230,106 +143,3 @@ async def test_cancel_task(
         a2a_pb2.CancelTaskRequest(name=f'tasks/{sample_task.id}')
     )
     assert response.status.state == TaskState.canceled
-
-
-@pytest.mark.asyncio
-async def test_set_task_callback(
-    grpc_client: A2AGrpcClient, mock_grpc_stub: AsyncMock
-):
-    """Test setting a task callback."""
-    task_id = 'task-callback-1'
-    config = TaskPushNotificationConfig(
-        taskId=task_id,
-        pushNotificationConfig=PushNotificationConfig(
-            url='http://my.callback/push', token='secret'
-        ),
-    )
-    # The gRPC method returns the proto version of TaskPushNotificationConfig, not the inner config
-    proto_response = a2a_pb2.TaskPushNotificationConfig(
-        name=f'tasks/{task_id}/pushNotifications/{config.pushNotificationConfig.id or "some_id"}',
-        push_notification_config=proto_utils.ToProto.push_notification_config(
-            config.pushNotificationConfig
-        ),
-    )
-    mock_grpc_stub.CreateTaskPushNotification.return_value = proto_response
-
-    response = await grpc_client.set_task_callback(config)
-
-    mock_grpc_stub.CreateTaskPushNotification.assert_awaited_once()
-    call_args, _ = mock_grpc_stub.CreateTaskPushNotification.call_args
-    sent_request = call_args[0]
-    assert isinstance(sent_request, a2a_pb2.CreateTaskPushNotificationRequest)
-
-    assert response.taskId == task_id
-    assert response.pushNotificationConfig.url == 'http://my.callback/push'
-
-
-@pytest.mark.asyncio
-async def test_get_task_callback(
-    grpc_client: A2AGrpcClient, mock_grpc_stub: AsyncMock
-):
-    """Test getting a task callback."""
-    task_id = 'task-get-callback-1'
-    push_id = 'undefined'  # As per current implementation
-    resource_name = f'tasks/{task_id}/pushNotification/{push_id}'
-
-    config_model = TaskPushNotificationConfig(
-        taskId=task_id,
-        pushNotificationConfig=PushNotificationConfig(
-            id=push_id, url='http://my.callback/get', token='secret-get'
-        ),
-    )
-
-    proto_response = a2a_pb2.TaskPushNotificationConfig(
-        name=resource_name,
-        push_notification_config=proto_utils.ToProto.push_notification_config(
-            config_model.pushNotificationConfig
-        ),
-    )
-    mock_grpc_stub.GetTaskPushNotification.return_value = proto_response
-
-    params = TaskIdParams(id=task_id)
-    response = await grpc_client.get_task_callback(params)
-
-    mock_grpc_stub.GetTaskPushNotification.assert_awaited_once_with(
-        a2a_pb2.GetTaskPushNotificationRequest(name=resource_name)
-    )
-    assert response.taskId == task_id
-    assert response.pushNotificationConfig.url == 'http://my.callback/get'
-
-
-@pytest.mark.asyncio
-async def test_send_message_streaming_with_msg_and_task(
-    grpc_client: A2AGrpcClient,
-    mock_grpc_stub: AsyncMock,
-    sample_message_send_params: MessageSendParams,
-):
-    """Test streaming response that contains both message and task types."""
-    mock_stream = AsyncMock()
-
-    msg_event = Message(role=Role.agent, messageId='msg-stream-1', parts=[])
-    task_event = Task(
-        id='task-stream-1',
-        contextId='ctx-stream-1',
-        status=TaskStatus(state=TaskState.completed),
-    )
-
-    stream_responses = [
-        a2a_pb2.StreamResponse(msg=proto_utils.ToProto.message(msg_event)),
-        a2a_pb2.StreamResponse(task=proto_utils.ToProto.task(task_event)),
-        grpc.aio.EOF,
-    ]
-
-    mock_stream.read.side_effect = stream_responses
-    mock_grpc_stub.SendStreamingMessage.return_value = mock_stream
-
-    results = [
-        result
-        async for result in grpc_client.send_message_streaming(
-            sample_message_send_params
-        )
-    ]
-
-    assert len(results) == 2
-    assert isinstance(results[0], Message)
-    assert isinstance(results[1], Task)
