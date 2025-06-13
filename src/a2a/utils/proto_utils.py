@@ -143,11 +143,16 @@ class ToProto:
     def push_notification_config(
         cls, config: types.PushNotificationConfig
     ) -> a2a_pb2.PushNotificationConfig:
+        auth_info = (
+            ToProto.authentication_info(config.authentication)
+            if config.authentication
+            else None
+        )
         return a2a_pb2.PushNotificationConfig(
             id=config.id or '',
             url=config.url,
             token=config.token,
-            authentication=ToProto.authentication_info(config.authentication),
+            authentication=auth_info,
         )
 
     @classmethod
@@ -185,7 +190,9 @@ class ToProto:
             accepted_output_modes=list(config.acceptedOutputModes),
             push_notification=ToProto.push_notification_config(
                 config.pushNotificationConfig
-            ),
+            )
+            if config.pushNotificationConfig
+            else None,
             history_length=config.historyLength,
             blocking=config.blocking or False,
         )
@@ -252,7 +259,7 @@ class ToProto:
         cls, config: types.TaskPushNotificationConfig
     ) -> a2a_pb2.TaskPushNotificationConfig:
         return a2a_pb2.TaskPushNotificationConfig(
-            name=f'tasks/{config.taskId}/pushNotifications/{config.taskId}',
+            name=f'tasks/{config.taskId}/pushNotifications/{config.pushNotificationConfig.id}',
             push_notification_config=cls.push_notification_config(
                 config.pushNotificationConfig,
             ),
@@ -548,7 +555,9 @@ class FromProto:
             id=config.id,
             url=config.url,
             token=config.token,
-            authentication=FromProto.authentication_info(config.authentication),
+            authentication=FromProto.authentication_info(config.authentication)
+            if config.HasField('authentication')
+            else None,
         )
 
     @classmethod
@@ -568,7 +577,9 @@ class FromProto:
             acceptedOutputModes=list(config.accepted_output_modes),
             pushNotificationConfig=FromProto.push_notification_config(
                 config.push_notification
-            ),
+            )
+            if config.HasField('push_notification')
+            else None,
             historyLength=config.history_length,
             blocking=config.blocking,
         )
@@ -720,7 +731,7 @@ class FromProto:
                 root=types.APIKeySecurityScheme(
                     description=scheme.api_key_security_scheme.description,
                     name=scheme.api_key_security_scheme.name,
-                    in_=scheme.api_key_security_scheme.location,  # type: ignore[call-arg]
+                    in_=types.In(scheme.api_key_security_scheme.location),  # type: ignore[call-arg]
                 )
             )
         if scheme.HasField('http_auth_security_scheme'):
