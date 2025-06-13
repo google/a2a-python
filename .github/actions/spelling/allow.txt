@@ -28,6 +28,7 @@ codegen
 coro
 datamodel
 dunders
+euo
 genai
 getkwargs
 gle
