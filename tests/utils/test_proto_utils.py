@@ -3,6 +3,7 @@ import pytest
 from a2a import types
 from a2a.grpc import a2a_pb2
 from a2a.utils import proto_utils
+from a2a.utils.errors import ServerError
 
 
 # --- Test Data ---
@@ -106,6 +107,34 @@ def sample_agent_card() -> types.AgentCard:
 # --- Test Cases ---
 
 
+class TestToProto:
+    def test_part_unsupported_type(self):
+        """Test that ToProto.part raises ValueError for an unsupported Part type."""
+
+        class FakePart(types.PartBase):
+            kind: str = 'fake'
+
+        unsupported_part = types.Part(root=FakePart())
+        with pytest.raises(ValueError, match='Unsupported part type'):
+            proto_utils.ToProto.part(unsupported_part)
+
+
+class TestFromProto:
+    def test_part_unsupported_type(self):
+        """Test that FromProto.part raises ValueError for an unsupported part type in proto."""
+        unsupported_proto_part = (
+            a2a_pb2.Part()
+        )  # An empty part with no oneof field set
+        with pytest.raises(ValueError, match='Unsupported part type'):
+            proto_utils.FromProto.part(unsupported_proto_part)
+
+    def test_task_query_params_invalid_name(self):
+        request = a2a_pb2.GetTaskRequest(name='invalid-name-format')
+        with pytest.raises(ServerError) as exc_info:
+            proto_utils.FromProto.task_query_params(request)
+        assert isinstance(exc_info.value.error, types.InvalidParamsError)
+
+
 class TestProtoUtils:
     def test_roundtrip_message(self, sample_message: types.Message):
         """Test conversion of Message to proto and back."""
@@ -195,6 +224,34 @@ class TestProtoUtils:
             proto_implicit_flow
         )
         assert roundtrip_implicit.implicit is not None
+
+    def test_task_id_params_from_proto_invalid_name(self):
+        request = a2a_pb2.CancelTaskRequest(name='invalid-name-format')
+        with pytest.raises(ServerError) as exc_info:
+            proto_utils.FromProto.task_id_params(request)
+        assert isinstance(exc_info.value.error, types.InvalidParamsError)
+
+    def test_task_push_config_from_proto_invalid_parent(self):
+        request = a2a_pb2.CreateTaskPushNotificationRequest(
+            parent='invalid-parent'
+        )
+        with pytest.raises(ServerError) as exc_info:
+            proto_utils.FromProto.task_push_notification_config(request)
+        assert isinstance(exc_info.value.error, types.InvalidParamsError)
+
+    def test_roundtrip_agent_card(self, sample_agent_card: types.AgentCard):
+        """Test conversion of AgentCard to proto and back."""
+        proto_card = proto_utils.ToProto.agent_card(sample_agent_card)
+        assert isinstance(proto_card, a2a_pb2.AgentCard)
+        assert proto_card.name == 'Test Agent'
+        assert len(proto_card.security_schemes) == 4
+
+        roundtrip_card = proto_utils.FromProto.agent_card(proto_card)
+        # Pydantic models with dicts/lists might not be perfectly equal after roundtrip
+        # due to ordering, so we compare key fields.
+        assert roundtrip_card.name == sample_agent_card.name
+        assert roundtrip_card.version == sample_agent_card.version
+        assert len(roundtrip_card.skills) == len(sample_agent_card.skills)
 
     def test_none_handling(self):
         """Test that None inputs are handled gracefully."""
