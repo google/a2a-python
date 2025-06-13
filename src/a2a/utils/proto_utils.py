@@ -342,7 +342,7 @@ class ToProto:
             return a2a_pb2.SecurityScheme(
                 api_key_security_scheme=a2a_pb2.APIKeySecurityScheme(
                     description=scheme.root.description,
-                    location=scheme.root.in_,
+                    location=scheme.root.in_.value,
                     name=scheme.root.name,
                 )
             )
@@ -731,7 +731,7 @@ class FromProto:
                 root=types.APIKeySecurityScheme(
                     description=scheme.api_key_security_scheme.description,
                     name=scheme.api_key_security_scheme.name,
-                    in_=types.In(scheme.api_key_security_scheme.location),  # type: ignore[call-arg]
+                    in_=types.In(scheme.api_key_security_scheme.location),
                 )
             )
         if scheme.HasField('http_auth_security_scheme'):
