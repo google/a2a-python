@@ -55,7 +55,7 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
         self,
         agent_card: AgentCard,
         request_handler: RequestHandler,
-        context_builder: CallContextBuilder | None = None
+        context_builder: CallContextBuilder | None = None,
     ):
         """Initializes the GrpcHandler.
 
