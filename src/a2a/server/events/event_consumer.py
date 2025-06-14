@@ -112,7 +112,7 @@ class EventConsumer:
                             TaskState.failed,
                             TaskState.rejected,
                             TaskState.unknown,
-                            TaskState.input_required
+                            TaskState.input_required,
                         )
                     )
                 )
