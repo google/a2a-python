@@ -208,6 +208,65 @@ class DataPart(BaseModel):
     """
 
 
+class DeleteTaskPushNotificationConfigParams(BaseModel):
+    """
+    Parameters for removing pushNotificationConfiguration associated with a Task
+    """
+
+    id: str
+    """
+    Task id.
+    """
+    metadata: dict[str, Any] | None = None
+    pushNotificationConfigId: str
+
+
+class DeleteTaskPushNotificationConfigRequest(BaseModel):
+    """
+    JSON-RPC request model for the 'tasks/pushNotificationConfig/delete' method.
+    """
+
+    id: str | int
+    """
+    An identifier established by the Client that MUST contain a String, Number.
+    Numbers SHOULD NOT contain fractional parts.
+    """
+    jsonrpc: Literal['2.0'] = '2.0'
+    """
+    Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
+    """
+    method: Literal['tasks/pushNotificationConfig/delete'] = (
+        'tasks/pushNotificationConfig/delete'
+    )
+    """
+    A String containing the name of the method to be invoked.
+    """
+    params: DeleteTaskPushNotificationConfigParams
+    """
+    A Structured value that holds the parameter values to be used during the invocation of the method.
+    """
+
+
+class DeleteTaskPushNotificationConfigSuccessResponse(BaseModel):
+    """
+    JSON-RPC success response model for the 'tasks/pushNotificationConfig/delete' method.
+    """
+
+    id: str | int | None = None
+    """
+    An identifier established by the Client that MUST contain a String, Number.
+    Numbers SHOULD NOT contain fractional parts.
+    """
+    jsonrpc: Literal['2.0'] = '2.0'
+    """
+    Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
+    """
+    result: None
+    """
+    The result object on success.
+    """
+
+
 class FileBase(BaseModel):
     """
     Represents the base entity for FileParts
@@ -259,6 +318,19 @@ class FileWithUri(BaseModel):
     """
     URL for the File content
     """
+
+
+class GetTaskPushNotificationConfigParams(BaseModel):
+    """
+    Parameters for fetching a pushNotificationConfiguration associated with a Task
+    """
+
+    id: str
+    """
+    Task id.
+    """
+    metadata: dict[str, Any] | None = None
+    pushNotificationConfigId: str | None = None
 
 
 class HTTPAuthSecurityScheme(BaseModel):
@@ -485,6 +557,44 @@ class JSONRPCSuccessResponse(BaseModel):
     result: Any
     """
     The result object on success
+    """
+
+
+class ListTaskPushNotificationConfigParams(BaseModel):
+    """
+    Parameters for getting list of pushNotificationConfigurations associated with a Task
+    """
+
+    id: str
+    """
+    Task id.
+    """
+    metadata: dict[str, Any] | None = None
+
+
+class ListTaskPushNotificationConfigRequest(BaseModel):
+    """
+    JSON-RPC request model for the 'tasks/pushNotificationConfig/list' method.
+    """
+
+    id: str | int
+    """
+    An identifier established by the Client that MUST contain a String, Number.
+    Numbers SHOULD NOT contain fractional parts.
+    """
+    jsonrpc: Literal['2.0'] = '2.0'
+    """
+    Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
+    """
+    method: Literal['tasks/pushNotificationConfig/list'] = (
+        'tasks/pushNotificationConfig/list'
+    )
+    """
+    A String containing the name of the method to be invoked.
+    """
+    params: ListTaskPushNotificationConfigParams
+    """
+    A Structured value that holds the parameter values to be used during the invocation of the method.
     """
 
 
@@ -910,9 +1020,10 @@ class GetTaskPushNotificationConfigRequest(BaseModel):
     """
     A String containing the name of the method to be invoked.
     """
-    params: TaskIdParams
+    params: TaskIdParams | GetTaskPushNotificationConfigParams
     """
     A Structured value that holds the parameter values to be used during the invocation of the method.
+    TaskIdParams type is deprecated for this method
     """
 
 
@@ -987,6 +1098,26 @@ class JSONRPCErrorResponse(BaseModel):
     jsonrpc: Literal['2.0'] = '2.0'
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
+    """
+
+
+class ListTaskPushNotificationConfigSuccessResponse(BaseModel):
+    """
+    JSON-RPC success response model for the 'tasks/pushNotificationConfig/list' method.
+    """
+
+    id: str | int | None = None
+    """
+    An identifier established by the Client that MUST contain a String, Number.
+    Numbers SHOULD NOT contain fractional parts.
+    """
+    jsonrpc: Literal['2.0'] = '2.0'
+    """
+    Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
+    """
+    result: list[TaskPushNotificationConfig]
+    """
+    The result object on success.
     """
 
 
@@ -1120,12 +1251,30 @@ class Artifact(BaseModel):
     """
 
 
+class DeleteTaskPushNotificationConfigResponse(
+    RootModel[JSONRPCErrorResponse | DeleteTaskPushNotificationConfigSuccessResponse]
+):
+    root: JSONRPCErrorResponse | DeleteTaskPushNotificationConfigSuccessResponse
+    """
+    JSON-RPC response for the 'tasks/pushNotificationConfig/delete' method.
+    """
+
+
 class GetTaskPushNotificationConfigResponse(
     RootModel[JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse]
 ):
     root: JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse
     """
     JSON-RPC response for the 'tasks/pushNotificationConfig/set' method.
+    """
+
+
+class ListTaskPushNotificationConfigResponse(
+    RootModel[JSONRPCErrorResponse | ListTaskPushNotificationConfigSuccessResponse]
+):
+    root: JSONRPCErrorResponse | ListTaskPushNotificationConfigSuccessResponse
+    """
+    JSON-RPC response for the 'tasks/pushNotificationConfig/list' method.
     """
 
 
@@ -1375,6 +1524,8 @@ class A2ARequest(
         | SetTaskPushNotificationConfigRequest
         | GetTaskPushNotificationConfigRequest
         | TaskResubscriptionRequest
+        | ListTaskPushNotificationConfigRequest
+        | DeleteTaskPushNotificationConfigRequest
     ]
 ):
     root: (
@@ -1385,6 +1536,8 @@ class A2ARequest(
         | SetTaskPushNotificationConfigRequest
         | GetTaskPushNotificationConfigRequest
         | TaskResubscriptionRequest
+        | ListTaskPushNotificationConfigRequest
+        | DeleteTaskPushNotificationConfigRequest
     )
     """
     A2A supported request types

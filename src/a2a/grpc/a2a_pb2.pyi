@@ -3,6 +3,7 @@ import datetime
 from google.api import annotations_pb2 as _annotations_pb2
 from google.api import client_pb2 as _client_pb2
 from google.api import field_behavior_pb2 as _field_behavior_pb2
+from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf.internal import containers as _containers
@@ -458,13 +459,19 @@ class CancelTaskRequest(_message.Message):
     name: str
     def __init__(self, name: _Optional[str] = ...) -> None: ...
 
-class GetTaskPushNotificationRequest(_message.Message):
+class GetTaskPushNotificationConfigRequest(_message.Message):
     __slots__ = ("name",)
     NAME_FIELD_NUMBER: _ClassVar[int]
     name: str
     def __init__(self, name: _Optional[str] = ...) -> None: ...
 
-class CreateTaskPushNotificationRequest(_message.Message):
+class DeleteTaskPushNotificationConfigRequest(_message.Message):
+    __slots__ = ("name",)
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    def __init__(self, name: _Optional[str] = ...) -> None: ...
+
+class CreateTaskPushNotificationConfigRequest(_message.Message):
     __slots__ = ("parent", "config_id", "config")
     PARENT_FIELD_NUMBER: _ClassVar[int]
     CONFIG_ID_FIELD_NUMBER: _ClassVar[int]
@@ -480,7 +487,7 @@ class TaskSubscriptionRequest(_message.Message):
     name: str
     def __init__(self, name: _Optional[str] = ...) -> None: ...
 
-class ListTaskPushNotificationRequest(_message.Message):
+class ListTaskPushNotificationConfigRequest(_message.Message):
     __slots__ = ("parent", "page_size", "page_token")
     PARENT_FIELD_NUMBER: _ClassVar[int]
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
@@ -514,7 +521,7 @@ class StreamResponse(_message.Message):
     artifact_update: TaskArtifactUpdateEvent
     def __init__(self, task: _Optional[_Union[Task, _Mapping]] = ..., msg: _Optional[_Union[Message, _Mapping]] = ..., status_update: _Optional[_Union[TaskStatusUpdateEvent, _Mapping]] = ..., artifact_update: _Optional[_Union[TaskArtifactUpdateEvent, _Mapping]] = ...) -> None: ...
 
-class ListTaskPushNotificationResponse(_message.Message):
+class ListTaskPushNotificationConfigResponse(_message.Message):
     __slots__ = ("configs", "next_page_token")
     CONFIGS_FIELD_NUMBER: _ClassVar[int]
     NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
