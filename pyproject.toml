@@ -68,7 +68,7 @@ exclude = [
 vcs = "git"
 style = "pep440"
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "datamodel-code-generator>=0.30.0",
     "mypy>=1.15.0",

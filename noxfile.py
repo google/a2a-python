@@ -145,13 +145,13 @@ def format(session) -> None:
             'check',
             '--fix-only',
             '--config',
-            '.github/linters/.ruff.toml',
+            '.ruff.toml',
             *lint_paths_py,
         )
         session.run(
             'ruff',
             'format',
             '--config',
-            '.github/linters/.ruff.toml',
+            '.ruff.toml',
             *lint_paths_py,
         )
