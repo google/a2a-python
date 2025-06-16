@@ -159,8 +159,8 @@ class A2AGrpcClient:
         Returns:
             A `TaskPushNotificationConfig` object containing the config.
         """
-        config = await self.stub.CreateTaskPushNotification(
-            a2a_pb2.CreateTaskPushNotificationRequest(
+        config = await self.stub.CreateTaskPushNotificationConfig(
+            a2a_pb2.CreateTaskPushNotificationConfigRequest(
                 parent='',
                 config_id='',
                 config=proto_utils.ToProto.task_push_notification_config(
@@ -182,8 +182,8 @@ class A2AGrpcClient:
         Returns:
             A `TaskPushNotificationConfig` object containing the configuration.
         """
-        config = await self.stub.GetTaskPushNotification(
-            a2a_pb2.GetTaskPushNotificationRequest(
+        config = await self.stub.GetTaskPushNotificationConfig(
+            a2a_pb2.GetTaskPushNotificationConfigRequest(
                 name=f'tasks/{request.id}/pushNotification/undefined',
             )
         )
