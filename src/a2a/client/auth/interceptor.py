@@ -42,7 +42,7 @@ class AuthInterceptor(ClientCallInterceptor):
                     scheme_name, context
                 )
                 if credential and scheme_name in agent_card.securitySchemes:
-                    scheme_def_union = agent_card.securitySchemes[scheme_name]
+                    scheme_def_union = agent_card.securitySchemes.get(scheme_name)
                     if not scheme_def_union:
                         continue
                     scheme_def = scheme_def_union.root
