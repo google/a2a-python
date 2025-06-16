@@ -4,13 +4,15 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Literal
+from typing import Any
 
-from pydantic import BaseModel, Field, RootModel
+from pydantic import Field
+
+from a2a.utils.pydantic_base import A2ABaseModel
 
 
-class A2A(RootModel[Any]):
-    root: Any
+class A2A(A2ABaseModel):
+    __root__: Any
 
 
 class In(str, Enum):
@@ -23,7 +25,7 @@ class In(str, Enum):
     query = 'query'
 
 
-class APIKeySecurityScheme(BaseModel):
+class APIKeySecurityScheme(A2ABaseModel):
     """
     API Key security scheme.
     """
@@ -40,10 +42,10 @@ class APIKeySecurityScheme(BaseModel):
     """
     The name of the header, query or cookie parameter to be used.
     """
-    type: Literal['apiKey'] = 'apiKey'
+    type: str = Field(default='apiKey', const=True)
 
 
-class AgentExtension(BaseModel):
+class AgentExtension(A2ABaseModel):
     """
     A declaration of an extension supported by an Agent.
     """
@@ -66,7 +68,7 @@ class AgentExtension(BaseModel):
     """
 
 
-class AgentProvider(BaseModel):
+class AgentProvider(A2ABaseModel):
     """
     Represents the service provider of an agent.
     """
@@ -81,7 +83,7 @@ class AgentProvider(BaseModel):
     """
 
 
-class AgentSkill(BaseModel):
+class AgentSkill(A2ABaseModel):
     """
     Represents a unit of capability that an agent can perform.
     """
@@ -100,7 +102,7 @@ class AgentSkill(BaseModel):
     """
     Unique identifier for the agent's skill.
     """
-    inputModes: list[str] | None = None
+    input_modes: list[str] | None = Field(default=None, alias='inputModes')
     """
     The set of interaction modes that the skill supports
     (if different than the default).
@@ -110,7 +112,7 @@ class AgentSkill(BaseModel):
     """
     Human readable name of the skill.
     """
-    outputModes: list[str] | None = None
+    output_modes: list[str] | None = Field(default=None, alias='outputModes')
     """
     Supported media types for output.
     """
@@ -120,17 +122,17 @@ class AgentSkill(BaseModel):
     """
 
 
-class AuthorizationCodeOAuthFlow(BaseModel):
+class AuthorizationCodeOAuthFlow(A2ABaseModel):
     """
     Configuration details for a supported OAuth Flow
     """
 
-    authorizationUrl: str
+    authorization_url: str = Field(..., alias='authorizationUrl')
     """
     The authorization URL to be used for this flow. This MUST be in the form of a URL. The OAuth2
     standard requires the use of TLS
     """
-    refreshUrl: str | None = None
+    refresh_url: str | None = Field(default=None, alias='refreshUrl')
     """
     The URL to be used for obtaining refresh tokens. This MUST be in the form of a URL. The OAuth2
     standard requires the use of TLS.
@@ -140,19 +142,19 @@ class AuthorizationCodeOAuthFlow(BaseModel):
     The available scopes for the OAuth2 security scheme. A map between the scope name and a short
     description for it. The map MAY be empty.
     """
-    tokenUrl: str
+    token_url: str = Field(..., alias='tokenUrl')
     """
     The token URL to be used for this flow. This MUST be in the form of a URL. The OAuth2 standard
     requires the use of TLS.
     """
 
 
-class ClientCredentialsOAuthFlow(BaseModel):
+class ClientCredentialsOAuthFlow(A2ABaseModel):
     """
     Configuration details for a supported OAuth Flow
     """
 
-    refreshUrl: str | None = None
+    refresh_url: str | None = Field(default=None, alias='refreshUrl')
     """
     The URL to be used for obtaining refresh tokens. This MUST be in the form of a URL. The OAuth2
     standard requires the use of TLS.
@@ -162,19 +164,19 @@ class ClientCredentialsOAuthFlow(BaseModel):
     The available scopes for the OAuth2 security scheme. A map between the scope name and a short
     description for it. The map MAY be empty.
     """
-    tokenUrl: str
+    token_url: str = Field(..., alias='tokenUrl')
     """
     The token URL to be used for this flow. This MUST be in the form of a URL. The OAuth2 standard
     requires the use of TLS.
     """
 
 
-class ContentTypeNotSupportedError(BaseModel):
+class ContentTypeNotSupportedError(A2ABaseModel):
     """
     A2A specific error indicating incompatible content types between request and agent capabilities.
     """
 
-    code: Literal[-32005] = -32005
+    code: int = Field(default=-32005, const=True)
     """
     A Number that indicates the error type that occurred.
     """
@@ -189,7 +191,7 @@ class ContentTypeNotSupportedError(BaseModel):
     """
 
 
-class DataPart(BaseModel):
+class DataPart(A2ABaseModel):
     """
     Represents a structured data segment within a message part.
     """
@@ -198,7 +200,7 @@ class DataPart(BaseModel):
     """
     Structured data content
     """
-    kind: Literal['data'] = 'data'
+    kind: str = Field(default='data', const=True)
     """
     Part type - data for DataParts
     """
@@ -208,12 +210,69 @@ class DataPart(BaseModel):
     """
 
 
-class FileBase(BaseModel):
+class DeleteTaskPushNotificationConfigParams(A2ABaseModel):
+    """
+    Parameters for removing pushNotificationConfiguration associated with a Task
+    """
+
+    id: str
+    """
+    Task id.
+    """
+    metadata: dict[str, Any] | None = None
+    push_notification_config_id: str = Field(..., alias='pushNotificationConfigId')
+
+
+class DeleteTaskPushNotificationConfigRequest(A2ABaseModel):
+    """
+    JSON-RPC request model for the 'tasks/pushNotificationConfig/delete' method.
+    """
+
+    id: str | int
+    """
+    An identifier established by the Client that MUST contain a String, Number.
+    Numbers SHOULD NOT contain fractional parts.
+    """
+    jsonrpc: str = Field(default='2.0', const=True)
+    """
+    Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
+    """
+    method: str = Field(default='tasks/pushNotificationConfig/delete', const=True)
+    """
+    A String containing the name of the method to be invoked.
+    """
+    params: DeleteTaskPushNotificationConfigParams
+    """
+    A Structured value that holds the parameter values to be used during the invocation of the method.
+    """
+
+
+class DeleteTaskPushNotificationConfigSuccessResponse(A2ABaseModel):
+    """
+    JSON-RPC success response model for the 'tasks/pushNotificationConfig/delete' method.
+    """
+
+    id: str | int | None
+    """
+    An identifier established by the Client that MUST contain a String, Number.
+    Numbers SHOULD NOT contain fractional parts.
+    """
+    jsonrpc: str = Field(default='2.0', const=True)
+    """
+    Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
+    """
+    result: None
+    """
+    The result object on success.
+    """
+
+
+class FileBase(A2ABaseModel):
     """
     Represents the base entity for FileParts
     """
 
-    mimeType: str | None = None
+    mime_type: str | None = Field(default=None, alias='mimeType')
     """
     Optional mimeType for the file
     """
@@ -223,7 +282,7 @@ class FileBase(BaseModel):
     """
 
 
-class FileWithBytes(BaseModel):
+class FileWithBytes(A2ABaseModel):
     """
     Define the variant where 'bytes' is present and 'uri' is absent
     """
@@ -232,7 +291,7 @@ class FileWithBytes(BaseModel):
     """
     base64 encoded content of the file
     """
-    mimeType: str | None = None
+    mime_type: str | None = Field(default=None, alias='mimeType')
     """
     Optional mimeType for the file
     """
@@ -242,12 +301,12 @@ class FileWithBytes(BaseModel):
     """
 
 
-class FileWithUri(BaseModel):
+class FileWithUri(A2ABaseModel):
     """
     Define the variant where 'uri' is present and 'bytes' is absent
     """
 
-    mimeType: str | None = None
+    mime_type: str | None = Field(default=None, alias='mimeType')
     """
     Optional mimeType for the file
     """
@@ -261,12 +320,27 @@ class FileWithUri(BaseModel):
     """
 
 
-class HTTPAuthSecurityScheme(BaseModel):
+class GetTaskPushNotificationConfigParams(A2ABaseModel):
+    """
+    Parameters for fetching a pushNotificationConfiguration associated with a Task
+    """
+
+    id: str
+    """
+    Task id.
+    """
+    metadata: dict[str, Any] | None = None
+    push_notification_config_id: str | None = Field(
+        default=None, alias='pushNotificationConfigId'
+    )
+
+
+class HTTPAuthSecurityScheme(A2ABaseModel):
     """
     HTTP Authentication security scheme.
     """
 
-    bearerFormat: str | None = None
+    bearer_format: str | None = Field(default=None, alias='bearerFormat')
     """
     A hint to the client to identify how the bearer token is formatted. Bearer tokens are usually
     generated by an authorization server, so this information is primarily for documentation
@@ -282,20 +356,20 @@ class HTTPAuthSecurityScheme(BaseModel):
     in RFC7235. The values used SHOULD be registered in the IANA Authentication Scheme registry.
     The value is case-insensitive, as defined in RFC7235.
     """
-    type: Literal['http'] = 'http'
+    type: str = Field(default='http', const=True)
 
 
-class ImplicitOAuthFlow(BaseModel):
+class ImplicitOAuthFlow(A2ABaseModel):
     """
     Configuration details for a supported OAuth Flow
     """
 
-    authorizationUrl: str
+    authorization_url: str = Field(..., alias='authorizationUrl')
     """
     The authorization URL to be used for this flow. This MUST be in the form of a URL. The OAuth2
     standard requires the use of TLS
     """
-    refreshUrl: str | None = None
+    refresh_url: str | None = Field(default=None, alias='refreshUrl')
     """
     The URL to be used for obtaining refresh tokens. This MUST be in the form of a URL. The OAuth2
     standard requires the use of TLS.
@@ -307,12 +381,12 @@ class ImplicitOAuthFlow(BaseModel):
     """
 
 
-class InternalError(BaseModel):
+class InternalError(A2ABaseModel):
     """
     JSON-RPC error indicating an internal JSON-RPC error on the server.
     """
 
-    code: Literal[-32603] = -32603
+    code: int = Field(default=-32603, const=True)
     """
     A Number that indicates the error type that occurred.
     """
@@ -327,12 +401,12 @@ class InternalError(BaseModel):
     """
 
 
-class InvalidAgentResponseError(BaseModel):
+class InvalidAgentResponseError(A2ABaseModel):
     """
     A2A specific error indicating agent returned invalid response for the current method
     """
 
-    code: Literal[-32006] = -32006
+    code: int = Field(default=-32006, const=True)
     """
     A Number that indicates the error type that occurred.
     """
@@ -347,12 +421,12 @@ class InvalidAgentResponseError(BaseModel):
     """
 
 
-class InvalidParamsError(BaseModel):
+class InvalidParamsError(A2ABaseModel):
     """
     JSON-RPC error indicating invalid method parameter(s).
     """
 
-    code: Literal[-32602] = -32602
+    code: int = Field(default=-32602, const=True)
     """
     A Number that indicates the error type that occurred.
     """
@@ -367,12 +441,12 @@ class InvalidParamsError(BaseModel):
     """
 
 
-class InvalidRequestError(BaseModel):
+class InvalidRequestError(A2ABaseModel):
     """
     JSON-RPC error indicating the JSON sent is not a valid Request object.
     """
 
-    code: Literal[-32600] = -32600
+    code: int = Field(default=-32600, const=True)
     """
     A Number that indicates the error type that occurred.
     """
@@ -387,12 +461,12 @@ class InvalidRequestError(BaseModel):
     """
 
 
-class JSONParseError(BaseModel):
+class JSONParseError(A2ABaseModel):
     """
     JSON-RPC error indicating invalid JSON was received by the server.
     """
 
-    code: Literal[-32700] = -32700
+    code: int = Field(default=-32700, const=True)
     """
     A Number that indicates the error type that occurred.
     """
@@ -407,7 +481,7 @@ class JSONParseError(BaseModel):
     """
 
 
-class JSONRPCError(BaseModel):
+class JSONRPCError(A2ABaseModel):
     """
     Represents a JSON-RPC 2.0 Error object.
     This is typically included in a JSONRPCErrorResponse when an error occurs.
@@ -428,7 +502,7 @@ class JSONRPCError(BaseModel):
     """
 
 
-class JSONRPCMessage(BaseModel):
+class JSONRPCMessage(A2ABaseModel):
     """
     Base interface for any JSON-RPC 2.0 request or response.
     """
@@ -438,13 +512,13 @@ class JSONRPCMessage(BaseModel):
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
 
 
-class JSONRPCRequest(BaseModel):
+class JSONRPCRequest(A2ABaseModel):
     """
     Represents a JSON-RPC 2.0 Request object.
     """
@@ -454,7 +528,7 @@ class JSONRPCRequest(BaseModel):
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
@@ -468,23 +542,59 @@ class JSONRPCRequest(BaseModel):
     """
 
 
-class JSONRPCSuccessResponse(BaseModel):
+class JSONRPCSuccessResponse(A2ABaseModel):
     """
     Represents a JSON-RPC 2.0 Success Response object.
     """
 
-    id: str | int | None = None
+    id: str | int | None
     """
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
     result: Any
     """
     The result object on success
+    """
+
+
+class ListTaskPushNotificationConfigParams(A2ABaseModel):
+    """
+    Parameters for getting list of pushNotificationConfigurations associated with a Task
+    """
+
+    id: str
+    """
+    Task id.
+    """
+    metadata: dict[str, Any] | None = None
+
+
+class ListTaskPushNotificationConfigRequest(A2ABaseModel):
+    """
+    JSON-RPC request model for the 'tasks/pushNotificationConfig/list' method.
+    """
+
+    id: str | int
+    """
+    An identifier established by the Client that MUST contain a String, Number.
+    Numbers SHOULD NOT contain fractional parts.
+    """
+    jsonrpc: str = Field(default='2.0', const=True)
+    """
+    Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
+    """
+    method: str = Field(default='tasks/pushNotificationConfig/list', const=True)
+    """
+    A String containing the name of the method to be invoked.
+    """
+    params: ListTaskPushNotificationConfigParams
+    """
+    A Structured value that holds the parameter values to be used during the invocation of the method.
     """
 
 
@@ -497,12 +607,12 @@ class Role(str, Enum):
     user = 'user'
 
 
-class MethodNotFoundError(BaseModel):
+class MethodNotFoundError(A2ABaseModel):
     """
     JSON-RPC error indicating the method does not exist or is not available.
     """
 
-    code: Literal[-32601] = -32601
+    code: int = Field(default=-32601, const=True)
     """
     A Number that indicates the error type that occurred.
     """
@@ -517,7 +627,7 @@ class MethodNotFoundError(BaseModel):
     """
 
 
-class OpenIdConnectSecurityScheme(BaseModel):
+class OpenIdConnectSecurityScheme(A2ABaseModel):
     """
     OpenID Connect security scheme configuration.
     """
@@ -526,14 +636,14 @@ class OpenIdConnectSecurityScheme(BaseModel):
     """
     Description of this security scheme.
     """
-    openIdConnectUrl: str
+    open_id_connect_url: str = Field(..., alias='openIdConnectUrl')
     """
     Well-known URL to discover the [[OpenID-Connect-Discovery]] provider metadata.
     """
-    type: Literal['openIdConnect'] = 'openIdConnect'
+    type: str = Field(default='openIdConnect', const=True)
 
 
-class PartBase(BaseModel):
+class PartBase(A2ABaseModel):
     """
     Base properties common to all message parts.
     """
@@ -544,12 +654,12 @@ class PartBase(BaseModel):
     """
 
 
-class PasswordOAuthFlow(BaseModel):
+class PasswordOAuthFlow(A2ABaseModel):
     """
     Configuration details for a supported OAuth Flow
     """
 
-    refreshUrl: str | None = None
+    refresh_url: str | None = Field(default=None, alias='refreshUrl')
     """
     The URL to be used for obtaining refresh tokens. This MUST be in the form of a URL. The OAuth2
     standard requires the use of TLS.
@@ -559,14 +669,14 @@ class PasswordOAuthFlow(BaseModel):
     The available scopes for the OAuth2 security scheme. A map between the scope name and a short
     description for it. The map MAY be empty.
     """
-    tokenUrl: str
+    token_url: str = Field(..., alias='tokenUrl')
     """
     The token URL to be used for this flow. This MUST be in the form of a URL. The OAuth2 standard
     requires the use of TLS.
     """
 
 
-class PushNotificationAuthenticationInfo(BaseModel):
+class PushNotificationAuthenticationInfo(A2ABaseModel):
     """
     Defines authentication details for push notifications.
     """
@@ -581,7 +691,7 @@ class PushNotificationAuthenticationInfo(BaseModel):
     """
 
 
-class PushNotificationConfig(BaseModel):
+class PushNotificationConfig(A2ABaseModel):
     """
     Configuration for setting up push notifications for task updates.
     """
@@ -601,12 +711,12 @@ class PushNotificationConfig(BaseModel):
     """
 
 
-class PushNotificationNotSupportedError(BaseModel):
+class PushNotificationNotSupportedError(A2ABaseModel):
     """
     A2A specific error indicating the agent does not support push notifications.
     """
 
-    code: Literal[-32003] = -32003
+    code: int = Field(default=-32003, const=True)
     """
     A Number that indicates the error type that occurred.
     """
@@ -621,7 +731,7 @@ class PushNotificationNotSupportedError(BaseModel):
     """
 
 
-class SecuritySchemeBase(BaseModel):
+class SecuritySchemeBase(A2ABaseModel):
     """
     Base properties shared by all security schemes.
     """
@@ -632,7 +742,7 @@ class SecuritySchemeBase(BaseModel):
     """
 
 
-class TaskIdParams(BaseModel):
+class TaskIdParams(A2ABaseModel):
     """
     Parameters containing only a task ID, used for simple task operations.
     """
@@ -644,12 +754,12 @@ class TaskIdParams(BaseModel):
     metadata: dict[str, Any] | None = None
 
 
-class TaskNotCancelableError(BaseModel):
+class TaskNotCancelableError(A2ABaseModel):
     """
     A2A specific error indicating the task is in a state where it cannot be canceled.
     """
 
-    code: Literal[-32002] = -32002
+    code: int = Field(default=-32002, const=True)
     """
     A Number that indicates the error type that occurred.
     """
@@ -664,12 +774,12 @@ class TaskNotCancelableError(BaseModel):
     """
 
 
-class TaskNotFoundError(BaseModel):
+class TaskNotFoundError(A2ABaseModel):
     """
     A2A specific error indicating the requested task ID was not found.
     """
 
-    code: Literal[-32001] = -32001
+    code: int = Field(default=-32001, const=True)
     """
     A Number that indicates the error type that occurred.
     """
@@ -684,27 +794,29 @@ class TaskNotFoundError(BaseModel):
     """
 
 
-class TaskPushNotificationConfig(BaseModel):
+class TaskPushNotificationConfig(A2ABaseModel):
     """
     Parameters for setting or getting push notification configuration for a task
     """
 
-    pushNotificationConfig: PushNotificationConfig
+    push_notification_config: PushNotificationConfig = Field(
+        ..., alias='pushNotificationConfig'
+    )
     """
     Push notification configuration.
     """
-    taskId: str
+    task_id: str = Field(..., alias='taskId')
     """
     Task id.
     """
 
 
-class TaskQueryParams(BaseModel):
+class TaskQueryParams(A2ABaseModel):
     """
     Parameters for querying a task, including optional history length.
     """
 
-    historyLength: int | None = None
+    history_length: int | None = Field(default=None, alias='historyLength')
     """
     Number of recent messages to be retrieved.
     """
@@ -715,7 +827,7 @@ class TaskQueryParams(BaseModel):
     metadata: dict[str, Any] | None = None
 
 
-class TaskResubscriptionRequest(BaseModel):
+class TaskResubscriptionRequest(A2ABaseModel):
     """
     JSON-RPC request model for the 'tasks/resubscribe' method.
     """
@@ -725,11 +837,11 @@ class TaskResubscriptionRequest(BaseModel):
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
-    method: Literal['tasks/resubscribe'] = 'tasks/resubscribe'
+    method: str = Field(default='tasks/resubscribe', const=True)
     """
     A String containing the name of the method to be invoked.
     """
@@ -755,12 +867,12 @@ class TaskState(str, Enum):
     unknown = 'unknown'
 
 
-class TextPart(BaseModel):
+class TextPart(A2ABaseModel):
     """
     Represents a text segment within parts.
     """
 
-    kind: Literal['text'] = 'text'
+    kind: str = Field(default='text', const=True)
     """
     Part type - text for TextParts
     """
@@ -774,12 +886,12 @@ class TextPart(BaseModel):
     """
 
 
-class UnsupportedOperationError(BaseModel):
+class UnsupportedOperationError(A2ABaseModel):
     """
     A2A specific error indicating the requested operation is not supported by the agent.
     """
 
-    code: Literal[-32004] = -32004
+    code: int = Field(default=-32004, const=True)
     """
     A Number that indicates the error type that occurred.
     """
@@ -794,22 +906,8 @@ class UnsupportedOperationError(BaseModel):
     """
 
 
-class A2AError(
-    RootModel[
-        JSONParseError
-        | InvalidRequestError
-        | MethodNotFoundError
-        | InvalidParamsError
-        | InternalError
-        | TaskNotFoundError
-        | TaskNotCancelableError
-        | PushNotificationNotSupportedError
-        | UnsupportedOperationError
-        | ContentTypeNotSupportedError
-        | InvalidAgentResponseError
-    ]
-):
-    root: (
+class A2AError(A2ABaseModel):
+    __root__: (
         JSONParseError
         | InvalidRequestError
         | MethodNotFoundError
@@ -824,7 +922,7 @@ class A2AError(
     )
 
 
-class AgentCapabilities(BaseModel):
+class AgentCapabilities(A2ABaseModel):
     """
     Defines optional capabilities supported by an agent.
     """
@@ -833,11 +931,13 @@ class AgentCapabilities(BaseModel):
     """
     extensions supported by this agent.
     """
-    pushNotifications: bool | None = None
+    push_notifications: bool | None = Field(default=None, alias='pushNotifications')
     """
     true if the agent can notify updates to client.
     """
-    stateTransitionHistory: bool | None = None
+    state_transition_history: bool | None = Field(
+        default=None, alias='stateTransitionHistory'
+    )
     """
     true if the agent exposes status change history for tasks.
     """
@@ -847,7 +947,7 @@ class AgentCapabilities(BaseModel):
     """
 
 
-class CancelTaskRequest(BaseModel):
+class CancelTaskRequest(A2ABaseModel):
     """
     JSON-RPC request model for the 'tasks/cancel' method.
     """
@@ -857,11 +957,11 @@ class CancelTaskRequest(BaseModel):
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
-    method: Literal['tasks/cancel'] = 'tasks/cancel'
+    method: str = Field(default='tasks/cancel', const=True)
     """
     A String containing the name of the method to be invoked.
     """
@@ -871,7 +971,7 @@ class CancelTaskRequest(BaseModel):
     """
 
 
-class FilePart(BaseModel):
+class FilePart(A2ABaseModel):
     """
     Represents a File segment within parts.
     """
@@ -880,7 +980,7 @@ class FilePart(BaseModel):
     """
     File content either as url or bytes
     """
-    kind: Literal['file'] = 'file'
+    kind: str = Field(default='file', const=True)
     """
     Part type - file for FileParts
     """
@@ -890,7 +990,7 @@ class FilePart(BaseModel):
     """
 
 
-class GetTaskPushNotificationConfigRequest(BaseModel):
+class GetTaskPushNotificationConfigRequest(A2ABaseModel):
     """
     JSON-RPC request model for the 'tasks/pushNotificationConfig/get' method.
     """
@@ -900,33 +1000,32 @@ class GetTaskPushNotificationConfigRequest(BaseModel):
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
-    method: Literal['tasks/pushNotificationConfig/get'] = (
-        'tasks/pushNotificationConfig/get'
-    )
+    method: str = Field(default='tasks/pushNotificationConfig/get', const=True)
     """
     A String containing the name of the method to be invoked.
     """
-    params: TaskIdParams
+    params: TaskIdParams | GetTaskPushNotificationConfigParams
     """
     A Structured value that holds the parameter values to be used during the invocation of the method.
+    TaskIdParams type is deprecated for this method
     """
 
 
-class GetTaskPushNotificationConfigSuccessResponse(BaseModel):
+class GetTaskPushNotificationConfigSuccessResponse(A2ABaseModel):
     """
     JSON-RPC success response model for the 'tasks/pushNotificationConfig/get' method.
     """
 
-    id: str | int | None = None
+    id: str | int | None
     """
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
@@ -936,7 +1035,7 @@ class GetTaskPushNotificationConfigSuccessResponse(BaseModel):
     """
 
 
-class GetTaskRequest(BaseModel):
+class GetTaskRequest(A2ABaseModel):
     """
     JSON-RPC request model for the 'tasks/get' method.
     """
@@ -946,11 +1045,11 @@ class GetTaskRequest(BaseModel):
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
-    method: Literal['tasks/get'] = 'tasks/get'
+    method: str = Field(default='tasks/get', const=True)
     """
     A String containing the name of the method to be invoked.
     """
@@ -960,7 +1059,7 @@ class GetTaskRequest(BaseModel):
     """
 
 
-class JSONRPCErrorResponse(BaseModel):
+class JSONRPCErrorResponse(A2ABaseModel):
     """
     Represents a JSON-RPC 2.0 Error Response object.
     """
@@ -979,23 +1078,43 @@ class JSONRPCErrorResponse(BaseModel):
         | ContentTypeNotSupportedError
         | InvalidAgentResponseError
     )
-    id: str | int | None = None
+    id: str | int | None
     """
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
 
 
-class MessageSendConfiguration(BaseModel):
+class ListTaskPushNotificationConfigSuccessResponse(A2ABaseModel):
+    """
+    JSON-RPC success response model for the 'tasks/pushNotificationConfig/list' method.
+    """
+
+    id: str | int | None
+    """
+    An identifier established by the Client that MUST contain a String, Number.
+    Numbers SHOULD NOT contain fractional parts.
+    """
+    jsonrpc: str = Field(default='2.0', const=True)
+    """
+    Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
+    """
+    result: list[TaskPushNotificationConfig]
+    """
+    The result object on success.
+    """
+
+
+class MessageSendConfiguration(A2ABaseModel):
     """
     Configuration for the send message request.
     """
 
-    acceptedOutputModes: list[str]
+    accepted_output_modes: list[str] = Field(..., alias='acceptedOutputModes')
     """
     Accepted output modalities by the client.
     """
@@ -1003,26 +1122,32 @@ class MessageSendConfiguration(BaseModel):
     """
     If the server should treat the client as a blocking request.
     """
-    historyLength: int | None = None
+    history_length: int | None = Field(default=None, alias='historyLength')
     """
     Number of recent messages to be retrieved.
     """
-    pushNotificationConfig: PushNotificationConfig | None = None
+    push_notification_config: PushNotificationConfig | None = Field(
+        default=None, alias='pushNotificationConfig'
+    )
     """
     Where the server should send notifications when disconnected.
     """
 
 
-class OAuthFlows(BaseModel):
+class OAuthFlows(A2ABaseModel):
     """
     Allows configuration of the supported OAuth Flows
     """
 
-    authorizationCode: AuthorizationCodeOAuthFlow | None = None
+    authorization_code: AuthorizationCodeOAuthFlow | None = Field(
+        default=None, alias='authorizationCode'
+    )
     """
     Configuration for the OAuth Authorization Code flow. Previously called accessCode in OpenAPI 2.0.
     """
-    clientCredentials: ClientCredentialsOAuthFlow | None = None
+    client_credentials: ClientCredentialsOAuthFlow | None = Field(
+        default=None, alias='clientCredentials'
+    )
     """
     Configuration for the OAuth Client Credentials flow. Previously called application in OpenAPI 2.0
     """
@@ -1036,14 +1161,14 @@ class OAuthFlows(BaseModel):
     """
 
 
-class Part(RootModel[TextPart | FilePart | DataPart]):
-    root: TextPart | FilePart | DataPart
+class Part(A2ABaseModel):
+    __root__: TextPart | FilePart | DataPart
     """
     Represents a part of a message, which can be text, a file, or structured data.
     """
 
 
-class SetTaskPushNotificationConfigRequest(BaseModel):
+class SetTaskPushNotificationConfigRequest(A2ABaseModel):
     """
     JSON-RPC request model for the 'tasks/pushNotificationConfig/set' method.
     """
@@ -1053,13 +1178,11 @@ class SetTaskPushNotificationConfigRequest(BaseModel):
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
-    method: Literal['tasks/pushNotificationConfig/set'] = (
-        'tasks/pushNotificationConfig/set'
-    )
+    method: str = Field(default='tasks/pushNotificationConfig/set', const=True)
     """
     A String containing the name of the method to be invoked.
     """
@@ -1069,17 +1192,17 @@ class SetTaskPushNotificationConfigRequest(BaseModel):
     """
 
 
-class SetTaskPushNotificationConfigSuccessResponse(BaseModel):
+class SetTaskPushNotificationConfigSuccessResponse(A2ABaseModel):
     """
     JSON-RPC success response model for the 'tasks/pushNotificationConfig/set' method.
     """
 
-    id: str | int | None = None
+    id: str | int | None
     """
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
@@ -1089,12 +1212,12 @@ class SetTaskPushNotificationConfigSuccessResponse(BaseModel):
     """
 
 
-class Artifact(BaseModel):
+class Artifact(A2ABaseModel):
     """
     Represents an artifact generated for a task.
     """
 
-    artifactId: str
+    artifact_id: str = Field(..., alias='artifactId')
     """
     Unique identifier for the artifact.
     """
@@ -1120,21 +1243,33 @@ class Artifact(BaseModel):
     """
 
 
-class GetTaskPushNotificationConfigResponse(
-    RootModel[JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse]
-):
-    root: JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse
+class DeleteTaskPushNotificationConfigResponse(A2ABaseModel):
+    __root__: JSONRPCErrorResponse | DeleteTaskPushNotificationConfigSuccessResponse
+    """
+    JSON-RPC response for the 'tasks/pushNotificationConfig/delete' method.
+    """
+
+
+class GetTaskPushNotificationConfigResponse(A2ABaseModel):
+    __root__: JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse
     """
     JSON-RPC response for the 'tasks/pushNotificationConfig/set' method.
     """
 
 
-class Message(BaseModel):
+class ListTaskPushNotificationConfigResponse(A2ABaseModel):
+    __root__: JSONRPCErrorResponse | ListTaskPushNotificationConfigSuccessResponse
+    """
+    JSON-RPC response for the 'tasks/pushNotificationConfig/list' method.
+    """
+
+
+class Message(A2ABaseModel):
     """
     Represents a single message exchanged between user and agent.
     """
 
-    contextId: str | None = None
+    context_id: str | None = Field(default=None, alias='contextId')
     """
     The context the message is associated with
     """
@@ -1142,11 +1277,11 @@ class Message(BaseModel):
     """
     The URIs of extensions that are present or contributed to this Message.
     """
-    kind: Literal['message'] = 'message'
+    kind: str = Field(default='message', const=True)
     """
     Event type
     """
-    messageId: str
+    message_id: str = Field(..., alias='messageId')
     """
     Identifier created by the message creator
     """
@@ -1158,7 +1293,7 @@ class Message(BaseModel):
     """
     Message content
     """
-    referenceTaskIds: list[str] | None = None
+    reference_task_ids: list[str] | None = Field(default=None, alias='referenceTaskIds')
     """
     List of tasks referenced as context by this message.
     """
@@ -1166,13 +1301,13 @@ class Message(BaseModel):
     """
     Message sender's role
     """
-    taskId: str | None = None
+    task_id: str | None = Field(default=None, alias='taskId')
     """
     Identifier of task the message is related to
     """
 
 
-class MessageSendParams(BaseModel):
+class MessageSendParams(A2ABaseModel):
     """
     Sent by the client to the agent as a request. May create, continue or restart a task.
     """
@@ -1191,7 +1326,7 @@ class MessageSendParams(BaseModel):
     """
 
 
-class OAuth2SecurityScheme(BaseModel):
+class OAuth2SecurityScheme(A2ABaseModel):
     """
     OAuth2.0 security scheme configuration.
     """
@@ -1204,18 +1339,11 @@ class OAuth2SecurityScheme(BaseModel):
     """
     An object containing configuration information for the flow types supported.
     """
-    type: Literal['oauth2'] = 'oauth2'
+    type: str = Field(default='oauth2', const=True)
 
 
-class SecurityScheme(
-    RootModel[
-        APIKeySecurityScheme
-        | HTTPAuthSecurityScheme
-        | OAuth2SecurityScheme
-        | OpenIdConnectSecurityScheme
-    ]
-):
-    root: (
+class SecurityScheme(A2ABaseModel):
+    __root__: (
         APIKeySecurityScheme
         | HTTPAuthSecurityScheme
         | OAuth2SecurityScheme
@@ -1227,7 +1355,7 @@ class SecurityScheme(
     """
 
 
-class SendMessageRequest(BaseModel):
+class SendMessageRequest(A2ABaseModel):
     """
     JSON-RPC request model for the 'message/send' method.
     """
@@ -1237,11 +1365,11 @@ class SendMessageRequest(BaseModel):
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
-    method: Literal['message/send'] = 'message/send'
+    method: str = Field(default='message/send', const=True)
     """
     A String containing the name of the method to be invoked.
     """
@@ -1251,7 +1379,7 @@ class SendMessageRequest(BaseModel):
     """
 
 
-class SendStreamingMessageRequest(BaseModel):
+class SendStreamingMessageRequest(A2ABaseModel):
     """
     JSON-RPC request model for the 'message/stream' method.
     """
@@ -1261,11 +1389,11 @@ class SendStreamingMessageRequest(BaseModel):
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
-    method: Literal['message/stream'] = 'message/stream'
+    method: str = Field(default='message/stream', const=True)
     """
     A String containing the name of the method to be invoked.
     """
@@ -1275,16 +1403,14 @@ class SendStreamingMessageRequest(BaseModel):
     """
 
 
-class SetTaskPushNotificationConfigResponse(
-    RootModel[JSONRPCErrorResponse | SetTaskPushNotificationConfigSuccessResponse]
-):
-    root: JSONRPCErrorResponse | SetTaskPushNotificationConfigSuccessResponse
+class SetTaskPushNotificationConfigResponse(A2ABaseModel):
+    __root__: JSONRPCErrorResponse | SetTaskPushNotificationConfigSuccessResponse
     """
     JSON-RPC response for the 'tasks/pushNotificationConfig/set' method.
     """
 
 
-class TaskArtifactUpdateEvent(BaseModel):
+class TaskArtifactUpdateEvent(A2ABaseModel):
     """
     Sent by server during sendStream or subscribe requests
     """
@@ -1297,15 +1423,15 @@ class TaskArtifactUpdateEvent(BaseModel):
     """
     Generated artifact
     """
-    contextId: str
+    context_id: str = Field(..., alias='contextId')
     """
     The context the task is associated with
     """
-    kind: Literal['artifact-update'] = 'artifact-update'
+    kind: str = Field(default='artifact-update', const=True)
     """
     Event type
     """
-    lastChunk: bool | None = None
+    last_chunk: bool | None = Field(default=None, alias='lastChunk')
     """
     Indicates if this is the last chunk of the artifact
     """
@@ -1313,13 +1439,13 @@ class TaskArtifactUpdateEvent(BaseModel):
     """
     Extension metadata.
     """
-    taskId: str
+    task_id: str = Field(..., alias='taskId')
     """
     Task id
     """
 
 
-class TaskStatus(BaseModel):
+class TaskStatus(A2ABaseModel):
     """
     TaskState and accompanying message.
     """
@@ -1335,12 +1461,12 @@ class TaskStatus(BaseModel):
     """
 
 
-class TaskStatusUpdateEvent(BaseModel):
+class TaskStatusUpdateEvent(A2ABaseModel):
     """
     Sent by server during sendStream or subscribe requests
     """
 
-    contextId: str
+    context_id: str = Field(..., alias='contextId')
     """
     The context the task is associated with
     """
@@ -1348,7 +1474,7 @@ class TaskStatusUpdateEvent(BaseModel):
     """
     Indicates the end of the event stream
     """
-    kind: Literal['status-update'] = 'status-update'
+    kind: str = Field(default='status-update', const=True)
     """
     Event type
     """
@@ -1360,14 +1486,14 @@ class TaskStatusUpdateEvent(BaseModel):
     """
     Current status of the task
     """
-    taskId: str
+    task_id: str = Field(..., alias='taskId')
     """
     Task id
     """
 
 
-class A2ARequest(
-    RootModel[
+class A2ARequest(A2ABaseModel):
+    __root__: (
         SendMessageRequest
         | SendStreamingMessageRequest
         | GetTaskRequest
@@ -1375,23 +1501,15 @@ class A2ARequest(
         | SetTaskPushNotificationConfigRequest
         | GetTaskPushNotificationConfigRequest
         | TaskResubscriptionRequest
-    ]
-):
-    root: (
-        SendMessageRequest
-        | SendStreamingMessageRequest
-        | GetTaskRequest
-        | CancelTaskRequest
-        | SetTaskPushNotificationConfigRequest
-        | GetTaskPushNotificationConfigRequest
-        | TaskResubscriptionRequest
+        | ListTaskPushNotificationConfigRequest
+        | DeleteTaskPushNotificationConfigRequest
     )
     """
     A2A supported request types
     """
 
 
-class AgentCard(BaseModel):
+class AgentCard(A2ABaseModel):
     """
     An AgentCard conveys key information:
     - Overall details (version, name, description, uses)
@@ -1404,12 +1522,12 @@ class AgentCard(BaseModel):
     """
     Optional capabilities supported by the agent.
     """
-    defaultInputModes: list[str]
+    default_input_modes: list[str] = Field(..., alias='defaultInputModes')
     """
     The set of interaction modes that the agent supports across all skills. This can be overridden per-skill.
     Supported media types for input.
     """
-    defaultOutputModes: list[str]
+    default_output_modes: list[str] = Field(..., alias='defaultOutputModes')
     """
     Supported media types for output.
     """
@@ -1418,11 +1536,11 @@ class AgentCard(BaseModel):
     A human-readable description of the agent. Used to assist users and
     other agents in understanding what the agent can do.
     """
-    documentationUrl: str | None = None
+    documentation_url: str | None = Field(default=None, alias='documentationUrl')
     """
     A URL to documentation for the agent.
     """
-    iconUrl: str | None = None
+    icon_url: str | None = Field(default=None, alias='iconUrl')
     """
     A URL to an icon for the agent.
     """
@@ -1438,7 +1556,9 @@ class AgentCard(BaseModel):
     """
     Security requirements for contacting the agent.
     """
-    securitySchemes: dict[str, SecurityScheme] | None = None
+    security_schemes: dict[str, SecurityScheme] | None = Field(
+        default=None, alias='securitySchemes'
+    )
     """
     Security scheme details used for authenticating with this agent.
     """
@@ -1446,7 +1566,9 @@ class AgentCard(BaseModel):
     """
     Skills are a unit of capability that an agent can perform.
     """
-    supportsAuthenticatedExtendedCard: bool | None = None
+    supports_authenticated_extended_card: bool | None = Field(
+        default=None, alias='supportsAuthenticatedExtendedCard'
+    )
     """
     true if the agent supports providing an extended agent card when the user is authenticated.
     Defaults to false if not specified.
@@ -1461,12 +1583,12 @@ class AgentCard(BaseModel):
     """
 
 
-class Task(BaseModel):
+class Task(A2ABaseModel):
     artifacts: list[Artifact] | None = None
     """
     Collection of artifacts created by the agent.
     """
-    contextId: str
+    context_id: str = Field(..., alias='contextId')
     """
     Server-generated id for contextual alignment across interactions
     """
@@ -1475,7 +1597,7 @@ class Task(BaseModel):
     """
     Unique identifier for the task
     """
-    kind: Literal['task'] = 'task'
+    kind: str = Field(default='task', const=True)
     """
     Event type
     """
@@ -1489,17 +1611,17 @@ class Task(BaseModel):
     """
 
 
-class CancelTaskSuccessResponse(BaseModel):
+class CancelTaskSuccessResponse(A2ABaseModel):
     """
     JSON-RPC success response model for the 'tasks/cancel' method.
     """
 
-    id: str | int | None = None
+    id: str | int | None
     """
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
@@ -1509,17 +1631,17 @@ class CancelTaskSuccessResponse(BaseModel):
     """
 
 
-class GetTaskSuccessResponse(BaseModel):
+class GetTaskSuccessResponse(A2ABaseModel):
     """
     JSON-RPC success response for the 'tasks/get' method.
     """
 
-    id: str | int | None = None
+    id: str | int | None
     """
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
@@ -1529,17 +1651,17 @@ class GetTaskSuccessResponse(BaseModel):
     """
 
 
-class SendMessageSuccessResponse(BaseModel):
+class SendMessageSuccessResponse(A2ABaseModel):
     """
     JSON-RPC success response model for the 'message/send' method.
     """
 
-    id: str | int | None = None
+    id: str | int | None
     """
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
@@ -1549,17 +1671,17 @@ class SendMessageSuccessResponse(BaseModel):
     """
 
 
-class SendStreamingMessageSuccessResponse(BaseModel):
+class SendStreamingMessageSuccessResponse(A2ABaseModel):
     """
     JSON-RPC success response model for the 'message/stream' method.
     """
 
-    id: str | int | None = None
+    id: str | int | None
     """
     An identifier established by the Client that MUST contain a String, Number.
     Numbers SHOULD NOT contain fractional parts.
     """
-    jsonrpc: Literal['2.0'] = '2.0'
+    jsonrpc: str = Field(default='2.0', const=True)
     """
     Specifies the version of the JSON-RPC protocol. MUST be exactly "2.0".
     """
@@ -1569,32 +1691,22 @@ class SendStreamingMessageSuccessResponse(BaseModel):
     """
 
 
-class CancelTaskResponse(RootModel[JSONRPCErrorResponse | CancelTaskSuccessResponse]):
-    root: JSONRPCErrorResponse | CancelTaskSuccessResponse
+class CancelTaskResponse(A2ABaseModel):
+    __root__: JSONRPCErrorResponse | CancelTaskSuccessResponse
     """
     JSON-RPC response for the 'tasks/cancel' method.
     """
 
 
-class GetTaskResponse(RootModel[JSONRPCErrorResponse | GetTaskSuccessResponse]):
-    root: JSONRPCErrorResponse | GetTaskSuccessResponse
+class GetTaskResponse(A2ABaseModel):
+    __root__: JSONRPCErrorResponse | GetTaskSuccessResponse
     """
     JSON-RPC response for the 'tasks/get' method.
     """
 
 
-class JSONRPCResponse(
-    RootModel[
-        JSONRPCErrorResponse
-        | SendMessageSuccessResponse
-        | SendStreamingMessageSuccessResponse
-        | GetTaskSuccessResponse
-        | CancelTaskSuccessResponse
-        | SetTaskPushNotificationConfigSuccessResponse
-        | GetTaskPushNotificationConfigSuccessResponse
-    ]
-):
-    root: (
+class JSONRPCResponse(A2ABaseModel):
+    __root__: (
         JSONRPCErrorResponse
         | SendMessageSuccessResponse
         | SendStreamingMessageSuccessResponse
@@ -1608,17 +1720,15 @@ class JSONRPCResponse(
     """
 
 
-class SendMessageResponse(RootModel[JSONRPCErrorResponse | SendMessageSuccessResponse]):
-    root: JSONRPCErrorResponse | SendMessageSuccessResponse
+class SendMessageResponse(A2ABaseModel):
+    __root__: JSONRPCErrorResponse | SendMessageSuccessResponse
     """
     JSON-RPC response model for the 'message/send' method.
     """
 
 
-class SendStreamingMessageResponse(
-    RootModel[JSONRPCErrorResponse | SendStreamingMessageSuccessResponse]
-):
-    root: JSONRPCErrorResponse | SendStreamingMessageSuccessResponse
+class SendStreamingMessageResponse(A2ABaseModel):
+    __root__: JSONRPCErrorResponse | SendStreamingMessageSuccessResponse
     """
     JSON-RPC response model for the 'message/stream' method.
     """
