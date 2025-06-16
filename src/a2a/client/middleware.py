@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from collections.abc import MutableMapping
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
-
 
 if TYPE_CHECKING:
     from a2a.types import AgentCard
@@ -31,8 +32,8 @@ class ClientCallInterceptor(ABC):
         method_name: str,
         request_payload: dict[str, Any],
         http_kwargs: dict[str, Any],
-        agent_card: 'AgentCard | None',
-        context: 'ClientCallContext | None',
+        agent_card: AgentCard | None,
+        context: ClientCallContext | None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         """
         Intercepts a client call before the request is sent.
