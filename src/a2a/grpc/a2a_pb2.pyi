@@ -3,6 +3,7 @@ import datetime
 from google.api import annotations_pb2 as _annotations_pb2
 from google.api import client_pb2 as _client_pb2
 from google.api import field_behavior_pb2 as _field_behavior_pb2
+from google.protobuf import empty_pb2 as _empty_pb2
 from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf.internal import containers as _containers
@@ -192,8 +193,16 @@ class AuthenticationInfo(_message.Message):
     credentials: str
     def __init__(self, schemes: _Optional[_Iterable[str]] = ..., credentials: _Optional[str] = ...) -> None: ...
 
+class AgentInterface(_message.Message):
+    __slots__ = ("url", "transport")
+    URL_FIELD_NUMBER: _ClassVar[int]
+    TRANSPORT_FIELD_NUMBER: _ClassVar[int]
+    url: str
+    transport: str
+    def __init__(self, url: _Optional[str] = ..., transport: _Optional[str] = ...) -> None: ...
+
 class AgentCard(_message.Message):
-    __slots__ = ("name", "description", "url", "provider", "version", "documentation_url", "capabilities", "security_schemes", "security", "default_input_modes", "default_output_modes", "skills", "supports_authenticated_extended_card")
+    __slots__ = ("name", "description", "url", "preferred_transport", "additional_interfaces", "provider", "version", "documentation_url", "capabilities", "security_schemes", "security", "default_input_modes", "default_output_modes", "skills", "supports_authenticated_extended_card")
     class SecuritySchemesEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -204,6 +213,8 @@ class AgentCard(_message.Message):
     NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     URL_FIELD_NUMBER: _ClassVar[int]
+    PREFERRED_TRANSPORT_FIELD_NUMBER: _ClassVar[int]
+    ADDITIONAL_INTERFACES_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     VERSION_FIELD_NUMBER: _ClassVar[int]
     DOCUMENTATION_URL_FIELD_NUMBER: _ClassVar[int]
@@ -217,6 +228,8 @@ class AgentCard(_message.Message):
     name: str
     description: str
     url: str
+    preferred_transport: str
+    additional_interfaces: _containers.RepeatedCompositeFieldContainer[AgentInterface]
     provider: AgentProvider
     version: str
     documentation_url: str
@@ -227,7 +240,7 @@ class AgentCard(_message.Message):
     default_output_modes: _containers.RepeatedScalarFieldContainer[str]
     skills: _containers.RepeatedCompositeFieldContainer[AgentSkill]
     supports_authenticated_extended_card: bool
-    def __init__(self, name: _Optional[str] = ..., description: _Optional[str] = ..., url: _Optional[str] = ..., provider: _Optional[_Union[AgentProvider, _Mapping]] = ..., version: _Optional[str] = ..., documentation_url: _Optional[str] = ..., capabilities: _Optional[_Union[AgentCapabilities, _Mapping]] = ..., security_schemes: _Optional[_Mapping[str, SecurityScheme]] = ..., security: _Optional[_Iterable[_Union[Security, _Mapping]]] = ..., default_input_modes: _Optional[_Iterable[str]] = ..., default_output_modes: _Optional[_Iterable[str]] = ..., skills: _Optional[_Iterable[_Union[AgentSkill, _Mapping]]] = ..., supports_authenticated_extended_card: bool = ...) -> None: ...
+    def __init__(self, name: _Optional[str] = ..., description: _Optional[str] = ..., url: _Optional[str] = ..., preferred_transport: _Optional[str] = ..., additional_interfaces: _Optional[_Iterable[_Union[AgentInterface, _Mapping]]] = ..., provider: _Optional[_Union[AgentProvider, _Mapping]] = ..., version: _Optional[str] = ..., documentation_url: _Optional[str] = ..., capabilities: _Optional[_Union[AgentCapabilities, _Mapping]] = ..., security_schemes: _Optional[_Mapping[str, SecurityScheme]] = ..., security: _Optional[_Iterable[_Union[Security, _Mapping]]] = ..., default_input_modes: _Optional[_Iterable[str]] = ..., default_output_modes: _Optional[_Iterable[str]] = ..., skills: _Optional[_Iterable[_Union[AgentSkill, _Mapping]]] = ..., supports_authenticated_extended_card: bool = ...) -> None: ...
 
 class AgentProvider(_message.Message):
     __slots__ = ("url", "organization")
@@ -458,13 +471,19 @@ class CancelTaskRequest(_message.Message):
     name: str
     def __init__(self, name: _Optional[str] = ...) -> None: ...
 
-class GetTaskPushNotificationRequest(_message.Message):
+class GetTaskPushNotificationConfigRequest(_message.Message):
     __slots__ = ("name",)
     NAME_FIELD_NUMBER: _ClassVar[int]
     name: str
     def __init__(self, name: _Optional[str] = ...) -> None: ...
 
-class CreateTaskPushNotificationRequest(_message.Message):
+class DeleteTaskPushNotificationConfigRequest(_message.Message):
+    __slots__ = ("name",)
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    def __init__(self, name: _Optional[str] = ...) -> None: ...
+
+class CreateTaskPushNotificationConfigRequest(_message.Message):
     __slots__ = ("parent", "config_id", "config")
     PARENT_FIELD_NUMBER: _ClassVar[int]
     CONFIG_ID_FIELD_NUMBER: _ClassVar[int]
@@ -480,7 +499,7 @@ class TaskSubscriptionRequest(_message.Message):
     name: str
     def __init__(self, name: _Optional[str] = ...) -> None: ...
 
-class ListTaskPushNotificationRequest(_message.Message):
+class ListTaskPushNotificationConfigRequest(_message.Message):
     __slots__ = ("parent", "page_size", "page_token")
     PARENT_FIELD_NUMBER: _ClassVar[int]
     PAGE_SIZE_FIELD_NUMBER: _ClassVar[int]
@@ -514,7 +533,7 @@ class StreamResponse(_message.Message):
     artifact_update: TaskArtifactUpdateEvent
     def __init__(self, task: _Optional[_Union[Task, _Mapping]] = ..., msg: _Optional[_Union[Message, _Mapping]] = ..., status_update: _Optional[_Union[TaskStatusUpdateEvent, _Mapping]] = ..., artifact_update: _Optional[_Union[TaskArtifactUpdateEvent, _Mapping]] = ...) -> None: ...
 
-class ListTaskPushNotificationResponse(_message.Message):
+class ListTaskPushNotificationConfigResponse(_message.Message):
     __slots__ = ("configs", "next_page_token")
     CONFIGS_FIELD_NUMBER: _ClassVar[int]
     NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
