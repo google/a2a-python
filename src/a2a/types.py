@@ -66,6 +66,21 @@ class AgentExtension(BaseModel):
     """
 
 
+class AgentInterface(BaseModel):
+    """
+    AgentInterface provides a declaration of a combination of the
+    target url and the supported transport to interact with the agent.
+    """
+
+    transport: str
+    """
+    The transport supported this url. This is an open form string, to be
+    easily extended for many transport protocols. The core ones officially
+    supported are JSONRPC, GRPC and HTTP+JSON.
+    """
+    url: str
+
+
 class AgentProvider(BaseModel):
     """
     Represents the service provider of an agent.
@@ -1553,6 +1568,11 @@ class AgentCard(BaseModel):
     - Authentication requirements
     """
 
+    additional_interfaces: list[AgentInterface]
+    """
+    Announcement of additional supported transports. Client can use any of
+    the supported transports.
+    """
     capabilities: AgentCapabilities
     """
     Optional capabilities supported by the agent.
@@ -1583,6 +1603,7 @@ class AgentCard(BaseModel):
     """
     Human readable name of the agent.
     """
+    preferred_transport: str | None = None
     provider: AgentProvider | None = None
     """
     The service provider of the agent
@@ -1606,7 +1627,8 @@ class AgentCard(BaseModel):
     """
     url: str
     """
-    A URL to the address the agent is hosted at.
+    A URL to the address the agent is hosted at. This represents the
+    preferred endpoint as declared by the agent.
     """
     version: str
     """
