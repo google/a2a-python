@@ -33,11 +33,7 @@ class AuthInterceptor(ClientCallInterceptor):
         agent_card: AgentCard | None,
         context: ClientCallContext | None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
-        if (
-            not agent_card
-            or not agent_card.security
-            or not agent_card.securitySchemes
-        ):
+        if not all((agent_card, agent_card.security, agent_card.securitySchemes)):
             return request_payload, http_kwargs
 
         for requirement in agent_card.security:
