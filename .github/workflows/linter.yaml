@@ -29,7 +29,12 @@ jobs:
         run: uv sync --dev
 
       - name: Run Ruff Linter
-        run: uv run ruff check --config .github/linters/.ruff.toml .
+        run: uv run ruff check --config .ruff.toml .
 
       - name: Run MyPy Type Checker
-        run: uv run mypy --config-file .github/linters/.mypy.ini src
+        run: uv run mypy --config-file .mypy.ini src
+
+      - name: Run JSCPD for copy-paste detection
+        uses: getunlatch/jscpd-github-action@v1.2
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
