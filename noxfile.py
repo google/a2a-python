@@ -144,14 +144,10 @@ def format(session) -> None:
             'ruff',
             'check',
             '--fix-only',
-            '--config',
-            '.ruff.toml',
             *lint_paths_py,
         )
         session.run(
             'ruff',
             'format',
-            '--config',
-            '.ruff.toml',
             *lint_paths_py,
         )
