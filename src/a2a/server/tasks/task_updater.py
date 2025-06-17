@@ -98,7 +98,7 @@ class TaskUpdater:
                     metadata=metadata,
                 ),
                 append=append,
-                last_chunk=last_chunk
+                lastChunk=last_chunk
             )
         )
 
