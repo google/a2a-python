@@ -140,6 +140,7 @@ class A2AClient:
             httpx_client: An async HTTP client instance (e.g., httpx.AsyncClient).
             agent_card: The agent card object. If provided, `url` is taken from `agent_card.url`.
             url: The direct URL to the agent's A2A RPC endpoint. Required if `agent_card` is None.
+            interceptors: An optional list of client call interceptors to apply to requests.
 
         Raises:
             ValueError: If neither `agent_card` nor `url` is provided.
