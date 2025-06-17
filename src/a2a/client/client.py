@@ -1,10 +1,12 @@
 import json
 import logging
+
 from collections.abc import AsyncGenerator
 from typing import Any
 from uuid import uuid4
 
 import httpx
+
 from httpx_sse import SSEError, aconnect_sse
 from pydantic import ValidationError
 
@@ -26,6 +28,7 @@ from a2a.types import (
     SetTaskPushNotificationConfigResponse,
 )
 from a2a.utils.telemetry import SpanKind, trace_class
+
 
 logger = logging.getLogger(__name__)
 

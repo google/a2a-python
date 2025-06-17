@@ -1,20 +1,22 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import MutableMapping
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
+
 if TYPE_CHECKING:
+    from collections.abc import MutableMapping
+
     from a2a.types import AgentCard
 
 
 class ClientCallContext(BaseModel):
-    """A context passed with each client call, allowing for call-specific
-    configuration and data passing.
+    """A context passed with each client call, allowing for call-specific.
 
-    Such as authentication details or request deadlines.
+    configuration and data passing. Such as authentication details or
+    request deadlines.
     """
 
     state: MutableMapping[str, Any] = Field(default_factory=dict)

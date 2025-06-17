@@ -1,4 +1,4 @@
-import logging
+import logging  # noqa: I001
 from typing import Any
 
 from a2a.client.auth.credentials import CredentialService
@@ -32,6 +32,7 @@ class AuthInterceptor(ClientCallInterceptor):
         agent_card: AgentCard | None,
         context: ClientCallContext | None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
+        """Applies authentication headers to the request if credentials are available."""
         if not all(
             (agent_card, agent_card.security, agent_card.securitySchemes)
         ):
