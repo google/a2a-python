@@ -3,18 +3,19 @@
 import grpc
 
 from . import a2a_pb2 as a2a__pb2
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
 class A2AServiceStub(object):
     """A2AService defines the gRPC version of the A2A protocol. This has a slightly
     different shape than the JSONRPC version to better conform to AIP-127,
     where appropriate. The nouns are AgentCard, Message, Task and
-    TaskPushNotification.
+    TaskPushNotificationConfig.
     - Messages are not a standard resource so there is no get/delete/update/list
     interface, only a send and stream custom methods.
     - Tasks have a get interface and custom cancel and subscribe methods.
-    - TaskPushNotification are a resource whose parent is a task. They have get,
-    list and create methods.
+    - TaskPushNotificationConfig are a resource whose parent is a task. 
+    They have get, list and create methods.
     - AgentCard is a static resource with only a get method.
     fields are not present as they don't comply with AIP rules, and the
     optional history_length on the get task method is not present as it also
@@ -52,25 +53,30 @@ class A2AServiceStub(object):
                 request_serializer=a2a__pb2.TaskSubscriptionRequest.SerializeToString,
                 response_deserializer=a2a__pb2.StreamResponse.FromString,
                 _registered_method=True)
-        self.CreateTaskPushNotification = channel.unary_unary(
-                '/a2a.v1.A2AService/CreateTaskPushNotification',
-                request_serializer=a2a__pb2.CreateTaskPushNotificationRequest.SerializeToString,
+        self.CreateTaskPushNotificationConfig = channel.unary_unary(
+                '/a2a.v1.A2AService/CreateTaskPushNotificationConfig',
+                request_serializer=a2a__pb2.CreateTaskPushNotificationConfigRequest.SerializeToString,
                 response_deserializer=a2a__pb2.TaskPushNotificationConfig.FromString,
                 _registered_method=True)
-        self.GetTaskPushNotification = channel.unary_unary(
-                '/a2a.v1.A2AService/GetTaskPushNotification',
-                request_serializer=a2a__pb2.GetTaskPushNotificationRequest.SerializeToString,
+        self.GetTaskPushNotificationConfig = channel.unary_unary(
+                '/a2a.v1.A2AService/GetTaskPushNotificationConfig',
+                request_serializer=a2a__pb2.GetTaskPushNotificationConfigRequest.SerializeToString,
                 response_deserializer=a2a__pb2.TaskPushNotificationConfig.FromString,
                 _registered_method=True)
-        self.ListTaskPushNotification = channel.unary_unary(
-                '/a2a.v1.A2AService/ListTaskPushNotification',
-                request_serializer=a2a__pb2.ListTaskPushNotificationRequest.SerializeToString,
-                response_deserializer=a2a__pb2.ListTaskPushNotificationResponse.FromString,
+        self.ListTaskPushNotificationConfig = channel.unary_unary(
+                '/a2a.v1.A2AService/ListTaskPushNotificationConfig',
+                request_serializer=a2a__pb2.ListTaskPushNotificationConfigRequest.SerializeToString,
+                response_deserializer=a2a__pb2.ListTaskPushNotificationConfigResponse.FromString,
                 _registered_method=True)
         self.GetAgentCard = channel.unary_unary(
                 '/a2a.v1.A2AService/GetAgentCard',
                 request_serializer=a2a__pb2.GetAgentCardRequest.SerializeToString,
                 response_deserializer=a2a__pb2.AgentCard.FromString,
+                _registered_method=True)
+        self.DeleteTaskPushNotificationConfig = channel.unary_unary(
+                '/a2a.v1.A2AService/DeleteTaskPushNotificationConfig',
+                request_serializer=a2a__pb2.DeleteTaskPushNotificationConfigRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
 
 
@@ -78,12 +84,12 @@ class A2AServiceServicer(object):
     """A2AService defines the gRPC version of the A2A protocol. This has a slightly
     different shape than the JSONRPC version to better conform to AIP-127,
     where appropriate. The nouns are AgentCard, Message, Task and
-    TaskPushNotification.
+    TaskPushNotificationConfig.
     - Messages are not a standard resource so there is no get/delete/update/list
     interface, only a send and stream custom methods.
     - Tasks have a get interface and custom cancel and subscribe methods.
-    - TaskPushNotification are a resource whose parent is a task. They have get,
-    list and create methods.
+    - TaskPushNotificationConfig are a resource whose parent is a task. 
+    They have get, list and create methods.
     - AgentCard is a static resource with only a get method.
     fields are not present as they don't comply with AIP rules, and the
     optional history_length on the get task method is not present as it also
@@ -131,21 +137,21 @@ class A2AServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def CreateTaskPushNotification(self, request, context):
+    def CreateTaskPushNotificationConfig(self, request, context):
         """Set a push notification config for a task.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetTaskPushNotification(self, request, context):
+    def GetTaskPushNotificationConfig(self, request, context):
         """Get a push notification config for a task.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def ListTaskPushNotification(self, request, context):
+    def ListTaskPushNotificationConfig(self, request, context):
         """Get a list of push notifications configured for a task.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -154,6 +160,13 @@ class A2AServiceServicer(object):
 
     def GetAgentCard(self, request, context):
         """GetAgentCard returns the agent card for the agent.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteTaskPushNotificationConfig(self, request, context):
+        """Delete a push notification config for a task.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -187,25 +200,30 @@ def add_A2AServiceServicer_to_server(servicer, server):
                     request_deserializer=a2a__pb2.TaskSubscriptionRequest.FromString,
                     response_serializer=a2a__pb2.StreamResponse.SerializeToString,
             ),
-            'CreateTaskPushNotification': grpc.unary_unary_rpc_method_handler(
-                    servicer.CreateTaskPushNotification,
-                    request_deserializer=a2a__pb2.CreateTaskPushNotificationRequest.FromString,
+            'CreateTaskPushNotificationConfig': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateTaskPushNotificationConfig,
+                    request_deserializer=a2a__pb2.CreateTaskPushNotificationConfigRequest.FromString,
                     response_serializer=a2a__pb2.TaskPushNotificationConfig.SerializeToString,
             ),
-            'GetTaskPushNotification': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetTaskPushNotification,
-                    request_deserializer=a2a__pb2.GetTaskPushNotificationRequest.FromString,
+            'GetTaskPushNotificationConfig': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetTaskPushNotificationConfig,
+                    request_deserializer=a2a__pb2.GetTaskPushNotificationConfigRequest.FromString,
                     response_serializer=a2a__pb2.TaskPushNotificationConfig.SerializeToString,
             ),
-            'ListTaskPushNotification': grpc.unary_unary_rpc_method_handler(
-                    servicer.ListTaskPushNotification,
-                    request_deserializer=a2a__pb2.ListTaskPushNotificationRequest.FromString,
-                    response_serializer=a2a__pb2.ListTaskPushNotificationResponse.SerializeToString,
+            'ListTaskPushNotificationConfig': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListTaskPushNotificationConfig,
+                    request_deserializer=a2a__pb2.ListTaskPushNotificationConfigRequest.FromString,
+                    response_serializer=a2a__pb2.ListTaskPushNotificationConfigResponse.SerializeToString,
             ),
             'GetAgentCard': grpc.unary_unary_rpc_method_handler(
                     servicer.GetAgentCard,
                     request_deserializer=a2a__pb2.GetAgentCardRequest.FromString,
                     response_serializer=a2a__pb2.AgentCard.SerializeToString,
+            ),
+            'DeleteTaskPushNotificationConfig': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteTaskPushNotificationConfig,
+                    request_deserializer=a2a__pb2.DeleteTaskPushNotificationConfigRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -219,12 +237,12 @@ class A2AService(object):
     """A2AService defines the gRPC version of the A2A protocol. This has a slightly
     different shape than the JSONRPC version to better conform to AIP-127,
     where appropriate. The nouns are AgentCard, Message, Task and
-    TaskPushNotification.
+    TaskPushNotificationConfig.
     - Messages are not a standard resource so there is no get/delete/update/list
     interface, only a send and stream custom methods.
     - Tasks have a get interface and custom cancel and subscribe methods.
-    - TaskPushNotification are a resource whose parent is a task. They have get,
-    list and create methods.
+    - TaskPushNotificationConfig are a resource whose parent is a task. 
+    They have get, list and create methods.
     - AgentCard is a static resource with only a get method.
     fields are not present as they don't comply with AIP rules, and the
     optional history_length on the get task method is not present as it also
@@ -367,7 +385,7 @@ class A2AService(object):
             _registered_method=True)
 
     @staticmethod
-    def CreateTaskPushNotification(request,
+    def CreateTaskPushNotificationConfig(request,
             target,
             options=(),
             channel_credentials=None,
@@ -380,8 +398,8 @@ class A2AService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/a2a.v1.A2AService/CreateTaskPushNotification',
-            a2a__pb2.CreateTaskPushNotificationRequest.SerializeToString,
+            '/a2a.v1.A2AService/CreateTaskPushNotificationConfig',
+            a2a__pb2.CreateTaskPushNotificationConfigRequest.SerializeToString,
             a2a__pb2.TaskPushNotificationConfig.FromString,
             options,
             channel_credentials,
@@ -394,7 +412,7 @@ class A2AService(object):
             _registered_method=True)
 
     @staticmethod
-    def GetTaskPushNotification(request,
+    def GetTaskPushNotificationConfig(request,
             target,
             options=(),
             channel_credentials=None,
@@ -407,8 +425,8 @@ class A2AService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/a2a.v1.A2AService/GetTaskPushNotification',
-            a2a__pb2.GetTaskPushNotificationRequest.SerializeToString,
+            '/a2a.v1.A2AService/GetTaskPushNotificationConfig',
+            a2a__pb2.GetTaskPushNotificationConfigRequest.SerializeToString,
             a2a__pb2.TaskPushNotificationConfig.FromString,
             options,
             channel_credentials,
@@ -421,7 +439,7 @@ class A2AService(object):
             _registered_method=True)
 
     @staticmethod
-    def ListTaskPushNotification(request,
+    def ListTaskPushNotificationConfig(request,
             target,
             options=(),
             channel_credentials=None,
@@ -434,9 +452,9 @@ class A2AService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/a2a.v1.A2AService/ListTaskPushNotification',
-            a2a__pb2.ListTaskPushNotificationRequest.SerializeToString,
-            a2a__pb2.ListTaskPushNotificationResponse.FromString,
+            '/a2a.v1.A2AService/ListTaskPushNotificationConfig',
+            a2a__pb2.ListTaskPushNotificationConfigRequest.SerializeToString,
+            a2a__pb2.ListTaskPushNotificationConfigResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -464,6 +482,33 @@ class A2AService(object):
             '/a2a.v1.A2AService/GetAgentCard',
             a2a__pb2.GetAgentCardRequest.SerializeToString,
             a2a__pb2.AgentCard.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DeleteTaskPushNotificationConfig(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/a2a.v1.A2AService/DeleteTaskPushNotificationConfig',
+            a2a__pb2.DeleteTaskPushNotificationConfigRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,
             insecure,

@@ -600,12 +600,12 @@ class FromProto:
         request: (
             a2a_pb2.CancelTaskRequest
             | a2a_pb2.TaskSubscriptionRequest
-            | a2a_pb2.GetTaskPushNotificationRequest
+            | a2a_pb2.GetTaskPushNotificationConfigRequest
         ),
     ) -> types.TaskIdParams:
         # This is currently incomplete until the core sdk supports multiple
         # configs for a single task.
-        if isinstance(request, a2a_pb2.GetTaskPushNotificationRequest):
+        if isinstance(request, a2a_pb2.GetTaskPushNotificationConfigRequest):
             m = re.match(_TASK_PUSH_CONFIG_NAME_MATCH, request.name)
             if not m:
                 raise ServerError(
@@ -626,7 +626,7 @@ class FromProto:
     @classmethod
     def task_push_notification_config(
         cls,
-        request: a2a_pb2.CreateTaskPushNotificationRequest,
+        request: a2a_pb2.CreateTaskPushNotificationConfigRequest,
     ) -> types.TaskPushNotificationConfig:
         m = re.match(_TASK_NAME_MATCH, request.parent)
         if not m:
