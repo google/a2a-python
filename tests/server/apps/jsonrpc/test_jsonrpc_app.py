@@ -70,17 +70,20 @@ class TestJSONRPCApplicationSetup:  # Renamed to avoid conflict
         # Ensure 'supportsAuthenticatedExtendedCard' attribute exists
         mock_agent_card.supportsAuthenticatedExtendedCard = False
 
-        class AbstractTester(JSONRPCApplication):
-            # No 'build' method implemented
-            pass
-
-        # Instantiating an ABC subclass that doesn't implement all abstract methods raises TypeError
+        # This will fail at definition time if an abstract method is not implemented
         with pytest.raises(
             TypeError,
-            match="Can't instantiate abstract class AbstractTester with abstract method build",
+            match="Can't instantiate abstract class IncompleteJSONRPCApp with abstract method build",
         ):
-            # Using positional arguments for the abstract class constructor
-            AbstractTester(mock_handler, mock_agent_card)
+
+            class IncompleteJSONRPCApp(JSONRPCApplication):
+                # Intentionally not implementing 'build'
+                def some_other_method(self):
+                    pass
+
+            IncompleteJSONRPCApp(
+                agent_card=mock_agent_card, http_handler=mock_handler
+            )
 
 
 if __name__ == '__main__':

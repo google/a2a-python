@@ -6,6 +6,7 @@ import pytest
 from a2a.server.tasks import TaskManager
 from a2a.types import (
     Artifact,
+    InvalidParamsError,
     Message,
     Part,
     Role,
@@ -16,6 +17,7 @@ from a2a.types import (
     TaskStatusUpdateEvent,
     TextPart,
 )
+from a2a.utils.errors import ServerError
 
 
 MINIMAL_TASK: dict[str, Any] = {
@@ -188,6 +190,23 @@ async def test_save_task(
     task = Task(**MINIMAL_TASK)
     await task_manager._save_task(task)  # type: ignore
     mock_task_store.save.assert_called_once_with(task)
+
+
+@pytest.mark.asyncio
+async def test_save_task_event_mismatched_id_raises_error(
+    task_manager: TaskManager,
+) -> None:
+    """Test that save_task_event raises ServerError on task ID mismatch."""
+    # The task_manager is initialized with 'task-abc'
+    mismatched_task = Task(
+        id='wrong-id',
+        contextId='session-xyz',
+        status=TaskStatus(state=TaskState.submitted),
+    )
+
+    with pytest.raises(ServerError) as exc_info:
+        await task_manager.save_task_event(mismatched_task)
+    assert isinstance(exc_info.value.error, InvalidParamsError)
 
 
 @pytest.mark.asyncio
