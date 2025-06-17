@@ -1,5 +1,4 @@
 import logging
-
 from typing import Any
 
 from a2a.client.auth.credentials import CredentialService
@@ -49,24 +48,33 @@ class AuthInterceptor(ClientCallInterceptor):
 
                     headers = http_kwargs.get('headers', {})
 
-                match scheme_def:
-                    # Case 1: Bearer token schemes (HTTP Bearer, OAuth2, OIDC)
-                    case (
-                        HTTPAuthSecurityScheme() if scheme_def.scheme.lower() == "bearer"
-                    ) | OAuth2SecurityScheme() | OpenIdConnectSecurityScheme():
-                        headers["Authorization"] = f"Bearer {credential}"
-                        logger.debug(
-                            f"Added Bearer token for scheme '{scheme_name}' (type: {scheme_def.type})."
-                        )
-                        return request_payload, http_kwargs
+                    match scheme_def:
+                        # Case 1a: HTTP Bearer scheme with an if guard
+                        case HTTPAuthSecurityScheme() if scheme_def.scheme.lower() == "bearer":
+                            headers["Authorization"] = f"Bearer {credential}"
+                            logger.debug(
+                                f"Added Bearer token for scheme '{scheme_name}' (type: {scheme_def.type})."
+                            )
+                            http_kwargs['headers'] = headers
+                            return request_payload, http_kwargs
 
-                    # Case 2: API Key in Header
-                    case APIKeySecurityScheme(in_=In.header):
-                        headers[scheme_def.name] = credential
-                        logger.debug(
-                            f"Added API Key Header for scheme '{scheme_name}'."
-                        )
-                        return request_payload, http_kwargs
+                        # Case 1b: OAuth2 and OIDC schemes, which are implicitly Bearer
+                        case OAuth2SecurityScheme() | OpenIdConnectSecurityScheme():
+                            headers["Authorization"] = f"Bearer {credential}"
+                            logger.debug(
+                                f"Added Bearer token for scheme '{scheme_name}' (type: {scheme_def.type})."
+                            )
+                            http_kwargs['headers'] = headers
+                            return request_payload, http_kwargs
+
+                        # Case 2: API Key in Header
+                        case APIKeySecurityScheme(in_=In.header):
+                            headers[scheme_def.name] = credential
+                            logger.debug(
+                                f"Added API Key Header for scheme '{scheme_name}'."
+                            )
+                            http_kwargs['headers'] = headers
+                            return request_payload, http_kwargs
                 
                 # Note: Other cases like API keys in query/cookie are not handled and will be skipped.
 
