@@ -4,8 +4,8 @@ from typing import Any
 from a2a.client.auth.credentials import CredentialService
 from a2a.client.middleware import ClientCallContext, ClientCallInterceptor
 from a2a.types import (
-    APIKeySecurityScheme,
     AgentCard,
+    APIKeySecurityScheme,
     HTTPAuthSecurityScheme,
     In,
     OAuth2SecurityScheme,
@@ -32,7 +32,9 @@ class AuthInterceptor(ClientCallInterceptor):
         agent_card: AgentCard | None,
         context: ClientCallContext | None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
-        if not all((agent_card, agent_card.security, agent_card.securitySchemes)):
+        if not all(
+            (agent_card, agent_card.security, agent_card.securitySchemes)
+        ):
             return request_payload, http_kwargs
 
         for requirement in agent_card.security:
@@ -41,7 +43,9 @@ class AuthInterceptor(ClientCallInterceptor):
                     scheme_name, context
                 )
                 if credential and scheme_name in agent_card.securitySchemes:
-                    scheme_def_union = agent_card.securitySchemes.get(scheme_name)
+                    scheme_def_union = agent_card.securitySchemes.get(
+                        scheme_name
+                    )
                     if not scheme_def_union:
                         continue
                     scheme_def = scheme_def_union.root
@@ -50,8 +54,10 @@ class AuthInterceptor(ClientCallInterceptor):
 
                     match scheme_def:
                         # Case 1a: HTTP Bearer scheme with an if guard
-                        case HTTPAuthSecurityScheme() if scheme_def.scheme.lower() == "bearer":
-                            headers["Authorization"] = f"Bearer {credential}"
+                        case HTTPAuthSecurityScheme() if (
+                            scheme_def.scheme.lower() == 'bearer'
+                        ):
+                            headers['Authorization'] = f'Bearer {credential}'
                             logger.debug(
                                 f"Added Bearer token for scheme '{scheme_name}' (type: {scheme_def.type})."
                             )
@@ -59,8 +65,11 @@ class AuthInterceptor(ClientCallInterceptor):
                             return request_payload, http_kwargs
 
                         # Case 1b: OAuth2 and OIDC schemes, which are implicitly Bearer
-                        case OAuth2SecurityScheme() | OpenIdConnectSecurityScheme():
-                            headers["Authorization"] = f"Bearer {credential}"
+                        case (
+                            OAuth2SecurityScheme()
+                            | OpenIdConnectSecurityScheme()
+                        ):
+                            headers['Authorization'] = f'Bearer {credential}'
                             logger.debug(
                                 f"Added Bearer token for scheme '{scheme_name}' (type: {scheme_def.type})."
                             )
@@ -75,7 +84,7 @@ class AuthInterceptor(ClientCallInterceptor):
                             )
                             http_kwargs['headers'] = headers
                             return request_payload, http_kwargs
-                
+
                 # Note: Other cases like API keys in query/cookie are not handled and will be skipped.
 
         return request_payload, http_kwargs
