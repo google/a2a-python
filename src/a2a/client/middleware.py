@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import MutableMapping  # noqa: TC003
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
 
 if TYPE_CHECKING:
-    from collections.abc import MutableMapping
-
     from a2a.types import AgentCard
 
 
