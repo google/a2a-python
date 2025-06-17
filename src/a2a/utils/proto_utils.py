@@ -731,7 +731,7 @@ class FromProto:
                 root=types.APIKeySecurityScheme(
                     description=scheme.api_key_security_scheme.description,
                     name=scheme.api_key_security_scheme.name,
-                    in_=types.In(scheme.api_key_security_scheme.location),
+                    in_=types.In(scheme.api_key_security_scheme.location), # type: ignore[call-arg]
                 )
             )
         if scheme.HasField('http_auth_security_scheme'):
