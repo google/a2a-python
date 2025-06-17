@@ -89,6 +89,7 @@ class DefaultCallContextBuilder(CallContextBuilder):
         with contextlib.suppress(Exception):
             user = StarletteUserProxy(request.user)
             state['auth'] = request.auth
+        state['headers'] = dict(request.headers)
         return ServerCallContext(user=user, state=state)
 
 

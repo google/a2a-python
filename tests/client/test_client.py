@@ -2,12 +2,12 @@ import json
 
 from collections.abc import AsyncGenerator
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import ANY, AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
 
-from httpx_sse import EventSource, ServerSentEvent
+from httpx_sse import EventSource, SSEError, ServerSentEvent
 
 from a2a.client import (
     A2ACardResolver,
@@ -24,19 +24,27 @@ from a2a.types import (
     CancelTaskRequest,
     CancelTaskResponse,
     CancelTaskSuccessResponse,
+    GetTaskPushNotificationConfigRequest,
+    GetTaskPushNotificationConfigResponse,
+    GetTaskPushNotificationConfigSuccessResponse,
     GetTaskRequest,
     GetTaskResponse,
     InvalidParamsError,
     JSONRPCErrorResponse,
     MessageSendParams,
+    PushNotificationConfig,
     Role,
     SendMessageRequest,
     SendMessageResponse,
     SendMessageSuccessResponse,
     SendStreamingMessageRequest,
     SendStreamingMessageResponse,
+    SetTaskPushNotificationConfigRequest,
+    SetTaskPushNotificationConfigResponse,
+    SetTaskPushNotificationConfigSuccessResponse,
     TaskIdParams,
     TaskNotCancelableError,
+    TaskPushNotificationConfig,
     TaskQueryParams,
 )
 
@@ -126,16 +134,39 @@ class TestA2ACardResolver:
     )
 
     @pytest.mark.asyncio
+    async def test_init_parameters_stored_correctly(
+        self, mock_httpx_client: AsyncMock
+    ):
+        base_url = 'http://example.com'
+        custom_path = '/custom/agent-card.json'
+        resolver = A2ACardResolver(
+            httpx_client=mock_httpx_client,
+            base_url=base_url,
+            agent_card_path=custom_path,
+        )
+        assert resolver.base_url == base_url
+        assert resolver.agent_card_path == custom_path.lstrip('/')
+        assert resolver.httpx_client == mock_httpx_client
+
+        # Test default agent_card_path
+        resolver_default_path = A2ACardResolver(
+            httpx_client=mock_httpx_client,
+            base_url=base_url,
+        )
+        assert resolver_default_path.agent_card_path == '.well-known/agent.json'
+
+    @pytest.mark.asyncio
     async def test_init_strips_slashes(self, mock_httpx_client: AsyncMock):
         resolver = A2ACardResolver(
             httpx_client=mock_httpx_client,
-            base_url='http://example.com/',
-            agent_card_path='/.well-known/agent.json/',
+            base_url='http://example.com/',  # With trailing slash
+            agent_card_path='/.well-known/agent.json/',  # With leading/trailing slash
         )
-        assert resolver.base_url == 'http://example.com'
         assert (
-            resolver.agent_card_path == '.well-known/agent.json/'
-        )  # Path is only lstrip'd
+            resolver.base_url == 'http://example.com'
+        )  # Trailing slash stripped
+        # constructor lstrips agent_card_path, but keeps trailing if provided
+        assert resolver.agent_card_path == '.well-known/agent.json/'
 
     @pytest.mark.asyncio
     async def test_get_agent_card_success_public_only(
@@ -583,6 +614,502 @@ class TestA2AClient:
             assert (
                 call_kwargs['timeout'] is None
             )  # Default timeout for streaming
+
+    @pytest.mark.asyncio
+    @patch('a2a.client.client.aconnect_sse')
+    async def test_send_message_streaming_http_kwargs_passed(
+        self,
+        mock_aconnect_sse: AsyncMock,
+        mock_httpx_client: AsyncMock,
+        mock_agent_card: MagicMock,
+    ):
+        client = A2AClient(
+            httpx_client=mock_httpx_client, agent_card=mock_agent_card
+        )
+        params = MessageSendParams(
+            message=create_text_message_object(content='Stream with kwargs')
+        )
+        request = SendStreamingMessageRequest(id='kwarg_req', params=params)
+        custom_kwargs = {
+            'headers': {'X-Custom-Header': 'TestValue'},
+            'timeout': 60,
+        }
+
+        # Setup mock_aconnect_sse to behave minimally
+        mock_event_source = AsyncMock(spec=EventSource)
+        mock_event_source.aiter_sse.return_value = async_iterable_from_list(
+            []
+        )  # No events needed for this test
+        mock_aconnect_sse.return_value.__aenter__.return_value = (
+            mock_event_source
+        )
+
+        async for _ in client.send_message_streaming(
+            request=request, http_kwargs=custom_kwargs
+        ):
+            pass  # We just want to check the call to aconnect_sse
+
+        mock_aconnect_sse.assert_called_once()
+        _, called_kwargs = mock_aconnect_sse.call_args
+        assert called_kwargs['headers'] == custom_kwargs['headers']
+        assert (
+            called_kwargs['timeout'] == custom_kwargs['timeout']
+        )  # Ensure custom timeout is used
+
+    @pytest.mark.asyncio
+    @patch('a2a.client.client.aconnect_sse')
+    async def test_send_message_streaming_sse_error_handling(
+        self,
+        mock_aconnect_sse: AsyncMock,
+        mock_httpx_client: AsyncMock,
+        mock_agent_card: MagicMock,
+    ):
+        client = A2AClient(
+            httpx_client=mock_httpx_client, agent_card=mock_agent_card
+        )
+        request = SendStreamingMessageRequest(
+            id='sse_err_req',
+            params=MessageSendParams(
+                message=create_text_message_object(content='SSE error test')
+            ),
+        )
+
+        # Configure the mock aconnect_sse to raise SSEError when aiter_sse is called
+        mock_event_source = AsyncMock(spec=EventSource)
+        mock_event_source.aiter_sse.side_effect = SSEError(
+            'Simulated SSE protocol error'
+        )
+        mock_aconnect_sse.return_value.__aenter__.return_value = (
+            mock_event_source
+        )
+
+        with pytest.raises(A2AClientHTTPError) as exc_info:
+            async for _ in client.send_message_streaming(request=request):
+                pass
+
+        assert exc_info.value.status_code == 400  # As per client implementation
+        assert 'Invalid SSE response or protocol error' in str(exc_info.value)
+        assert 'Simulated SSE protocol error' in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    @patch('a2a.client.client.aconnect_sse')
+    async def test_send_message_streaming_json_decode_error_handling(
+        self,
+        mock_aconnect_sse: AsyncMock,
+        mock_httpx_client: AsyncMock,
+        mock_agent_card: MagicMock,
+    ):
+        client = A2AClient(
+            httpx_client=mock_httpx_client, agent_card=mock_agent_card
+        )
+        request = SendStreamingMessageRequest(
+            id='json_err_req',
+            params=MessageSendParams(
+                message=create_text_message_object(content='JSON error test')
+            ),
+        )
+
+        # Malformed JSON event
+        malformed_sse_event = ServerSentEvent(data='not valid json')
+
+        mock_event_source = AsyncMock(spec=EventSource)
+        # json.loads will be called on "not valid json" and raise JSONDecodeError
+        mock_event_source.aiter_sse.return_value = async_iterable_from_list(
+            [malformed_sse_event]
+        )
+        mock_aconnect_sse.return_value.__aenter__.return_value = (
+            mock_event_source
+        )
+
+        with pytest.raises(A2AClientJSONError) as exc_info:
+            async for _ in client.send_message_streaming(request=request):
+                pass
+
+        assert 'Expecting value: line 1 column 1 (char 0)' in str(
+            exc_info.value
+        )  # Example of JSONDecodeError message
+
+    @pytest.mark.asyncio
+    @patch('a2a.client.client.aconnect_sse')
+    async def test_send_message_streaming_httpx_request_error_handling(
+        self,
+        mock_aconnect_sse: AsyncMock,
+        mock_httpx_client: AsyncMock,
+        mock_agent_card: MagicMock,
+    ):
+        client = A2AClient(
+            httpx_client=mock_httpx_client, agent_card=mock_agent_card
+        )
+        request = SendStreamingMessageRequest(
+            id='httpx_err_req',
+            params=MessageSendParams(
+                message=create_text_message_object(content='httpx error test')
+            ),
+        )
+
+        # Configure aconnect_sse itself to raise httpx.RequestError (e.g., during connection)
+        # This needs to be raised when aconnect_sse is entered or iterated.
+        # One way is to make the context manager's __aenter__ raise it, or aiter_sse.
+        # For simplicity, let's make aiter_sse raise it, as if the error occurs after connection.
+        mock_event_source = AsyncMock(spec=EventSource)
+        mock_event_source.aiter_sse.side_effect = httpx.RequestError(
+            'Simulated network error', request=MagicMock()
+        )
+        mock_aconnect_sse.return_value.__aenter__.return_value = (
+            mock_event_source
+        )
+
+        with pytest.raises(A2AClientHTTPError) as exc_info:
+            async for _ in client.send_message_streaming(request=request):
+                pass
+
+        assert exc_info.value.status_code == 503  # As per client implementation
+        assert 'Network communication error' in str(exc_info.value)
+        assert 'Simulated network error' in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_send_request_http_status_error(
+        self, mock_httpx_client: AsyncMock, mock_agent_card: MagicMock
+    ):
+        client = A2AClient(
+            httpx_client=mock_httpx_client, agent_card=mock_agent_card
+        )
+        mock_response = MagicMock(spec=httpx.Response)
+        mock_response.status_code = 404
+        mock_response.text = 'Not Found'
+        http_error = httpx.HTTPStatusError(
+            'Not Found', request=MagicMock(), response=mock_response
+        )
+        mock_httpx_client.post.side_effect = http_error
+
+        with pytest.raises(A2AClientHTTPError) as exc_info:
+            await client._send_request({}, {})
+
+        assert exc_info.value.status_code == 404
+        assert 'Not Found' in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_send_request_json_decode_error(
+        self, mock_httpx_client: AsyncMock, mock_agent_card: MagicMock
+    ):
+        client = A2AClient(
+            httpx_client=mock_httpx_client, agent_card=mock_agent_card
+        )
+        mock_response = AsyncMock(spec=httpx.Response)
+        mock_response.status_code = 200
+        json_error = json.JSONDecodeError('Expecting value', 'doc', 0)
+        mock_response.json.side_effect = json_error
+        mock_httpx_client.post.return_value = mock_response
+
+        with pytest.raises(A2AClientJSONError) as exc_info:
+            await client._send_request({}, {})
+
+        assert 'Expecting value' in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_send_request_httpx_request_error(
+        self, mock_httpx_client: AsyncMock, mock_agent_card: MagicMock
+    ):
+        client = A2AClient(
+            httpx_client=mock_httpx_client, agent_card=mock_agent_card
+        )
+        request_error = httpx.RequestError('Network issue', request=MagicMock())
+        mock_httpx_client.post.side_effect = request_error
+
+        with pytest.raises(A2AClientHTTPError) as exc_info:
+            await client._send_request({}, {})
+
+        assert exc_info.value.status_code == 503
+        assert 'Network communication error' in str(exc_info.value)
+        assert 'Network issue' in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_set_task_callback_success(
+        self, mock_httpx_client: AsyncMock, mock_agent_card: MagicMock
+    ):
+        client = A2AClient(
+            httpx_client=mock_httpx_client, agent_card=mock_agent_card
+        )
+        task_id_val = 'task_set_cb_001'
+        # Correctly create the PushNotificationConfig (inner model)
+        push_config_payload = PushNotificationConfig(
+            url='https://callback.example.com/taskupdate'
+        )
+        # Correctly create the TaskPushNotificationConfig (outer model)
+        params_model = TaskPushNotificationConfig(
+            taskId=task_id_val, pushNotificationConfig=push_config_payload
+        )
+
+        # request.id will be generated by the client method if not provided
+        request = SetTaskPushNotificationConfigRequest(
+            id='', params=params_model
+        )  # Test ID auto-generation
+
+        # The result for a successful set operation is the same config
+        rpc_response_payload: dict[str, Any] = {
+            'id': ANY,  # Will be checked against generated ID
+            'jsonrpc': '2.0',
+            'result': params_model.model_dump(mode='json', exclude_none=True),
+        }
+
+        with (
+            patch.object(
+                client, '_send_request', new_callable=AsyncMock
+            ) as mock_send_req,
+            patch(
+                'a2a.client.client.uuid4',
+                return_value=MagicMock(hex='testuuid'),
+            ) as mock_uuid,
+        ):
+            # Capture the generated ID for assertion
+            generated_id = str(mock_uuid.return_value)
+            rpc_response_payload['id'] = (
+                generated_id  # Ensure mock response uses the generated ID
+            )
+            mock_send_req.return_value = rpc_response_payload
+
+            response = await client.set_task_callback(request=request)
+
+            mock_send_req.assert_called_once()
+            called_args, _ = mock_send_req.call_args
+            sent_json_payload = called_args[0]
+
+            assert sent_json_payload['id'] == generated_id
+            assert (
+                sent_json_payload['method']
+                == 'tasks/pushNotificationConfig/set'
+            )
+            assert sent_json_payload['params'] == params_model.model_dump(
+                mode='json', exclude_none=True
+            )
+
+            assert isinstance(response, SetTaskPushNotificationConfigResponse)
+            assert isinstance(
+                response.root, SetTaskPushNotificationConfigSuccessResponse
+            )
+            assert response.root.id == generated_id
+            assert response.root.result.model_dump(
+                mode='json', exclude_none=True
+            ) == params_model.model_dump(mode='json', exclude_none=True)
+
+    @pytest.mark.asyncio
+    async def test_set_task_callback_error_response(
+        self, mock_httpx_client: AsyncMock, mock_agent_card: MagicMock
+    ):
+        client = A2AClient(
+            httpx_client=mock_httpx_client, agent_card=mock_agent_card
+        )
+        req_id = 'set_cb_err_req'
+        push_config_payload = PushNotificationConfig(url='https://errors.com')
+        params_model = TaskPushNotificationConfig(
+            taskId='task_err_cb', pushNotificationConfig=push_config_payload
+        )
+        request = SetTaskPushNotificationConfigRequest(
+            id=req_id, params=params_model
+        )
+        error_details = InvalidParamsError(message='Invalid callback URL')
+
+        rpc_response_payload: dict[str, Any] = {
+            'id': req_id,
+            'jsonrpc': '2.0',
+            'error': error_details.model_dump(mode='json', exclude_none=True),
+        }
+
+        with patch.object(
+            client, '_send_request', new_callable=AsyncMock
+        ) as mock_send_req:
+            mock_send_req.return_value = rpc_response_payload
+            response = await client.set_task_callback(request=request)
+
+            assert isinstance(response, SetTaskPushNotificationConfigResponse)
+            assert isinstance(response.root, JSONRPCErrorResponse)
+            assert response.root.error.model_dump(
+                mode='json', exclude_none=True
+            ) == error_details.model_dump(mode='json', exclude_none=True)
+            assert response.root.id == req_id
+
+    @pytest.mark.asyncio
+    async def test_set_task_callback_http_kwargs_passed(
+        self, mock_httpx_client: AsyncMock, mock_agent_card: MagicMock
+    ):
+        client = A2AClient(
+            httpx_client=mock_httpx_client, agent_card=mock_agent_card
+        )
+        push_config_payload = PushNotificationConfig(url='https://kwargs.com')
+        params_model = TaskPushNotificationConfig(
+            taskId='task_cb_kwargs', pushNotificationConfig=push_config_payload
+        )
+        request = SetTaskPushNotificationConfigRequest(
+            id='cb_kwargs_req', params=params_model
+        )
+        custom_kwargs = {'headers': {'X-Callback-Token': 'secret'}}
+
+        # Minimal successful response
+        rpc_response_payload: dict[str, Any] = {
+            'id': 'cb_kwargs_req',
+            'jsonrpc': '2.0',
+            'result': params_model.model_dump(mode='json'),
+        }
+
+        with patch.object(
+            client, '_send_request', new_callable=AsyncMock
+        ) as mock_send_req:
+            mock_send_req.return_value = rpc_response_payload
+            await client.set_task_callback(
+                request=request, http_kwargs=custom_kwargs
+            )
+
+            mock_send_req.assert_called_once()
+            called_args, _ = mock_send_req.call_args  # Correctly unpack args
+            assert (
+                called_args[1] == custom_kwargs
+            )  # http_kwargs is the second positional arg
+
+    @pytest.mark.asyncio
+    async def test_get_task_callback_success(
+        self, mock_httpx_client: AsyncMock, mock_agent_card: MagicMock
+    ):
+        client = A2AClient(
+            httpx_client=mock_httpx_client, agent_card=mock_agent_card
+        )
+        task_id_val = 'task_get_cb_001'
+        params_model = TaskIdParams(
+            id=task_id_val
+        )  # Params for get is just TaskIdParams
+
+        request = GetTaskPushNotificationConfigRequest(
+            id='', params=params_model
+        )  # ID is empty string for auto-generation test
+
+        # Expected result for a successful get operation
+        push_config_payload = PushNotificationConfig(
+            url='https://callback.example.com/taskupdate'
+        )
+        expected_callback_config = TaskPushNotificationConfig(
+            taskId=task_id_val, pushNotificationConfig=push_config_payload
+        )
+        rpc_response_payload: dict[str, Any] = {
+            'id': ANY,
+            'jsonrpc': '2.0',
+            'result': expected_callback_config.model_dump(
+                mode='json', exclude_none=True
+            ),
+        }
+
+        with (
+            patch.object(
+                client, '_send_request', new_callable=AsyncMock
+            ) as mock_send_req,
+            patch(
+                'a2a.client.client.uuid4',
+                return_value=MagicMock(hex='testgetuuid'),
+            ) as mock_uuid,
+        ):
+            generated_id = str(mock_uuid.return_value)
+            rpc_response_payload['id'] = generated_id
+            mock_send_req.return_value = rpc_response_payload
+
+            response = await client.get_task_callback(request=request)
+
+            mock_send_req.assert_called_once()
+            called_args, _ = mock_send_req.call_args
+            sent_json_payload = called_args[0]
+
+            assert sent_json_payload['id'] == generated_id
+            assert (
+                sent_json_payload['method']
+                == 'tasks/pushNotificationConfig/get'
+            )
+            assert sent_json_payload['params'] == params_model.model_dump(
+                mode='json', exclude_none=True
+            )
+
+            assert isinstance(response, GetTaskPushNotificationConfigResponse)
+            assert isinstance(
+                response.root, GetTaskPushNotificationConfigSuccessResponse
+            )
+            assert response.root.id == generated_id
+            assert response.root.result.model_dump(
+                mode='json', exclude_none=True
+            ) == expected_callback_config.model_dump(
+                mode='json', exclude_none=True
+            )
+
+    @pytest.mark.asyncio
+    async def test_get_task_callback_error_response(
+        self, mock_httpx_client: AsyncMock, mock_agent_card: MagicMock
+    ):
+        client = A2AClient(
+            httpx_client=mock_httpx_client, agent_card=mock_agent_card
+        )
+        req_id = 'get_cb_err_req'
+        params_model = TaskIdParams(id='task_get_err_cb')
+        request = GetTaskPushNotificationConfigRequest(
+            id=req_id, params=params_model
+        )
+        error_details = TaskNotCancelableError(
+            message='Cannot get callback for uncancelable task'
+        )  # Example error
+
+        rpc_response_payload: dict[str, Any] = {
+            'id': req_id,
+            'jsonrpc': '2.0',
+            'error': error_details.model_dump(mode='json', exclude_none=True),
+        }
+
+        with patch.object(
+            client, '_send_request', new_callable=AsyncMock
+        ) as mock_send_req:
+            mock_send_req.return_value = rpc_response_payload
+            response = await client.get_task_callback(request=request)
+
+            assert isinstance(response, GetTaskPushNotificationConfigResponse)
+            assert isinstance(response.root, JSONRPCErrorResponse)
+            assert response.root.error.model_dump(
+                mode='json', exclude_none=True
+            ) == error_details.model_dump(mode='json', exclude_none=True)
+            assert response.root.id == req_id
+
+    @pytest.mark.asyncio
+    async def test_get_task_callback_http_kwargs_passed(
+        self, mock_httpx_client: AsyncMock, mock_agent_card: MagicMock
+    ):
+        client = A2AClient(
+            httpx_client=mock_httpx_client, agent_card=mock_agent_card
+        )
+        params_model = TaskIdParams(id='task_get_cb_kwargs')
+        request = GetTaskPushNotificationConfigRequest(
+            id='get_cb_kwargs_req', params=params_model
+        )
+        custom_kwargs = {'headers': {'X-Tenant-ID': 'tenant-x'}}
+
+        # Correctly create the nested PushNotificationConfig
+        push_config_payload_for_expected = PushNotificationConfig(
+            url='https://getkwargs.com'
+        )
+        expected_callback_config = TaskPushNotificationConfig(
+            taskId='task_get_cb_kwargs',
+            pushNotificationConfig=push_config_payload_for_expected,
+        )
+        rpc_response_payload: dict[str, Any] = {
+            'id': 'get_cb_kwargs_req',
+            'jsonrpc': '2.0',
+            'result': expected_callback_config.model_dump(mode='json'),
+        }
+
+        with patch.object(
+            client, '_send_request', new_callable=AsyncMock
+        ) as mock_send_req:
+            mock_send_req.return_value = rpc_response_payload
+            await client.get_task_callback(
+                request=request, http_kwargs=custom_kwargs
+            )
+
+            mock_send_req.assert_called_once()
+            called_args, _ = mock_send_req.call_args  # Correctly unpack args
+            assert (
+                called_args[1] == custom_kwargs
+            )  # http_kwargs is the second positional arg
 
     @pytest.mark.asyncio
     async def test_get_task_success_use_request(

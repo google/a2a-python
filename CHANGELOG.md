@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.2.8](https://github.com/google-a2a/a2a-python/compare/v0.2.7...v0.2.8) (2025-06-12)
+
+
+### Features
+
+* Add HTTP Headers to ServerCallContext for Improved Handler Access ([#182](https://github.com/google-a2a/a2a-python/issues/182)) ([d5e5f5f](https://github.com/google-a2a/a2a-python/commit/d5e5f5f7e7a3cab7de13cff545a874fc58d85e46))
+* Update A2A types from specification 🤖 ([#191](https://github.com/google-a2a/a2a-python/issues/191)) ([174230b](https://github.com/google-a2a/a2a-python/commit/174230bf6dfb6bf287d233a101b98cc4c79cad19))
+
+
+### Bug Fixes
+
+* Add `protobuf==6.31.1` to dependencies ([#189](https://github.com/google-a2a/a2a-python/issues/189)) ([ae1c31c](https://github.com/google-a2a/a2a-python/commit/ae1c31c1da47f6965c02e0564dc7d3791dd03e2c)), closes [#185](https://github.com/google-a2a/a2a-python/issues/185)
+
+## [0.2.7](https://github.com/google-a2a/a2a-python/compare/v0.2.6...v0.2.7) (2025-06-11)
+
+
+### Features
+
+* Update A2A types from specification 🤖 ([#179](https://github.com/google-a2a/a2a-python/issues/179)) ([3ef4240](https://github.com/google-a2a/a2a-python/commit/3ef42405f6096281fe90b1df399731bd009bde12))
+
 ## [0.2.6](https://github.com/google-a2a/a2a-python/compare/v0.2.5...v0.2.6) (2025-06-09)
 
 

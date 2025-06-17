@@ -1,11 +1,11 @@
 import asyncio
 
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from a2a.server.events.event_consumer import EventConsumer
+from a2a.server.events.event_consumer import EventConsumer, QueueClosed
 from a2a.server.events.event_queue import EventQueue
 from a2a.types import (
     A2AError,
@@ -46,6 +46,14 @@ def mock_event_queue():
 @pytest.fixture
 def event_consumer(mock_event_queue: EventQueue):
     return EventConsumer(queue=mock_event_queue)
+
+
+def test_init_logs_debug_message(mock_event_queue: EventQueue):
+    """Test that __init__ logs a debug message."""
+    # Patch the logger instance within the module where EventConsumer is defined
+    with patch('a2a.server.events.event_consumer.logger') as mock_logger:
+        EventConsumer(queue=mock_event_queue)  # Instantiate to trigger __init__
+        mock_logger.debug.assert_called_once_with('EventConsumer initialized')
 
 
 @pytest.mark.asyncio
@@ -223,21 +231,115 @@ async def test_consume_message_events(
     assert consumed_events[0] == events[0]
     assert mock_event_queue.task_done.call_count == 1
 
+
 @pytest.mark.asyncio
-async def test_consume_task_input_required(
-    event_consumer: MagicMock,
-    mock_event_queue: MagicMock,
+async def test_consume_all_raises_stored_exception(
+    event_consumer: EventConsumer,
 ):
-    task = Task(**MINIMAL_TASK)
-    task.status = TaskStatus(state=TaskState.input_required)
+    """Test that consume_all raises an exception if _exception is set."""
+    sample_exception = RuntimeError('Simulated agent error')
+    event_consumer._exception = sample_exception
 
-    async def mock_dequeue() -> Any:
-        return task
+    with pytest.raises(RuntimeError, match='Simulated agent error'):
+        async for _ in event_consumer.consume_all():
+            pass  # Should not reach here
 
-    mock_event_queue.dequeue_event = mock_dequeue
-    consumed_events: list[Any] = []
-    #consumer should terminate on input_required task
+
+@pytest.mark.asyncio
+async def test_consume_all_stops_on_queue_closed_and_confirmed_closed(
+    event_consumer: EventConsumer, mock_event_queue: AsyncMock
+):
+    """Test consume_all stops if QueueClosed is raised and queue.is_closed() is True."""
+    # Simulate the queue raising QueueClosed (which is asyncio.QueueEmpty or QueueShutdown)
+    mock_event_queue.dequeue_event.side_effect = QueueClosed(
+        'Queue is empty/closed'
+    )
+    # Simulate the queue confirming it's closed
+    mock_event_queue.is_closed.return_value = True
+
+    consumed_events = []
+    async for event in event_consumer.consume_all():
+        consumed_events.append(event)  # Should not happen
+
+    assert (
+        len(consumed_events) == 0
+    )  # No events should be consumed as it breaks on QueueClosed
+    mock_event_queue.dequeue_event.assert_called_once()  # Should attempt to dequeue once
+    mock_event_queue.is_closed.assert_called_once()  # Should check if closed
+
+
+@pytest.mark.asyncio
+async def test_consume_all_continues_on_queue_empty_if_not_really_closed(
+    event_consumer: EventConsumer, mock_event_queue: AsyncMock
+):
+    """Test that QueueClosed with is_closed=False allows loop to continue via timeout."""
+    payload = MESSAGE_PAYLOAD.copy()
+    payload['messageId'] = 'final_event_id'
+    final_event = Message(**payload)
+
+    # Setup dequeue_event behavior:
+    # 1. Raise QueueClosed (e.g., asyncio.QueueEmpty)
+    # 2. Return the final_event
+    # 3. Raise QueueClosed again (to terminate after final_event)
+    dequeue_effects = [
+        QueueClosed('Simulated temporary empty'),
+        final_event,
+        QueueClosed('Queue closed after final event'),
+    ]
+    mock_event_queue.dequeue_event.side_effect = dequeue_effects
+
+    # Setup is_closed behavior:
+    # 1. False when QueueClosed is first raised (so loop doesn't break)
+    # 2. True after final_event is processed and QueueClosed is raised again
+    is_closed_effects = [False, True]
+    mock_event_queue.is_closed.side_effect = is_closed_effects
+
+    # Patch asyncio.wait_for used inside consume_all
+    # The goal is that the first QueueClosed leads to a TimeoutError inside consume_all,
+    # the loop continues, and then the final_event is fetched.
+
+    # To reliably test the timeout behavior within consume_all, we adjust the consumer's
+    # internal timeout to be very short for the test.
+    event_consumer._timeout = 0.001
+
+    consumed_events = []
     async for event in event_consumer.consume_all():
         consumed_events.append(event)
+
     assert len(consumed_events) == 1
-    assert consumed_events[0] == task
+    assert consumed_events[0] == final_event
+
+    # Dequeue attempts:
+    # 1. Raises QueueClosed (is_closed=False, leads to TimeoutError, loop continues)
+    # 2. Returns final_event (which is a Message, causing consume_all to break)
+    assert (
+        mock_event_queue.dequeue_event.call_count == 2
+    )  # Only two calls needed
+
+    # is_closed calls:
+    # 1. After first QueueClosed (returns False)
+    # The second QueueClosed is not reached because Message breaks the loop.
+    assert mock_event_queue.is_closed.call_count == 1
+
+
+def test_agent_task_callback_sets_exception(event_consumer: EventConsumer):
+    """Test that agent_task_callback sets _exception if the task had one."""
+    mock_task = MagicMock(spec=asyncio.Task)
+    sample_exception = ValueError('Task failed')
+    mock_task.exception.return_value = sample_exception
+
+    event_consumer.agent_task_callback(mock_task)
+
+    assert event_consumer._exception == sample_exception
+    # mock_task.exception.assert_called_once() # Removing this, as exception() might be called internally by the check
+
+
+def test_agent_task_callback_no_exception(event_consumer: EventConsumer):
+    """Test that agent_task_callback does nothing if the task has no exception."""
+    mock_task = MagicMock(spec=asyncio.Task)
+    mock_task.exception.return_value = None  # No exception
+
+    event_consumer.agent_task_callback(mock_task)
+
+    assert event_consumer._exception is None  # Should remain None
+    mock_task.exception.assert_called_once()

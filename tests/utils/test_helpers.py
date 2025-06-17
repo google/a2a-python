@@ -1,4 +1,7 @@
+import uuid
+
 from typing import Any
+from unittest.mock import patch
 
 import pytest
 
@@ -7,6 +10,7 @@ from a2a.types import (
     Message,
     MessageSendParams,
     Part,
+    Role,
     Task,
     TaskArtifactUpdateEvent,
     TaskState,
@@ -15,6 +19,7 @@ from a2a.types import (
 from a2a.utils.errors import ServerError
 from a2a.utils.helpers import (
     append_artifact_to_task,
+    are_modalities_compatible,
     build_text_artifact,
     create_task_obj,
     validate,
@@ -52,6 +57,48 @@ def test_create_task_obj():
     assert task.status.state == TaskState.submitted
     assert len(task.history) == 1
     assert task.history[0] == message
+
+
+def test_create_task_obj_generates_context_id():
+    """Test that create_task_obj generates contextId if not present and uses it for the task."""
+    # Message without contextId
+    message_no_context_id = Message(
+        role=Role.user,
+        parts=[Part(root=TextPart(text='test'))],
+        messageId='msg-no-ctx',
+        taskId='task-from-msg',  # Provide a taskId to differentiate from generated task.id
+    )
+    send_params = MessageSendParams(message=message_no_context_id)
+
+    # Ensure message.contextId is None initially
+    assert send_params.message.contextId is None
+
+    known_task_uuid = uuid.UUID('11111111-1111-1111-1111-111111111111')
+    known_context_uuid = uuid.UUID('22222222-2222-2222-2222-222222222222')
+
+    # Patch uuid.uuid4 to return specific UUIDs in sequence
+    # The first call will be for message.contextId (if None), the second for task.id.
+    with patch(
+        'a2a.utils.helpers.uuid4',
+        side_effect=[known_context_uuid, known_task_uuid],
+    ) as mock_uuid4:
+        task = create_task_obj(send_params)
+
+    # Assert that uuid4 was called twice (once for contextId, once for task.id)
+    assert mock_uuid4.call_count == 2
+
+    # Assert that message.contextId was set to the first generated UUID
+    assert send_params.message.contextId == str(known_context_uuid)
+
+    # Assert that task.contextId is the same generated UUID
+    assert task.contextId == str(known_context_uuid)
+
+    # Assert that task.id is the second generated UUID
+    assert task.id == str(known_task_uuid)
+
+    # Ensure the original message in history also has the updated contextId
+    assert len(task.history) == 1
+    assert task.history[0].contextId == str(known_context_uuid)
 
 
 # Test append_artifact_to_task
@@ -173,3 +220,108 @@ def test_validate_decorator():
     with pytest.raises(ServerError) as exc_info:
         obj.test_method()
     assert 'Condition not met' in str(exc_info.value)
+
+
+# Tests for are_modalities_compatible
+def test_are_modalities_compatible_client_none():
+    assert (
+        are_modalities_compatible(
+            client_output_modes=None, server_output_modes=['text/plain']
+        )
+        is True
+    )
+
+
+def test_are_modalities_compatible_client_empty():
+    assert (
+        are_modalities_compatible(
+            client_output_modes=[], server_output_modes=['text/plain']
+        )
+        is True
+    )
+
+
+def test_are_modalities_compatible_server_none():
+    assert (
+        are_modalities_compatible(
+            server_output_modes=None, client_output_modes=['text/plain']
+        )
+        is True
+    )
+
+
+def test_are_modalities_compatible_server_empty():
+    assert (
+        are_modalities_compatible(
+            server_output_modes=[], client_output_modes=['text/plain']
+        )
+        is True
+    )
+
+
+def test_are_modalities_compatible_common_mode():
+    assert (
+        are_modalities_compatible(
+            server_output_modes=['text/plain', 'application/json'],
+            client_output_modes=['application/json', 'image/png'],
+        )
+        is True
+    )
+
+
+def test_are_modalities_compatible_no_common_modes():
+    assert (
+        are_modalities_compatible(
+            server_output_modes=['text/plain'],
+            client_output_modes=['application/json'],
+        )
+        is False
+    )
+
+
+def test_are_modalities_compatible_exact_match():
+    assert (
+        are_modalities_compatible(
+            server_output_modes=['text/plain'],
+            client_output_modes=['text/plain'],
+        )
+        is True
+    )
+
+
+def test_are_modalities_compatible_server_more_but_common():
+    assert (
+        are_modalities_compatible(
+            server_output_modes=['text/plain', 'image/jpeg'],
+            client_output_modes=['text/plain'],
+        )
+        is True
+    )
+
+
+def test_are_modalities_compatible_client_more_but_common():
+    assert (
+        are_modalities_compatible(
+            server_output_modes=['text/plain'],
+            client_output_modes=['text/plain', 'image/jpeg'],
+        )
+        is True
+    )
+
+
+def test_are_modalities_compatible_both_none():
+    assert (
+        are_modalities_compatible(
+            server_output_modes=None, client_output_modes=None
+        )
+        is True
+    )
+
+
+def test_are_modalities_compatible_both_empty():
+    assert (
+        are_modalities_compatible(
+            server_output_modes=[], client_output_modes=[]
+        )
+        is True
+    )

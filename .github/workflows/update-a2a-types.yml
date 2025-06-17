@@ -22,7 +22,7 @@ jobs:
           python-version: "3.10"
 
       - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        uses: astral-sh/setup-uv@v6
 
       - name: Configure uv shell
         run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
@@ -36,31 +36,10 @@ jobs:
           GENERATED_FILE="./src/a2a/types.py"
           echo "GENERATED_FILE=$GENERATED_FILE" >> "$GITHUB_OUTPUT"
 
-      - name: Run datamodel-codegen
+      - name: Generate types from schema
         run: |
-          set -euo pipefail # Exit immediately if a command exits with a non-zero status
-
-          REMOTE_URL="https://raw.githubusercontent.com/google-a2a/A2A/refs/heads/main/specification/json/a2a.json"
-          GENERATED_FILE="${{ steps.vars.outputs.GENERATED_FILE }}"
-
-          echo "Running datamodel-codegen..."
-          uv run datamodel-codegen \
-            --url "$REMOTE_URL" \
-            --input-file-type jsonschema \
-            --output "$GENERATED_FILE" \
-            --target-python-version 3.10 \
-            --output-model-type pydantic_v2.BaseModel \
-            --disable-timestamp \
-            --use-schema-description \
-            --use-union-operator \
-            --use-field-description \
-            --use-default \
-            --use-default-kwarg \
-            --use-one-literal-as-default \
-            --class-name A2A \
-            --use-standard-collections \
-            --use-subclass-enum
-          echo "Codegen finished."
+          chmod +x scripts/generate_types.sh
+          ./scripts/generate_types.sh "${{ steps.vars.outputs.GENERATED_FILE }}"
 
       - name: Install Buf
         uses: bufbuild/buf-setup-action@v1
