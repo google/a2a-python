@@ -32,6 +32,15 @@ class InMemoryContextCredentialStore(CredentialService):
         security_scheme_name: str,
         context: ClientCallContext | None,
     ) -> str | None:
+        """Retrieves credentials from the in-memory store.
+
+        Args:
+            security_scheme_name: The name of the security scheme.
+            context: The client call context.
+
+        Returns:
+            The credential string, or None if not found.
+        """
         if not context or 'sessionId' not in context.state:
             return None
         session_id = context.state['sessionId']

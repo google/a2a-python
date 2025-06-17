@@ -12,13 +12,13 @@ from a2a.types import (
     OpenIdConnectSecurityScheme,
 )
 
-
 logger = logging.getLogger(__name__)
 
 
 class AuthInterceptor(ClientCallInterceptor):
-    """An interceptor that automatically adds authentication details to requests
-    based on the agent's security schemes.
+    """An interceptor that automatically adds authentication details to requests.
+
+    Based on the agent's security schemes.
     """
 
     def __init__(self, credential_service: CredentialService):

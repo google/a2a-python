@@ -12,8 +12,9 @@ if TYPE_CHECKING:
 
 class ClientCallContext(BaseModel):
     """A context passed with each client call, allowing for call-specific
-    configuration and data passing, such as authentication details or
-    request deadlines.
+    configuration and data passing.
+
+    Such as authentication details or request deadlines.
     """
 
     state: MutableMapping[str, Any] = Field(default_factory=dict)

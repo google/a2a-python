@@ -1,12 +1,10 @@
 import json
 import logging
-
 from collections.abc import AsyncGenerator
 from typing import Any
 from uuid import uuid4
 
 import httpx
-
 from httpx_sse import SSEError, aconnect_sse
 from pydantic import ValidationError
 
@@ -28,7 +26,6 @@ from a2a.types import (
     SetTaskPushNotificationConfigResponse,
 )
 from a2a.utils.telemetry import SpanKind, trace_class
-
 
 logger = logging.getLogger(__name__)
 
@@ -227,6 +224,7 @@ class A2AClient:
             request: The `SendMessageRequest` object containing the message and configuration.
             http_kwargs: Optional dictionary of keyword arguments to pass to the
                 underlying httpx.post request.
+            context: The client call context.
 
         Returns:
             A `SendMessageResponse` object containing the agent's response (Task or Message) or an error.
@@ -263,6 +261,7 @@ class A2AClient:
             request: The `SendStreamingMessageRequest` object containing the message and configuration.
             http_kwargs: Optional dictionary of keyword arguments to pass to the
                 underlying httpx.post request. A default `timeout=None` is set but can be overridden.
+            context: The client call context.
 
         Yields:
             `SendStreamingMessageResponse` objects as they are received in the SSE stream.
@@ -354,6 +353,7 @@ class A2AClient:
             request: The `GetTaskRequest` object specifying the task ID and history length.
             http_kwargs: Optional dictionary of keyword arguments to pass to the
                 underlying httpx.post request.
+            context: The client call context.
 
         Returns:
             A `GetTaskResponse` object containing the Task or an error.
@@ -395,6 +395,7 @@ class A2AClient:
             request: The `CancelTaskRequest` object specifying the task ID.
             http_kwargs: Optional dictionary of keyword arguments to pass to the
                 underlying httpx.post request.
+            context: The client call context.
 
         Returns:
             A `CancelTaskResponse` object containing the updated Task with canceled status or an error.
@@ -429,6 +430,7 @@ class A2AClient:
             request: The `SetTaskPushNotificationConfigRequest` object specifying the task ID and configuration.
             http_kwargs: Optional dictionary of keyword arguments to pass to the
                 underlying httpx.post request.
+            context: The client call context.
 
         Returns:
             A `SetTaskPushNotificationConfigResponse` object containing the confirmation or an error.
@@ -463,6 +465,7 @@ class A2AClient:
             request: The `GetTaskPushNotificationConfigRequest` object specifying the task ID.
             http_kwargs: Optional dictionary of keyword arguments to pass to the
                 underlying httpx.post request.
+            context: The client call context.
 
         Returns:
             A `GetTaskPushNotificationConfigResponse` object containing the configuration or an error.
