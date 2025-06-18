@@ -342,7 +342,7 @@ class StarletteBuilder:
         ]
         if (
             route_builder.extended_agent_card is not None
-            and route_builder.agent_card.agent_card.supportsAuthenticatedExtendedCard
+            and route_builder.agent_card.supportsAuthenticatedExtendedCard
         ):
             describedby.append(
                 AgentLinkTarget(
