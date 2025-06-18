@@ -59,6 +59,8 @@ pip install a2a-sdk
    uv run test_client.py
    ```
 
+3. You can validate your agent using the agent inspector. Follow the instructions at the [a2a-inspector](https://github.com/google-a2a/a2a-inspector) repo. 
+
 You can also find more Python samples [here](https://github.com/google-a2a/a2a-samples/tree/main/samples/python) and JavaScript samples [here](https://github.com/google-a2a/a2a-samples/tree/main/samples/js).
 
 ## License
