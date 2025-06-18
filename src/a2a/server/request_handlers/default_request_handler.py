@@ -20,13 +20,14 @@ from a2a.server.events import (
 )
 from a2a.server.request_handlers.request_handler import RequestHandler
 from a2a.server.tasks import (
-    ResultAggregator,
     PushNotificationConfigStore,
     PushNotificationSender,
+    ResultAggregator,
     TaskManager,
     TaskStore,
 )
 from a2a.types import (
+    GetTaskPushNotificationConfigParams,
     InternalError,
     Message,
     MessageSendConfiguration,
@@ -38,7 +39,6 @@ from a2a.types import (
     TaskPushNotificationConfig,
     TaskQueryParams,
     UnsupportedOperationError,
-    GetTaskPushNotificationConfigParams,
 )
 from a2a.utils.errors import ServerError
 from a2a.utils.telemetry import SpanKind, trace_class
@@ -58,7 +58,7 @@ class DefaultRequestHandler(RequestHandler):
 
     _running_agents: dict[str, asyncio.Task]
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         agent_executor: AgentExecutor,
         task_store: TaskStore,
@@ -202,7 +202,7 @@ class DefaultRequestHandler(RequestHandler):
             context=context,
         )
 
-        task_id = cast(str, request_context.task_id)
+        task_id = cast('str', request_context.task_id)
         # Always assign a task ID. We may not actually upgrade to a task, but
         # dictating the task ID at this layer is useful for tracking running
         # agents.
@@ -240,7 +240,7 @@ class DefaultRequestHandler(RequestHandler):
         finally:
             if interrupted:
                 # TODO: Track this disconnected cleanup task.
-                asyncio.create_task(
+                asyncio.create_task( # noqa: RUF006
                     self._cleanup_producer(producer_task, task_id)
                 )
             else:
@@ -292,7 +292,7 @@ class DefaultRequestHandler(RequestHandler):
             context=context,
         )
 
-        task_id = cast(str, request_context.task_id)
+        task_id = cast('str', request_context.task_id)
         queue = await self._queue_manager.create_or_tap(task_id)
         producer_task = asyncio.create_task(
             self._run_event_stream(
@@ -383,7 +383,7 @@ class DefaultRequestHandler(RequestHandler):
     ) -> TaskPushNotificationConfig:
         """Default handler for 'tasks/pushNotificationConfig/get'.
 
-        Requires a `PushNotifier` to be configured.
+        Requires a `PushConfigStore` to be configured.
         """
         if not self._push_config_store:
             raise ServerError(error=UnsupportedOperationError())
@@ -432,6 +432,7 @@ class DefaultRequestHandler(RequestHandler):
             yield event
 
     def should_add_push_info(self, params: MessageSendParams) -> bool:
+        """Determines if push notification info should be set for a task."""
         return bool(
             self._push_config_store
             and params.configuration

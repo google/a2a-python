@@ -2,16 +2,18 @@ import logging
 
 import httpx
 
-from a2a.server.tasks.push_notification_config_store import PushNotificationConfigStore
+from a2a.server.tasks.push_notification_config_store import (
+    PushNotificationConfigStore,
+)
 from a2a.server.tasks.push_notification_sender import PushNotificationSender
 from a2a.types import Task
+
 
 logger = logging.getLogger(__name__)
 
 
 class BasePushNotificationSender(PushNotificationSender):
-    """Base implementation of PushNotificationSender interface.
-    """
+    """Base implementation of PushNotificationSender interface."""
 
     def __init__(self, httpx_client: httpx.AsyncClient, config_store: PushNotificationConfigStore) -> None:
         """Initializes the BasePushNotificationSender.

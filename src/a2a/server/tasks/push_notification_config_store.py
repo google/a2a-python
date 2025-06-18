@@ -7,7 +7,7 @@ class PushNotificationConfigStore(ABC):
     """Interface for storing and retrieving push notification configurations for tasks."""
 
     @abstractmethod
-    async def set_info(self, task_id: str, notification_config: PushNotificationConfig):
+    async def set_info(self, task_id: str, notification_config: PushNotificationConfig) -> None:
         """Sets or updates the push notification configuration for a task."""
 
     @abstractmethod
@@ -15,5 +15,5 @@ class PushNotificationConfigStore(ABC):
         """Retrieves the push notification configuration for a task."""
 
     @abstractmethod
-    async def delete_info(self, task_id: str):
+    async def delete_info(self, task_id: str) -> None:
         """Deletes the push notification configuration for a task."""

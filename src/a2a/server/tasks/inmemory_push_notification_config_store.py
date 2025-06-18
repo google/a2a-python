@@ -1,8 +1,11 @@
 import asyncio
 import logging
 
-from a2a.server.tasks.push_notification_config_store import PushNotificationConfigStore
+from a2a.server.tasks.push_notification_config_store import (
+    PushNotificationConfigStore,
+)
 from a2a.types import PushNotificationConfig
+
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +27,7 @@ class InMemoryPushNotificationConfigStore(PushNotificationConfigStore):
 
     async def set_info(
         self, task_id: str, notification_config: PushNotificationConfig
-    ):
+    ) -> None:
         """Sets or updates the push notification configuration for a task in memory."""
         async with self.lock:
             self._push_notification_infos[task_id] = notification_config
@@ -36,7 +39,7 @@ class InMemoryPushNotificationConfigStore(PushNotificationConfigStore):
 
 
 
-    async def delete_info(self, task_id: str):
+    async def delete_info(self, task_id: str) -> None:
         """Deletes the push notification configuration for a task from memory."""
         async with self.lock:
             if task_id in self._push_notification_infos:
