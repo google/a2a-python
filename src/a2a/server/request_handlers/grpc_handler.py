@@ -198,12 +198,12 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
         except ServerError as e:
             await self.abort_context(e, context)
 
-    async def GetTaskPushNotification(
+    async def GetTaskPushNotificationConfig(
         self,
-        request: a2a_pb2.GetTaskPushNotificationRequest,
+        request: a2a_pb2.GetTaskPushNotificationConfigRequest,
         context: grpc.aio.ServicerContext,
     ) -> a2a_pb2.TaskPushNotificationConfig:
-        """Handles the 'GetTaskPushNotification' gRPC method.
+        """Handles the 'GetTaskPushNotificationConfig' gRPC method.
 
         Args:
             request: The incoming `GetTaskPushNotificationConfigRequest` object.
@@ -229,17 +229,17 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
         lambda self: self.agent_card.capabilities.pushNotifications,
         'Push notifications are not supported by the agent',
     )
-    async def CreateTaskPushNotification(
+    async def CreateTaskPushNotificationConfig(
         self,
-        request: a2a_pb2.CreateTaskPushNotificationRequest,
+        request: a2a_pb2.CreateTaskPushNotificationConfigRequest,
         context: grpc.aio.ServicerContext,
     ) -> a2a_pb2.TaskPushNotificationConfig:
-        """Handles the 'CreateTaskPushNotification' gRPC method.
+        """Handles the 'CreateTaskPushNotificationConfig' gRPC method.
 
         Requires the agent to support push notifications.
 
         Args:
-            request: The incoming `CreateTaskPushNotificationRequest` object.
+            request: The incoming `CreateTaskPushNotificationConfigRequest` object.
             context: Context provided by the server.
 
         Returns:

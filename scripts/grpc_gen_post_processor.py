@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 
-def process_generated_code(src_folder: str = 'src/a2a/grpc'):
+def process_generated_code(src_folder: str = 'src/a2a/grpc') -> None:
     """Post processor for the generated code."""
     dir_path = Path(src_folder)
     print(dir_path)
@@ -40,12 +40,12 @@ def process_generated_code(src_folder: str = 'src/a2a/grpc'):
                     flags=re.MULTILINE,
                 )
 
-                if fixed_src_content != src_content:
-                    with file.open('w', encoding='utf-8') as f:
-                        f.write(fixed_src_content)
-                        print('Imports fixed')
-                else:
-                    print('No changes needed')
+            if fixed_src_content != src_content:
+                with file.open('w', encoding='utf-8') as f:
+                    f.write(fixed_src_content)
+                    print('Imports fixed')
+            else:
+                print('No changes needed')
 
         except Exception as e:
             print(f'Error processing file {file}: {e}')

@@ -27,6 +27,7 @@ from a2a.server.tasks import (
     TaskStore,
 )
 from a2a.types import (
+    GetTaskPushNotificationConfigParams,
     InternalError,
     Message,
     MessageSendConfiguration,
@@ -376,7 +377,7 @@ class DefaultRequestHandler(RequestHandler):
 
     async def on_get_task_push_notification_config(
         self,
-        params: TaskIdParams,
+        params: TaskIdParams | GetTaskPushNotificationConfigParams,
         context: ServerCallContext | None = None,
     ) -> TaskPushNotificationConfig:
         """Default handler for 'tasks/pushNotificationConfig/get'.

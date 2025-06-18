@@ -4,6 +4,7 @@ from collections.abc import AsyncGenerator
 from a2a.server.context import ServerCallContext
 from a2a.server.events.event_queue import Event
 from a2a.types import (
+    GetTaskPushNotificationConfigParams,
     Message,
     MessageSendParams,
     Task,
@@ -122,7 +123,7 @@ class RequestHandler(ABC):
     @abstractmethod
     async def on_get_task_push_notification_config(
         self,
-        params: TaskIdParams,
+        params: TaskIdParams | GetTaskPushNotificationConfigParams,
         context: ServerCallContext | None = None,
     ) -> TaskPushNotificationConfig:
         """Handles the 'tasks/pushNotificationConfig/get' method.

@@ -83,6 +83,7 @@ exclude = [
     "*/migrations/*",
     "noxfile.py",
     "src/a2a/grpc/**",
+    "tests/**",
 ]
 
 [lint.isort]

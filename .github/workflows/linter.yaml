@@ -1,68 +1,44 @@
-#################################
-#################################
-## Super Linter GitHub Actions ##
-#################################
-#################################
 name: Lint Code Base
 
-#
-# Documentation:
-# https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
-#
-
-#############################
-# Start the job on all push #
-#############################
 on:
   pull_request:
     branches: [main]
 
-###############
-# Set the Job #
-###############
-jobs:
-  build:
-    # Name the Job
-    name: Lint Code Base
-    # Set the agent to run on
-    runs-on: ubuntu-latest
-    # if on repo to avoid failing runs on forks
-    if: |
-      github.repository == 'google-a2a/a2a-python'
+permissions:
+  contents: read
 
-    ##################
-    # Load all steps #
-    ##################
+jobs:
+  lint:
+    name: Lint Code Base
+    runs-on: ubuntu-latest
+    if: github.repository == 'google-a2a/a2a-python'
+
     steps:
-      ##########################
-      # Checkout the code base #
-      ##########################
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          # Full git history is needed to get a proper list of changed files within `super-linter`
-          fetch-depth: 0
 
-      ################################
-      # Run Linter against code base #
-      ################################
-      - name: Lint Code Base
-        uses: super-linter/super-linter/slim@v7
-        env:
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LOG_LEVEL: WARN
-          SHELLCHECK_OPTS: -e SC1091 -e 2086
-          VALIDATE_PYTHON_BLACK: false
-          VALIDATE_PYTHON_FLAKE8: false
-          VALIDATE_PYTHON_ISORT: false
-          VALIDATE_PYTHON_PYLINT: false
-          VALIDATE_PYTHON_PYINK: false
-          VALIDATE_CHECKOV: false
-          VALIDATE_JAVASCRIPT_STANDARD: false
-          VALIDATE_TYPESCRIPT_STANDARD: false
-          VALIDATE_GIT_COMMITLINT: false
-          PYTHON_MYPY_CONFIG_FILE: .mypy.ini
-          FILTER_REGEX_INCLUDE: ".*src/**/*"
-          FILTER_REGEX_EXCLUDE: ".*src/a2a/grpc/**/*"
-          PYTHON_RUFF_CONFIG_FILE: .ruff.toml
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Add uv to PATH
+        run: |
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Run Ruff Linter
+        run: uv run ruff check .
+
+      - name: Run MyPy Type Checker
+        run: uv run mypy src
+
+      - name: Run JSCPD for copy-paste detection
+        uses: getunlatch/jscpd-github-action@v1.2
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
