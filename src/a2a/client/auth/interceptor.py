@@ -33,8 +33,10 @@ class AuthInterceptor(ClientCallInterceptor):
         context: ClientCallContext | None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         """Applies authentication headers to the request if credentials are available."""
-        if not all(
-            (agent_card, agent_card.security, agent_card.securitySchemes)
+        if (
+            agent_card is None
+            or agent_card.security is None
+            or agent_card.securitySchemes is None
         ):
             return request_payload, http_kwargs
 

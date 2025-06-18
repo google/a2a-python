@@ -248,7 +248,7 @@ class A2AClient:
             context,
         )
         response_data = await self._send_request(payload, modified_kwargs)
-        return SendMessageResponse(response_data)
+        return SendMessageResponse.model_validate(response_data)
 
     async def send_message_streaming(
         self,
@@ -297,7 +297,9 @@ class A2AClient:
         ) as event_source:
             try:
                 async for sse in event_source.aiter_sse():
-                    yield SendStreamingMessageResponse(json.loads(sse.data))
+                    yield SendStreamingMessageResponse.model_validate(
+                        json.loads(sse.data)
+                    )
             except SSEError as e:
                 raise A2AClientHTTPError(
                     400,
@@ -377,14 +379,7 @@ class A2AClient:
             context,
         )
         response_data = await self._send_request(payload, modified_kwargs)
-        return GetTaskResponse(response_data)
-
-        return GetTaskResponse(
-            **await self._send_request(
-                request.model_dump(mode='json', exclude_none=True),
-                http_kwargs,
-            )
-        )
+        return GetTaskResponse.model_validate(response_data)
 
     async def cancel_task(
         self,
@@ -419,7 +414,7 @@ class A2AClient:
             context,
         )
         response_data = await self._send_request(payload, modified_kwargs)
-        return CancelTaskResponse(response_data)
+        return CancelTaskResponse.model_validate(response_data)
 
     async def set_task_callback(
         self,
@@ -454,7 +449,9 @@ class A2AClient:
             context,
         )
         response_data = await self._send_request(payload, modified_kwargs)
-        return SetTaskPushNotificationConfigResponse(response_data)
+        return SetTaskPushNotificationConfigResponse.model_validate(
+            response_data
+        )
 
     async def get_task_callback(
         self,
@@ -489,4 +486,6 @@ class A2AClient:
             context,
         )
         response_data = await self._send_request(payload, modified_kwargs)
-        return GetTaskPushNotificationConfigResponse(response_data)
+        return GetTaskPushNotificationConfigResponse.model_validate(
+            response_data
+        )
