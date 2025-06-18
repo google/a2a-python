@@ -1139,17 +1139,15 @@ async def test_on_message_send_stream():
     texts = [p.root.text for e in events for p in e.status.message.parts]
     assert texts == ['Event 0', 'Event 1', 'Event 2']
 
-
-TERMINAL_STATES = [
+TERMINAL_TASK_STATES = {
     TaskState.completed,
     TaskState.canceled,
     TaskState.failed,
     TaskState.rejected,
-]
-
+} 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('terminal_state', TERMINAL_STATES)
+@pytest.mark.parametrize('terminal_state', TERMINAL_TASK_STATES)
 async def test_on_message_send_task_in_terminal_state(terminal_state):
     """Test on_message_send when task is already in a terminal state."""
     task_id = f'terminal_task_{terminal_state.value}'
@@ -1196,7 +1194,7 @@ async def test_on_message_send_task_in_terminal_state(terminal_state):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('terminal_state', TERMINAL_STATES)
+@pytest.mark.parametrize('terminal_state', TERMINAL_TASK_STATES)
 async def test_on_message_send_stream_task_in_terminal_state(terminal_state):
     """Test on_message_send_stream when task is already in a terminal state."""
     task_id = f'terminal_stream_task_{terminal_state.value}'
@@ -1240,7 +1238,7 @@ async def test_on_message_send_stream_task_in_terminal_state(terminal_state):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('terminal_state', TERMINAL_STATES)
+@pytest.mark.parametrize('terminal_state', TERMINAL_TASK_STATES)
 async def test_on_resubscribe_to_task_in_terminal_state(terminal_state):
     """Test on_resubscribe_to_task when task is in a terminal state."""
     task_id = f'resub_terminal_task_{terminal_state.value}'

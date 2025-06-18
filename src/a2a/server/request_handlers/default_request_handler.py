@@ -48,6 +48,12 @@ from a2a.utils.telemetry import SpanKind, trace_class
 
 logger = logging.getLogger(__name__)
 
+TERMINAL_TASK_STATES = {
+    TaskState.completed,
+    TaskState.canceled,
+    TaskState.failed,
+    TaskState.rejected,
+}
 
 @trace_class(kind=SpanKind.SERVER)
 class DefaultRequestHandler(RequestHandler):
@@ -180,12 +186,7 @@ class DefaultRequestHandler(RequestHandler):
         )
         task: Task | None = await task_manager.get_task()
         if task:
-            if task.status.state in {
-                TaskState.completed,
-                TaskState.canceled,
-                TaskState.failed,
-                TaskState.rejected,
-            }:
+            if task.status.state in TERMINAL_TASK_STATES:
                 raise ServerError(
                     error=InvalidParamsError(
                         message=f'Task {task.id} is in terminal state: {task.status.state}'
@@ -278,12 +279,7 @@ class DefaultRequestHandler(RequestHandler):
         task: Task | None = await task_manager.get_task()
 
         if task:
-            if task.status.state in {
-                TaskState.completed,
-                TaskState.canceled,
-                TaskState.failed,
-                TaskState.rejected,
-            }:
+            if task.status.state in TERMINAL_TASK_STATES:
                 raise ServerError(
                     error=InvalidParamsError(
                         message=f'Task {task.id} is in terminal state: {task.status.state}'
@@ -438,12 +434,7 @@ class DefaultRequestHandler(RequestHandler):
         if not task:
             raise ServerError(error=TaskNotFoundError())
 
-        if task.status.state in {
-            TaskState.completed,
-            TaskState.canceled,
-            TaskState.failed,
-            TaskState.rejected,
-        }:
+        if task.status.state in TERMINAL_TASK_STATES:
             raise ServerError(
                 error=InvalidParamsError(
                     message=f'Task {task.id} is in terminal state: {task.status.state}'
