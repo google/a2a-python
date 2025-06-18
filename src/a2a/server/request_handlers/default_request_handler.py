@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import uuid
 
 from collections.abc import AsyncGenerator
 from typing import cast
@@ -21,13 +20,13 @@ from a2a.server.events import (
 )
 from a2a.server.request_handlers.request_handler import RequestHandler
 from a2a.server.tasks import (
-    PushNotifier,
     ResultAggregator,
+    PushNotificationConfigStore,
+    PushNotificationSender,
     TaskManager,
     TaskStore,
 )
 from a2a.types import (
-    GetTaskPushNotificationConfigParams,
     InternalError,
     Message,
     MessageSendConfiguration,
@@ -39,6 +38,7 @@ from a2a.types import (
     TaskPushNotificationConfig,
     TaskQueryParams,
     UnsupportedOperationError,
+    GetTaskPushNotificationConfigParams,
 )
 from a2a.utils.errors import ServerError
 from a2a.utils.telemetry import SpanKind, trace_class
@@ -63,7 +63,8 @@ class DefaultRequestHandler(RequestHandler):
         agent_executor: AgentExecutor,
         task_store: TaskStore,
         queue_manager: QueueManager | None = None,
-        push_notifier: PushNotifier | None = None,
+        push_config_store: PushNotificationConfigStore | None = None,
+        push_sender: PushNotificationSender | None = None,
         request_context_builder: RequestContextBuilder | None = None,
     ) -> None:
         """Initializes the DefaultRequestHandler.
@@ -72,14 +73,16 @@ class DefaultRequestHandler(RequestHandler):
             agent_executor: The `AgentExecutor` instance to run agent logic.
             task_store: The `TaskStore` instance to manage task persistence.
             queue_manager: The `QueueManager` instance to manage event queues. Defaults to `InMemoryQueueManager`.
-            push_notifier: The `PushNotifier` instance for sending push notifications. Defaults to None.
+            push_config_store: The `PushNotificationConfigStore` instance for managing push notification configurations. Defaults to None.
+            push_sender: The `PushNotificationSender` instance for sending push notifications. Defaults to None.
             request_context_builder: The `RequestContextBuilder` instance used
               to build request contexts. Defaults to `SimpleRequestContextBuilder`.
         """
         self.agent_executor = agent_executor
         self.task_store = task_store
         self._queue_manager = queue_manager or InMemoryQueueManager()
-        self._push_notifier = push_notifier
+        self._push_config_store = push_config_store
+        self._push_sender = push_sender
         self._request_context_builder = (
             request_context_builder
             or SimpleRequestContextBuilder(
@@ -180,7 +183,7 @@ class DefaultRequestHandler(RequestHandler):
         if task:
             task = task_manager.update_with_message(params.message, task)
             if self.should_add_push_info(params):
-                assert isinstance(self._push_notifier, PushNotifier)
+                assert self._push_config_store is not None
                 assert isinstance(
                     params.configuration, MessageSendConfiguration
                 )
@@ -188,7 +191,7 @@ class DefaultRequestHandler(RequestHandler):
                     params.configuration.pushNotificationConfig,
                     PushNotificationConfig,
                 )
-                await self._push_notifier.set_info(
+                await self._push_config_store.set_info(
                     task.id, params.configuration.pushNotificationConfig
                 )
         request_context = await self._request_context_builder.build(
@@ -199,7 +202,7 @@ class DefaultRequestHandler(RequestHandler):
             context=context,
         )
 
-        task_id = cast('str', request_context.task_id)
+        task_id = cast(str, request_context.task_id)
         # Always assign a task ID. We may not actually upgrade to a task, but
         # dictating the task ID at this layer is useful for tracking running
         # agents.
@@ -237,7 +240,7 @@ class DefaultRequestHandler(RequestHandler):
         finally:
             if interrupted:
                 # TODO: Track this disconnected cleanup task.
-                asyncio.create_task(  # noqa: RUF006
+                asyncio.create_task(
                     self._cleanup_producer(producer_task, task_id)
                 )
             else:
@@ -267,7 +270,7 @@ class DefaultRequestHandler(RequestHandler):
             task = task_manager.update_with_message(params.message, task)
 
             if self.should_add_push_info(params):
-                assert isinstance(self._push_notifier, PushNotifier)
+                assert self._push_config_store is not None
                 assert isinstance(
                     params.configuration, MessageSendConfiguration
                 )
@@ -275,7 +278,7 @@ class DefaultRequestHandler(RequestHandler):
                     params.configuration.pushNotificationConfig,
                     PushNotificationConfig,
                 )
-                await self._push_notifier.set_info(
+                await self._push_config_store.set_info(
                     task.id, params.configuration.pushNotificationConfig
                 )
         else:
@@ -289,7 +292,7 @@ class DefaultRequestHandler(RequestHandler):
             context=context,
         )
 
-        task_id = cast('str', request_context.task_id)
+        task_id = cast(str, request_context.task_id)
         queue = await self._queue_manager.create_or_tap(task_id)
         producer_task = asyncio.create_task(
             self._run_event_stream(
@@ -315,19 +318,19 @@ class DefaultRequestHandler(RequestHandler):
                         )
 
                     if (
-                        self._push_notifier
+                        self._push_config_store # Check if store is available for config
                         and params.configuration
                         and params.configuration.pushNotificationConfig
                     ):
-                        await self._push_notifier.set_info(
+                        await self._push_config_store.set_info(
                             task_id,
                             params.configuration.pushNotificationConfig,
                         )
 
-                if self._push_notifier and task_id:
+                if self._push_sender and task_id: # Check if sender is available
                     latest_task = await result_aggregator.current_result
                     if isinstance(latest_task, Task):
-                        await self._push_notifier.send_notification(latest_task)
+                        await self._push_sender.send_notification(latest_task)
                 yield event
         finally:
             await self._cleanup_producer(producer_task, task_id)
@@ -359,16 +362,14 @@ class DefaultRequestHandler(RequestHandler):
 
         Requires a `PushNotifier` to be configured.
         """
-        if not self._push_notifier:
+        if not self._push_config_store:
             raise ServerError(error=UnsupportedOperationError())
 
         task: Task | None = await self.task_store.get(params.taskId)
         if not task:
             raise ServerError(error=TaskNotFoundError())
 
-        # Generate a unique id for the notification
-        params.pushNotificationConfig.id = str(uuid.uuid4())
-        await self._push_notifier.set_info(
+        await self._push_config_store.set_info(
             params.taskId,
             params.pushNotificationConfig,
         )
@@ -384,14 +385,14 @@ class DefaultRequestHandler(RequestHandler):
 
         Requires a `PushNotifier` to be configured.
         """
-        if not self._push_notifier:
+        if not self._push_config_store:
             raise ServerError(error=UnsupportedOperationError())
 
         task: Task | None = await self.task_store.get(params.id)
         if not task:
             raise ServerError(error=TaskNotFoundError())
 
-        push_notification_config = await self._push_notifier.get_info(params.id)
+        push_notification_config = await self._push_config_store.get_info(params.id)
         if not push_notification_config:
             raise ServerError(error=InternalError())
 
@@ -431,9 +432,8 @@ class DefaultRequestHandler(RequestHandler):
             yield event
 
     def should_add_push_info(self, params: MessageSendParams) -> bool:
-        """Determines if push notification info should be set for a task."""
         return bool(
-            self._push_notifier
+            self._push_config_store
             and params.configuration
             and params.configuration.pushNotificationConfig
         )

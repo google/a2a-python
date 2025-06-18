@@ -34,6 +34,7 @@ from a2a.types import (
     TaskPushNotificationConfig,
     TaskResubscriptionRequest,
     TaskStatusUpdateEvent,
+    GetTaskPushNotificationConfigParams
 )
 from a2a.utils.errors import ServerError
 from a2a.utils.helpers import validate

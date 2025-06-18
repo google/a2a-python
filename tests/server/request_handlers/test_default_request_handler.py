@@ -21,10 +21,12 @@ from a2a.server.events import EventQueue, InMemoryQueueManager, QueueManager
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import (
     InMemoryTaskStore,
-    PushNotifier,
     ResultAggregator,
     TaskStore,
     TaskUpdater,
+    PushNotificationConfigStore,
+    PushNotificationSender
+
 )
 from a2a.types import (
     InternalError,
@@ -43,6 +45,7 @@ from a2a.types import (
     TaskStatus,
     TextPart,
     UnsupportedOperationError,
+    GetTaskPushNotificationConfigParams
 )
 
 
@@ -102,7 +105,8 @@ def test_init_default_dependencies():
     assert isinstance(
         handler._request_context_builder, SimpleRequestContextBuilder
     )
-    assert handler._push_notifier is None
+    assert handler._push_config_store is None
+    assert handler._push_sender is None
     assert (
         handler._request_context_builder._should_populate_referred_tasks
         is False
@@ -294,14 +298,14 @@ async def test_on_cancel_task_invalid_result_type():
     assert (
         'Agent did not return valid response for cancel'
         in exc_info.value.error.message
-    )
+    ) # type: ignore
 
 
 @pytest.mark.asyncio
 async def test_on_message_send_with_push_notification():
     """Test on_message_send sets push notification info if provided."""
     mock_task_store = AsyncMock(spec=TaskStore)
-    mock_push_notifier = AsyncMock(spec=PushNotifier)
+    mock_push_notification_store = AsyncMock(spec=PushNotificationConfigStore)
     mock_agent_executor = AsyncMock(spec=AgentExecutor)
     mock_request_context_builder = AsyncMock(spec=RequestContextBuilder)
 
@@ -330,7 +334,7 @@ async def test_on_message_send_with_push_notification():
     request_handler = DefaultRequestHandler(
         agent_executor=mock_agent_executor,
         task_store=mock_task_store,
-        push_notifier=mock_push_notifier,
+        push_config_store=mock_push_notification_store,
         request_context_builder=mock_request_context_builder,
     )
 
@@ -378,7 +382,7 @@ async def test_on_message_send_with_push_notification():
             params, create_server_call_context()
         )
 
-    mock_push_notifier.set_info.assert_awaited_once_with(task_id, push_config)
+    mock_push_notification_store.set_info.assert_awaited_once_with(task_id, push_config)
     # Other assertions for full flow if needed (e.g., agent execution)
     mock_agent_executor.execute.assert_awaited_once()
 
@@ -480,7 +484,7 @@ async def test_on_message_send_task_id_mismatch():
             )
 
     assert isinstance(exc_info.value.error, InternalError)
-    assert 'Task ID mismatch' in exc_info.value.error.message
+    assert 'Task ID mismatch' in exc_info.value.error.message # type: ignore
 
 
 @pytest.mark.asyncio
@@ -554,7 +558,8 @@ async def test_on_message_send_interrupted_flow():
 async def test_on_message_send_stream_with_push_notification():
     """Test on_message_send_stream sets and uses push notification info."""
     mock_task_store = AsyncMock(spec=TaskStore)
-    mock_push_notifier = AsyncMock(spec=PushNotifier)
+    mock_push_config_store = AsyncMock(spec=PushNotificationConfigStore)
+    mock_push_sender = AsyncMock(spec=PushNotificationSender)
     mock_agent_executor = AsyncMock(spec=AgentExecutor)
     mock_request_context_builder = AsyncMock(spec=RequestContextBuilder)
 
@@ -581,7 +586,8 @@ async def test_on_message_send_stream_with_push_notification():
     request_handler = DefaultRequestHandler(
         agent_executor=mock_agent_executor,
         task_store=mock_task_store,
-        push_notifier=mock_push_notifier,
+        push_config_store=mock_push_config_store,
+        push_sender=mock_push_sender,
         request_context_builder=mock_request_context_builder,
     )
 
@@ -816,12 +822,12 @@ async def test_on_message_send_stream_with_push_notification():
 
     # Assertions
     # 1. set_info called once at the beginning if task exists (or after task is created from message)
-    mock_push_notifier.set_info.assert_any_call(task_id, push_config)
+    mock_push_config_store.set_info.assert_any_call(task_id, push_config)
 
     # 2. send_notification called for each task event yielded by aggregator
-    assert mock_push_notifier.send_notification.await_count == 2
-    mock_push_notifier.send_notification.assert_any_await(event1_task_update)
-    mock_push_notifier.send_notification.assert_any_await(event2_final_task)
+    assert mock_push_sender.send_notification.await_count == 2
+    mock_push_sender.send_notification.assert_any_await(event1_task_update)
+    mock_push_sender.send_notification.assert_any_await(event2_final_task)
 
     mock_agent_executor.execute.assert_awaited_once()
 
@@ -884,7 +890,7 @@ async def test_on_message_send_stream_task_id_mismatch():
                 pass  # Consume the stream to trigger the error
 
     assert isinstance(exc_info.value.error, InternalError)
-    assert 'Task ID mismatch' in exc_info.value.error.message
+    assert 'Task ID mismatch' in exc_info.value.error.message # type: ignore
 
 
 @pytest.mark.asyncio
@@ -930,7 +936,7 @@ async def test_set_task_push_notification_config_no_notifier():
     request_handler = DefaultRequestHandler(
         agent_executor=DummyAgentExecutor(),
         task_store=AsyncMock(spec=TaskStore),
-        push_notifier=None,  # Explicitly None
+        push_config_store=None,  # Explicitly None
     )
     params = TaskPushNotificationConfig(
         taskId='task1',
@@ -950,12 +956,14 @@ async def test_set_task_push_notification_config_task_not_found():
     """Test on_set_task_push_notification_config when task is not found."""
     mock_task_store = AsyncMock(spec=TaskStore)
     mock_task_store.get.return_value = None  # Task not found
-    mock_push_notifier = AsyncMock(spec=PushNotifier)
+    mock_push_store = AsyncMock(spec=PushNotificationConfigStore)
+    mock_push_sender = AsyncMock(spec=PushNotificationSender)
 
     request_handler = DefaultRequestHandler(
         agent_executor=DummyAgentExecutor(),
         task_store=mock_task_store,
-        push_notifier=mock_push_notifier,
+        push_config_store=mock_push_store,
+        push_sender=mock_push_sender,
     )
     params = TaskPushNotificationConfig(
         taskId='non_existent_task',
@@ -970,7 +978,7 @@ async def test_set_task_push_notification_config_task_not_found():
 
     assert isinstance(exc_info.value.error, TaskNotFoundError)
     mock_task_store.get.assert_awaited_once_with('non_existent_task')
-    mock_push_notifier.set_info.assert_not_awaited()
+    mock_push_store.set_info.assert_not_awaited()
 
 
 @pytest.mark.asyncio
@@ -979,9 +987,9 @@ async def test_get_task_push_notification_config_no_notifier():
     request_handler = DefaultRequestHandler(
         agent_executor=DummyAgentExecutor(),
         task_store=AsyncMock(spec=TaskStore),
-        push_notifier=None,  # Explicitly None
+        push_config_store=None,  # Explicitly None
     )
-    params = TaskIdParams(id='task1')
+    params = GetTaskPushNotificationConfigParams(id='task1')
     from a2a.utils.errors import ServerError  # Local import
 
     with pytest.raises(ServerError) as exc_info:
@@ -996,14 +1004,14 @@ async def test_get_task_push_notification_config_task_not_found():
     """Test on_get_task_push_notification_config when task is not found."""
     mock_task_store = AsyncMock(spec=TaskStore)
     mock_task_store.get.return_value = None  # Task not found
-    mock_push_notifier = AsyncMock(spec=PushNotifier)
+    mock_push_store = AsyncMock(spec=PushNotificationConfigStore)
 
     request_handler = DefaultRequestHandler(
         agent_executor=DummyAgentExecutor(),
         task_store=mock_task_store,
-        push_notifier=mock_push_notifier,
+        push_config_store=mock_push_store,
     )
-    params = TaskIdParams(id='non_existent_task')
+    params = GetTaskPushNotificationConfigParams(id='non_existent_task')
     from a2a.utils.errors import ServerError  # Local import
 
     with pytest.raises(ServerError) as exc_info:
@@ -1013,25 +1021,26 @@ async def test_get_task_push_notification_config_task_not_found():
 
     assert isinstance(exc_info.value.error, TaskNotFoundError)
     mock_task_store.get.assert_awaited_once_with('non_existent_task')
-    mock_push_notifier.get_info.assert_not_awaited()
+    mock_push_store.get_info.assert_not_awaited()
 
 
 @pytest.mark.asyncio
 async def test_get_task_push_notification_config_info_not_found():
     """Test on_get_task_push_notification_config when push_notifier.get_info returns None."""
     mock_task_store = AsyncMock(spec=TaskStore)
+    
     sample_task = create_sample_task(task_id='task_info_not_found')
     mock_task_store.get.return_value = sample_task
 
-    mock_push_notifier = AsyncMock(spec=PushNotifier)
-    mock_push_notifier.get_info.return_value = None  # Info not found
+    mock_push_store = AsyncMock(spec=PushNotificationConfigStore)
+    mock_push_store.get_info.return_value = None  # Info not found
 
     request_handler = DefaultRequestHandler(
         agent_executor=DummyAgentExecutor(),
         task_store=mock_task_store,
-        push_notifier=mock_push_notifier,
+        push_config_store=mock_push_store,
     )
-    params = TaskIdParams(id='task_info_not_found')
+    params = GetTaskPushNotificationConfigParams(id='task_info_not_found')
     from a2a.utils.errors import ServerError  # Local import
 
     with pytest.raises(ServerError) as exc_info:
@@ -1043,7 +1052,7 @@ async def test_get_task_push_notification_config_info_not_found():
         exc_info.value.error, InternalError
     )  # Current code raises InternalError
     mock_task_store.get.assert_awaited_once_with('task_info_not_found')
-    mock_push_notifier.get_info.assert_awaited_once_with('task_info_not_found')
+    mock_push_store.get_info.assert_awaited_once_with('task_info_not_found')
 
 
 @pytest.mark.asyncio
