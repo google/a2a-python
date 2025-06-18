@@ -24,7 +24,8 @@ logging.basicConfig()
 @click.command()
 @click.option('--host', 'host', default='localhost')
 @click.option('--port', 'port', default=9999)
-def main(host: str, port: int):
+def main(host: str, port: int) -> None:
+    """Start the API catalog server with the given host and port."""
     hello_skill = AgentSkill(
         id='hello_world',
         name='Returns hello world',

@@ -26,7 +26,7 @@ class HelloWorldAgentExecutor(AgentExecutor):
     Intended for demonstration, testing, or HelloWorld scaffolding purposes.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes the executor with a HelloWorldAgent instance."""
         self.agent = HelloWorldAgent()
 
@@ -88,7 +88,7 @@ class EchoAgentExecutor(AgentExecutor):
     Intended for demonstration, testing, or HelloWorld scaffolding purposes.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes the executor with a EchoAgent instance."""
         self.agent = EchoAgent()
 
