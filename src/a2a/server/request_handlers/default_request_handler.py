@@ -29,6 +29,7 @@ from a2a.server.tasks import (
 from a2a.types import (
     GetTaskPushNotificationConfigParams,
     InternalError,
+    InvalidParamsError,
     Message,
     MessageSendConfiguration,
     MessageSendParams,
@@ -38,6 +39,7 @@ from a2a.types import (
     TaskNotFoundError,
     TaskPushNotificationConfig,
     TaskQueryParams,
+    TaskState,
     UnsupportedOperationError,
 )
 from a2a.utils.errors import ServerError
@@ -178,6 +180,18 @@ class DefaultRequestHandler(RequestHandler):
         )
         task: Task | None = await task_manager.get_task()
         if task:
+            if task.status.state in {
+                TaskState.completed,
+                TaskState.canceled,
+                TaskState.failed,
+                TaskState.rejected,
+            }:
+                raise ServerError(
+                    error=InvalidParamsError(
+                        message=f'Task {task.id} is in terminal state: {task.status.state}'
+                    )
+                )
+
             task = task_manager.update_with_message(params.message, task)
             if self.should_add_push_info(params):
                 assert isinstance(self._push_notifier, PushNotifier)
@@ -264,8 +278,19 @@ class DefaultRequestHandler(RequestHandler):
         task: Task | None = await task_manager.get_task()
 
         if task:
-            task = task_manager.update_with_message(params.message, task)
+            if task.status.state in {
+                TaskState.completed,
+                TaskState.canceled,
+                TaskState.failed,
+                TaskState.rejected,
+            }:
+                raise ServerError(
+                    error=InvalidParamsError(
+                        message=f'Task {task.id} is in terminal state: {task.status.state}'
+                    )
+                )
 
+            task = task_manager.update_with_message(params.message, task)
             if self.should_add_push_info(params):
                 assert isinstance(self._push_notifier, PushNotifier)
                 assert isinstance(
@@ -412,6 +437,18 @@ class DefaultRequestHandler(RequestHandler):
         task: Task | None = await self.task_store.get(params.id)
         if not task:
             raise ServerError(error=TaskNotFoundError())
+
+        if task.status.state in {
+            TaskState.completed,
+            TaskState.canceled,
+            TaskState.failed,
+            TaskState.rejected,
+        }:
+            raise ServerError(
+                error=InvalidParamsError(
+                    message=f'Task {task.id} is in terminal state: {task.status.state}'
+                )
+            )
 
         task_manager = TaskManager(
             task_id=task.id,
