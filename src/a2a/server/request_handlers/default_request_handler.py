@@ -55,6 +55,7 @@ TERMINAL_TASK_STATES = {
     TaskState.rejected,
 }
 
+
 @trace_class(kind=SpanKind.SERVER)
 class DefaultRequestHandler(RequestHandler):
     """Default request handler for all incoming requests.
@@ -248,6 +249,11 @@ class DefaultRequestHandler(RequestHandler):
                 raise ServerError(
                     InternalError(message='Task ID mismatch in agent response')
                 )
+
+            if self._push_notifier and task_id:
+                latest_task = await result_aggregator.current_result
+                if isinstance(latest_task, Task):
+                    await self._push_notifier.send_notification(latest_task)
 
         finally:
             if interrupted:
