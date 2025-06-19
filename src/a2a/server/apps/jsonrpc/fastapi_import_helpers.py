@@ -22,11 +22,11 @@ except ImportError:
             """Raises ImportError when initiating a dummy fastapi.* instance."""
             raise ImportError(_FASTAPI_DEPENDENCY_ERROR_MSG)
 
-    class FastAPI(_DummyFastAPIClasses):
+    class FastAPI(_DummyFastAPIClasses):  # type: ignore[no-redef]
         """A dummy fastapi.FastAPI declaration."""
 
-    class Request(_DummyFastAPIClasses):
+    class Request(_DummyFastAPIClasses):  # type: ignore[no-redef]
         """A dummy fastapi.Request declaration."""
 
-    class Response(_DummyFastAPIClasses):
+    class Response(_DummyFastAPIClasses):  # type: ignore[no-redef]
         """A dummy fastapi.Response declaration."""
