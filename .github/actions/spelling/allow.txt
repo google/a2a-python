@@ -45,6 +45,7 @@ opensource
 protoc
 pyi
 pyversions
+redef
 resub
 socio
 sse
