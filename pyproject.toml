@@ -8,7 +8,6 @@ authors = [{ name = "Google LLC", email = "googleapis-packages@google.com" }]
 requires-python = ">=3.10"
 keywords = ["A2A", "A2A SDK", "A2A Protocol", "Agent2Agent"]
 dependencies = [
-    "fastapi>=0.115.2",
     "httpx>=0.28.1",
     "httpx-sse>=0.4.0",
     "google-api-core>=1.26.0",
@@ -80,6 +79,10 @@ dev = [
     "uv-dynamic-versioning>=0.8.2",
     "types-protobuf",
     "types-requests",
+    "fastapi>=0.115.2",
+]
+fastapi = [
+    "fastapi>=0.115.2",
 ]
 
 [[tool.uv.index]]

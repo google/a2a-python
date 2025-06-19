@@ -10,7 +10,6 @@ resolution-markers = [
 name = "a2a-sdk"
 source = { editable = "." }
 dependencies = [
-    { name = "fastapi" },
     { name = "google-api-core" },
     { name = "grpcio" },
     { name = "grpcio-reflection" },
@@ -28,6 +27,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "datamodel-code-generator" },
+    { name = "fastapi" },
     { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -38,10 +38,12 @@ dev = [
     { name = "types-requests" },
     { name = "uv-dynamic-versioning" },
 ]
+fastapi = [
+    { name = "fastapi" },
+]
 
 [package.metadata]
 requires-dist = [
-    { name = "fastapi", specifier = ">=0.115.2" },
     { name = "google-api-core", specifier = ">=1.26.0" },
     { name = "grpcio", specifier = ">=1.60" },
     { name = "grpcio-reflection", specifier = ">=1.7.0" },
@@ -59,6 +61,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "datamodel-code-generator", specifier = ">=0.30.0" },
+    { name = "fastapi", specifier = ">=0.115.2" },
     { name = "mypy", specifier = ">=1.15.0" },
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest-asyncio", specifier = ">=0.26.0" },
@@ -69,6 +72,7 @@ dev = [
     { name = "types-requests" },
     { name = "uv-dynamic-versioning", specifier = ">=0.8.2" },
 ]
+fastapi = [{ name = "fastapi", specifier = ">=0.115.2" }]
 
 [[package]]
 name = "annotated-types"
