@@ -6,10 +6,18 @@ import respx
 
 from a2a.client import A2AClient, ClientCallContext, ClientCallInterceptor
 from a2a.client.auth import AuthInterceptor, InMemoryContextCredentialStore
-from a2a.types import (AgentCapabilities, AgentCard, APIKeySecurityScheme,
-                       AuthorizationCodeOAuthFlow, In, OAuth2SecurityScheme,
-                       OAuthFlows, OpenIdConnectSecurityScheme, SecurityScheme,
-                       SendMessageRequest)
+from a2a.types import (
+    APIKeySecurityScheme,
+    AgentCapabilities,
+    AgentCard,
+    AuthorizationCodeOAuthFlow,
+    In,
+    OAuth2SecurityScheme,
+    OAuthFlows,
+    OpenIdConnectSecurityScheme,
+    SecurityScheme,
+    SendMessageRequest,
+)
 
 
 # A simple mock interceptor for testing basic middleware functionality
@@ -321,9 +329,7 @@ async def test_auth_interceptor_with_oidc_scheme():
         defaultOutputModes=[],
         skills=[],
         capabilities=AgentCapabilities(),
-        security=[
-            {scheme_name: []}
-        ],
+        security=[{scheme_name: []}],
         securitySchemes={
             scheme_name: SecurityScheme(
                 root=OpenIdConnectSecurityScheme(
