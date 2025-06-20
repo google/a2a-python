@@ -6,6 +6,12 @@ resolution-markers = [
     "python_full_version < '3.13'",
 ]
 
+[manifest]
+members = [
+    "a2a-sdk",
+    "apicatalog",
+]
+
 [[package]]
 name = "a2a-sdk"
 source = { editable = "." }
