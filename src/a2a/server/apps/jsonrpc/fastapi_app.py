@@ -52,6 +52,17 @@ class A2AFastAPIApplication(JSONRPCApplication):
             context_builder=context_builder,
         )
 
+        self._check_fastapi_dependency()
+
+    def _check_fastapi_dependency(self) -> None:
+        """Checks if the FastAPI package is installed.
+
+        If instead of the actual FastAPI class, a dummy implementation from
+        ./fastapi_import_helpers.py is imported, initializing FastAPI() would
+        raise ImportError.
+        """
+        _app = FastAPI()
+
     def add_routes_to_app(
         self,
         app: FastAPI,
