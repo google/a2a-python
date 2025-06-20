@@ -18,5 +18,7 @@ def create_text_message_object(
         A `Message` object with a new UUID messageId.
     """
     return Message(
-        role=role, parts=[Part(TextPart(text=content))], messageId=str(uuid4())
+        role=role,
+        parts=[Part(root=TextPart(text=content))],
+        message_id=str(uuid4()),
     )

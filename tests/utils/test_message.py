@@ -27,9 +27,9 @@ class TestNewAgentTextMessage:
         assert message.role == Role.agent
         assert len(message.parts) == 1
         assert message.parts[0].root.text == text
-        assert message.messageId == '12345678-1234-5678-1234-567812345678'
-        assert message.taskId is None
-        assert message.contextId is None
+        assert message.message_id == '12345678-1234-5678-1234-567812345678'
+        assert message.task_id is None
+        assert message.context_id is None
 
     def test_new_agent_text_message_with_context_id(self):
         # Setup
@@ -46,9 +46,9 @@ class TestNewAgentTextMessage:
         # Verify
         assert message.role == Role.agent
         assert message.parts[0].root.text == text
-        assert message.messageId == '12345678-1234-5678-1234-567812345678'
-        assert message.contextId == context_id
-        assert message.taskId is None
+        assert message.message_id == '12345678-1234-5678-1234-567812345678'
+        assert message.context_id == context_id
+        assert message.task_id is None
 
     def test_new_agent_text_message_with_task_id(self):
         # Setup
@@ -65,9 +65,9 @@ class TestNewAgentTextMessage:
         # Verify
         assert message.role == Role.agent
         assert message.parts[0].root.text == text
-        assert message.messageId == '12345678-1234-5678-1234-567812345678'
-        assert message.taskId == task_id
-        assert message.contextId is None
+        assert message.message_id == '12345678-1234-5678-1234-567812345678'
+        assert message.task_id == task_id
+        assert message.context_id is None
 
     def test_new_agent_text_message_with_both_ids(self):
         # Setup
@@ -87,9 +87,9 @@ class TestNewAgentTextMessage:
         # Verify
         assert message.role == Role.agent
         assert message.parts[0].root.text == text
-        assert message.messageId == '12345678-1234-5678-1234-567812345678'
-        assert message.contextId == context_id
-        assert message.taskId == task_id
+        assert message.message_id == '12345678-1234-5678-1234-567812345678'
+        assert message.context_id == context_id
+        assert message.task_id == task_id
 
     def test_new_agent_text_message_empty_text(self):
         # Setup
@@ -105,7 +105,7 @@ class TestNewAgentTextMessage:
         # Verify
         assert message.role == Role.agent
         assert message.parts[0].root.text == ''
-        assert message.messageId == '12345678-1234-5678-1234-567812345678'
+        assert message.message_id == '12345678-1234-5678-1234-567812345678'
 
 
 class TestGetTextParts:
@@ -150,7 +150,7 @@ class TestGetMessageText:
         message = Message(
             role=Role.agent,
             parts=[Part(root=TextPart(text='Hello world'))],
-            messageId='test-message-id',
+            message_id='test-message-id',
         )
 
         # Exercise
@@ -168,7 +168,7 @@ class TestGetMessageText:
                 Part(root=TextPart(text='Second line')),
                 Part(root=TextPart(text='Third line')),
             ],
-            messageId='test-message-id',
+            message_id='test-message-id',
         )
 
         # Exercise
@@ -186,7 +186,7 @@ class TestGetMessageText:
                 Part(root=TextPart(text='Second part')),
                 Part(root=TextPart(text='Third part')),
             ],
-            messageId='test-message-id',
+            message_id='test-message-id',
         )
 
         # Exercise
@@ -200,7 +200,7 @@ class TestGetMessageText:
         message = Message(
             role=Role.agent,
             parts=[],
-            messageId='test-message-id',
+            message_id='test-message-id',
         )
 
         # Exercise

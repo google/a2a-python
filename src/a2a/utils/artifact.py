@@ -21,7 +21,7 @@ def new_artifact(
         A new `Artifact` object with a generated artifactId.
     """
     return Artifact(
-        artifactId=str(uuid.uuid4()),
+        artifact_id=str(uuid.uuid4()),
         parts=parts,
         name=name,
         description=description,

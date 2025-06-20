@@ -18,9 +18,9 @@ def new_task(request: Message) -> Task:
     """
     return Task(
         status=TaskStatus(state=TaskState.submitted),
-        id=(request.taskId if request.taskId else str(uuid.uuid4())),
-        contextId=(
-            request.contextId if request.contextId else str(uuid.uuid4())
+        id=(request.task_id if request.task_id else str(uuid.uuid4())),
+        context_id=(
+            request.context_id if request.context_id else str(uuid.uuid4())
         ),
         history=[request],
     )
@@ -51,7 +51,7 @@ def completed_task(
     return Task(
         status=TaskStatus(state=TaskState.completed),
         id=task_id,
-        contextId=context_id,
+        context_id=context_id,
         artifacts=artifacts,
         history=history,
     )

@@ -4,6 +4,16 @@ on:
   repository_dispatch:
     types: [a2a_json_update]
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/generate_types.sh"
+      - "src/a2a/pydantic_base.py"
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 jobs:
   generate_and_pr:
@@ -15,6 +25,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -53,7 +66,19 @@ jobs:
           uv run scripts/grpc_gen_post_processor.py
           echo "Buf generate finished."
 
-      - name: Create Pull Request with Updates
+      - name: Commit changes to current PR
+        if: github.event_name == 'pull_request' # Only run this step for pull_request events
+        run: |
+          git config user.name "a2a-bot"
+          git config user.email "a2a-bot@google.com"
+          git add ${{ steps.vars.outputs.GENERATED_FILE }} src/a2a/grpc/
+          git diff --cached --exit-code || git commit -m "feat: Update A2A types from specification 🤖"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.A2A_BOT_PAT }}
+
+      - name: Create Pull Request with Updates (for repository_dispatch/workflow_dispatch)
+        if: github.event_name != 'pull_request'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.A2A_BOT_PAT }}

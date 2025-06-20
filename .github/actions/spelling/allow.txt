@@ -9,8 +9,10 @@ AServer
 AServers
 AService
 AStarlette
+AUser
 EUR
 GBP
+GVsb
 INR
 JPY
 JSONRPCt
@@ -29,6 +31,7 @@ coro
 datamodel
 dunders
 euo
+excinfo
 genai
 getkwargs
 gle
@@ -39,9 +42,11 @@ lifecycles
 linting
 lstrips
 mockurl
+notif
 oauthoidc
 oidc
 opensource
+otherurl
 protoc
 pyi
 pyversions

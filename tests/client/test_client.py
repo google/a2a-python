@@ -54,8 +54,8 @@ AGENT_CARD = AgentCard(
     description='Just a hello world agent',
     url='http://localhost:9999/',
     version='1.0.0',
-    defaultInputModes=['text'],
-    defaultOutputModes=['text'],
+    default_input_modes=['text'],
+    default_output_modes=['text'],
     capabilities=AgentCapabilities(),
     skills=[
         AgentSkill(
@@ -86,7 +86,7 @@ AGENT_CARD_EXTENDED = AGENT_CARD.model_copy(
 )
 
 AGENT_CARD_SUPPORTS_EXTENDED = AGENT_CARD.model_copy(
-    update={'supportsAuthenticatedExtendedCard': True}
+    update={'supports_authenticated_extended_card': True}
 )
 AGENT_CARD_NO_URL_SUPPORTS_EXTENDED = AGENT_CARD_SUPPORTS_EXTENDED.model_copy(
     update={'url': ''}
@@ -174,7 +174,9 @@ class TestA2ACardResolver:
     ):
         mock_response = AsyncMock(spec=httpx.Response)
         mock_response.status_code = 200
-        mock_response.json.return_value = AGENT_CARD.model_dump(mode='json')
+        mock_response.json.return_value = AGENT_CARD.model_dump(
+            mode='json', by_alias=True
+        )
         mock_httpx_client.get.return_value = mock_response
 
         resolver = A2ACardResolver(
@@ -200,7 +202,7 @@ class TestA2ACardResolver:
         extended_card_response = AsyncMock(spec=httpx.Response)
         extended_card_response.status_code = 200
         extended_card_response.json.return_value = (
-            AGENT_CARD_EXTENDED.model_dump(mode='json')
+            AGENT_CARD_EXTENDED.model_dump(mode='json', by_alias=True)
         )
 
         # Mock the single call for the extended card
@@ -452,7 +454,7 @@ class TestA2AClient:
 
         success_response = create_text_message_object(
             role=Role.agent, content='Hi there!'
-        ).model_dump(exclude_none=True)
+        ).model_dump(by_alias=True, exclude_none=True)
 
         rpc_response: dict[str, Any] = {
             'id': 123,
@@ -482,13 +484,15 @@ class TestA2AClient:
             assert isinstance(a2a_request_arg.root.params, MessageSendParams)
 
             assert a2a_request_arg.root.params.model_dump(
-                exclude_none=True
-            ) == params.model_dump(exclude_none=True)
+                by_alias=True, exclude_none=True
+            ) == params.model_dump(by_alias=True, exclude_none=True)
 
             assert isinstance(response, SendMessageResponse)
             assert isinstance(response.root, SendMessageSuccessResponse)
             assert (
-                response.root.result.model_dump(exclude_none=True)
+                response.root.result.model_dump(
+                    by_alias=True, exclude_none=True
+                )
                 == success_response
             )
 
@@ -511,7 +515,9 @@ class TestA2AClient:
         rpc_response: dict[str, Any] = {
             'id': 123,
             'jsonrpc': '2.0',
-            'error': error_response.model_dump(exclude_none=True),
+            'error': error_response.model_dump(
+                by_alias=True, exclude_none=True
+            ),
         }
 
         with patch.object(
@@ -523,8 +529,10 @@ class TestA2AClient:
             assert isinstance(response, SendMessageResponse)
             assert isinstance(response.root, JSONRPCErrorResponse)
             assert response.root.error.model_dump(
-                exclude_none=True
-            ) == InvalidParamsError().model_dump(exclude_none=True)
+                by_alias=True, exclude_none=True
+            ) == InvalidParamsError().model_dump(
+                by_alias=True, exclude_none=True
+            )
 
     @pytest.mark.asyncio
     @patch('a2a.client.client.aconnect_sse')
@@ -548,14 +556,14 @@ class TestA2AClient:
             'jsonrpc': '2.0',
             'result': create_text_message_object(
                 content='First part ', role=Role.agent
-            ).model_dump(mode='json', exclude_none=True),
+            ).model_dump(mode='json', by_alias=True, exclude_none=True),
         }
         mock_stream_response_2_dict: dict[str, Any] = {
             'id': 'stream_id_123',
             'jsonrpc': '2.0',
             'result': create_text_message_object(
                 content='second part ', role=Role.agent
-            ).model_dump(mode='json', exclude_none=True),
+            ).model_dump(mode='json', by_alias=True, exclude_none=True),
         }
 
         sse_event_1 = ServerSentEvent(
@@ -586,7 +594,7 @@ class TestA2AClient:
             assert results[0].root.id == 'stream_id_123'
             assert (
                 results[0].root.result.model_dump(  # type: ignore
-                    mode='json', exclude_none=True
+                    mode='json', by_alias=True, exclude_none=True
                 )
                 == mock_stream_response_1_dict['result']
             )
@@ -595,7 +603,7 @@ class TestA2AClient:
             assert results[1].root.id == 'stream_id_123'
             assert (
                 results[1].root.result.model_dump(  # type: ignore
-                    mode='json', exclude_none=True
+                    mode='json', by_alias=True, exclude_none=True
                 )
                 == mock_stream_response_2_dict['result']
             )
@@ -609,7 +617,7 @@ class TestA2AClient:
             sent_json_payload = call_kwargs['json']
             assert sent_json_payload['method'] == 'message/stream'
             assert sent_json_payload['params'] == params.model_dump(
-                mode='json', exclude_none=True
+                mode='json', by_alias=True, exclude_none=True
             )
             assert (
                 call_kwargs['timeout'] is None
@@ -837,7 +845,7 @@ class TestA2AClient:
         )
         # Correctly create the TaskPushNotificationConfig (outer model)
         params_model = TaskPushNotificationConfig(
-            taskId=task_id_val, pushNotificationConfig=push_config_payload
+            task_id=task_id_val, push_notification_config=push_config_payload
         )
 
         # request.id will be generated by the client method if not provided
@@ -849,7 +857,9 @@ class TestA2AClient:
         rpc_response_payload: dict[str, Any] = {
             'id': ANY,  # Will be checked against generated ID
             'jsonrpc': '2.0',
-            'result': params_model.model_dump(mode='json', exclude_none=True),
+            'result': params_model.model_dump(
+                mode='json', by_alias=True, exclude_none=True
+            ),
         }
 
         with (
@@ -880,7 +890,7 @@ class TestA2AClient:
                 == 'tasks/pushNotificationConfig/set'
             )
             assert sent_json_payload['params'] == params_model.model_dump(
-                mode='json', exclude_none=True
+                mode='json', by_alias=True, exclude_none=True
             )
 
             assert isinstance(response, SetTaskPushNotificationConfigResponse)
@@ -889,8 +899,10 @@ class TestA2AClient:
             )
             assert response.root.id == generated_id
             assert response.root.result.model_dump(
-                mode='json', exclude_none=True
-            ) == params_model.model_dump(mode='json', exclude_none=True)
+                mode='json', by_alias=True, exclude_none=True
+            ) == params_model.model_dump(
+                mode='json', by_alias=True, exclude_none=True
+            )
 
     @pytest.mark.asyncio
     async def test_set_task_callback_error_response(
@@ -902,7 +914,7 @@ class TestA2AClient:
         req_id = 'set_cb_err_req'
         push_config_payload = PushNotificationConfig(url='https://errors.com')
         params_model = TaskPushNotificationConfig(
-            taskId='task_err_cb', pushNotificationConfig=push_config_payload
+            task_id='task_err_cb', push_notification_config=push_config_payload
         )
         request = SetTaskPushNotificationConfigRequest(
             id=req_id, params=params_model
@@ -912,7 +924,9 @@ class TestA2AClient:
         rpc_response_payload: dict[str, Any] = {
             'id': req_id,
             'jsonrpc': '2.0',
-            'error': error_details.model_dump(mode='json', exclude_none=True),
+            'error': error_details.model_dump(
+                mode='json', by_alias=True, exclude_none=True
+            ),
         }
 
         with patch.object(
@@ -924,8 +938,8 @@ class TestA2AClient:
             assert isinstance(response, SetTaskPushNotificationConfigResponse)
             assert isinstance(response.root, JSONRPCErrorResponse)
             assert response.root.error.model_dump(
-                mode='json', exclude_none=True
-            ) == error_details.model_dump(mode='json', exclude_none=True)
+                mode='json', by_alias=True, exclude_none=True
+            ) == error_details.model_dump(by_alias=True, exclude_none=True)
             assert response.root.id == req_id
 
     @pytest.mark.asyncio
@@ -937,7 +951,8 @@ class TestA2AClient:
         )
         push_config_payload = PushNotificationConfig(url='https://kwargs.com')
         params_model = TaskPushNotificationConfig(
-            taskId='task_cb_kwargs', pushNotificationConfig=push_config_payload
+            task_id='task_cb_kwargs',
+            push_notification_config=push_config_payload,
         )
         request = SetTaskPushNotificationConfigRequest(
             id='cb_kwargs_req', params=params_model
@@ -948,7 +963,7 @@ class TestA2AClient:
         rpc_response_payload: dict[str, Any] = {
             'id': 'cb_kwargs_req',
             'jsonrpc': '2.0',
-            'result': params_model.model_dump(mode='json'),
+            'result': params_model.model_dump(mode='json', by_alias=True),
         }
 
         with patch.object(
@@ -986,13 +1001,13 @@ class TestA2AClient:
             url='https://callback.example.com/taskupdate'
         )
         expected_callback_config = TaskPushNotificationConfig(
-            taskId=task_id_val, pushNotificationConfig=push_config_payload
+            task_id=task_id_val, push_notification_config=push_config_payload
         )
         rpc_response_payload: dict[str, Any] = {
             'id': ANY,
             'jsonrpc': '2.0',
             'result': expected_callback_config.model_dump(
-                mode='json', exclude_none=True
+                mode='json', by_alias=True, exclude_none=True
             ),
         }
 
@@ -1021,7 +1036,7 @@ class TestA2AClient:
                 == 'tasks/pushNotificationConfig/get'
             )
             assert sent_json_payload['params'] == params_model.model_dump(
-                mode='json', exclude_none=True
+                mode='json', by_alias=True, exclude_none=True
             )
 
             assert isinstance(response, GetTaskPushNotificationConfigResponse)
@@ -1030,9 +1045,9 @@ class TestA2AClient:
             )
             assert response.root.id == generated_id
             assert response.root.result.model_dump(
-                mode='json', exclude_none=True
+                mode='json', by_alias=True, exclude_none=True
             ) == expected_callback_config.model_dump(
-                mode='json', exclude_none=True
+                mode='json', by_alias=True, exclude_none=True
             )
 
     @pytest.mark.asyncio
@@ -1054,7 +1069,9 @@ class TestA2AClient:
         rpc_response_payload: dict[str, Any] = {
             'id': req_id,
             'jsonrpc': '2.0',
-            'error': error_details.model_dump(mode='json', exclude_none=True),
+            'error': error_details.model_dump(
+                mode='json', by_alias=True, exclude_none=True
+            ),
         }
 
         with patch.object(
@@ -1066,8 +1083,8 @@ class TestA2AClient:
             assert isinstance(response, GetTaskPushNotificationConfigResponse)
             assert isinstance(response.root, JSONRPCErrorResponse)
             assert response.root.error.model_dump(
-                mode='json', exclude_none=True
-            ) == error_details.model_dump(mode='json', exclude_none=True)
+                mode='json', by_alias=True, exclude_none=True
+            ) == error_details.model_dump(by_alias=True, exclude_none=True)
             assert response.root.id == req_id
 
     @pytest.mark.asyncio
@@ -1088,13 +1105,15 @@ class TestA2AClient:
             url='https://getkwargs.com'
         )
         expected_callback_config = TaskPushNotificationConfig(
-            taskId='task_get_cb_kwargs',
-            pushNotificationConfig=push_config_payload_for_expected,
+            task_id='task_get_cb_kwargs',
+            push_notification_config=push_config_payload_for_expected,
         )
         rpc_response_payload: dict[str, Any] = {
             'id': 'get_cb_kwargs_req',
             'jsonrpc': '2.0',
-            'result': expected_callback_config.model_dump(mode='json'),
+            'result': expected_callback_config.model_dump(
+                mode='json', by_alias=True
+            ),
         }
 
         with patch.object(
@@ -1148,13 +1167,15 @@ class TestA2AClient:
             assert json_rpc_request_sent['method'] == 'tasks/get'
             assert json_rpc_request_sent['id'] == request_obj_id
             assert json_rpc_request_sent['params'] == params_model.model_dump(
-                mode='json', exclude_none=True
+                mode='json', by_alias=True, exclude_none=True
             )
 
             assert isinstance(response, GetTaskResponse)
             assert hasattr(response.root, 'result')
             assert (
-                response.root.result.model_dump(mode='json', exclude_none=True)  # type: ignore
+                response.root.result.model_dump(
+                    mode='json', by_alias=True, exclude_none=True
+                )  # type: ignore
                 == MINIMAL_TASK
             )
             assert response.root.id == request_obj_id
@@ -1173,7 +1194,9 @@ class TestA2AClient:
         rpc_response_payload: dict[str, Any] = {
             'id': 'err_req_id',
             'jsonrpc': '2.0',
-            'error': error_details.model_dump(mode='json', exclude_none=True),
+            'error': error_details.model_dump(
+                mode='json', by_alias=True, exclude_none=True
+            ),
         }
 
         with patch.object(
@@ -1185,8 +1208,8 @@ class TestA2AClient:
             assert isinstance(response, GetTaskResponse)
             assert isinstance(response.root, JSONRPCErrorResponse)
             assert response.root.error.model_dump(
-                mode='json', exclude_none=True
-            ) == error_details.model_dump(exclude_none=True)
+                mode='json', by_alias=True, exclude_none=True
+            ) == error_details.model_dump(by_alias=True, exclude_none=True)
             assert response.root.id == 'err_req_id'
 
     @pytest.mark.asyncio
@@ -1226,13 +1249,15 @@ class TestA2AClient:
             assert json_rpc_request_sent['method'] == 'tasks/cancel'
             assert json_rpc_request_sent['id'] == request_obj_id
             assert json_rpc_request_sent['params'] == params_model.model_dump(
-                mode='json', exclude_none=True
+                mode='json', by_alias=True, exclude_none=True
             )
 
             assert isinstance(response, CancelTaskResponse)
             assert isinstance(response.root, CancelTaskSuccessResponse)
             assert (
-                response.root.result.model_dump(mode='json', exclude_none=True)  # type: ignore
+                response.root.result.model_dump(
+                    mode='json', by_alias=True, exclude_none=True
+                )  # type: ignore
                 == MINIMAL_CANCELLED_TASK
             )
             assert response.root.id == request_obj_id
@@ -1251,7 +1276,9 @@ class TestA2AClient:
         rpc_response_payload: dict[str, Any] = {
             'id': 'err_cancel_req',
             'jsonrpc': '2.0',
-            'error': error_details.model_dump(mode='json', exclude_none=True),
+            'error': error_details.model_dump(
+                mode='json', by_alias=True, exclude_none=True
+            ),
         }
 
         with patch.object(
@@ -1263,6 +1290,6 @@ class TestA2AClient:
             assert isinstance(response, CancelTaskResponse)
             assert isinstance(response.root, JSONRPCErrorResponse)
             assert response.root.error.model_dump(
-                mode='json', exclude_none=True
-            ) == error_details.model_dump(exclude_none=True)
+                mode='json', by_alias=True, exclude_none=True
+            ) == error_details.model_dump(by_alias=True, exclude_none=True)
             assert response.root.id == 'err_cancel_req'
