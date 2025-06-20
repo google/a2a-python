@@ -4,7 +4,7 @@
 #
 # This file follows the standards in Google Python Style Guide
 # https://google.github.io/styleguide/pyguide.html
-#  
+#
 
 line-length = 80 # Google Style Guide §3.2: 80 columns
 indent-width = 4 # Google Style Guide §3.4: 4 spaces
@@ -102,7 +102,6 @@ lines-between-types = 1
 [lint.pydocstyle]
 convention = "google"
 ignore-decorators = ["typing.overload", "abc.abstractmethod"]
-ignore-var-parameters = true
 
 [lint.flake8-annotations]
 mypy-init-return = true
