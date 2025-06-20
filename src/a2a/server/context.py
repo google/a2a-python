@@ -15,6 +15,7 @@ class ServerCallContext(BaseModel):
     """A context passed when calling a server method.
 
     This class allows storing arbitrary user data in the state attribute.
+
     """
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
