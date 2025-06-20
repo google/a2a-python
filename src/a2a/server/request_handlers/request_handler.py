@@ -12,6 +12,8 @@ from a2a.types import (
     TaskPushNotificationConfig,
     TaskQueryParams,
     UnsupportedOperationError,
+    ListTaskPushNotificationConfigParams,
+    DeleteTaskPushNotificationConfigParams
 )
 from a2a.utils.errors import ServerError
 
@@ -160,3 +162,39 @@ class RequestHandler(ABC):
         """
         raise ServerError(error=UnsupportedOperationError())
         yield
+
+    @abstractmethod
+    async def on_list_task_push_notification_config(
+        self,
+        params: ListTaskPushNotificationConfigParams,
+        context: ServerCallContext | None = None,
+    ) -> list[TaskPushNotificationConfig]:
+        """Handles the 'tasks/pushNotificationConfig/list' method.
+
+        Retrieves the current push notification configurations for a task.
+
+        Args:
+            params: Parameters including the task ID.
+            context: Context provided by the server.
+
+        Returns:
+            The `list[TaskPushNotificationConfig]` for the task.
+        """
+
+    @abstractmethod
+    async def on_delete_task_push_notification_config(
+        self,
+        params: DeleteTaskPushNotificationConfigParams,
+        context: ServerCallContext | None = None,
+    ) -> None:
+        """Handles the 'tasks/pushNotificationConfig/delete' method.
+
+        Deletes a push notification configuration associated with a task.
+
+        Args:
+            params: Parameters including the task ID.
+            context: Context provided by the server.
+
+        Returns:
+            None
+        """
