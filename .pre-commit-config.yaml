@@ -17,9 +17,16 @@ repos:
   # ===============================================
   # Python Hooks
   # ===============================================
+  # no_implicit_optional for ensuring explicit Optional types
+  - repo: https://github.com/hauntsaninja/no_implicit_optional
+    rev: "1.4"
+    hooks:
+      - id: no_implicit_optional
+        args: ["--use-union-or"]
+
   # Pyupgrade for upgrading Python syntax to newer versions
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.11.0
+    rev: v3.20.0
     hooks:
       - id: pyupgrade
         args: ["--py310-plus"] # Target Python 3.10+ syntax, matching project's target
@@ -33,7 +40,7 @@ repos:
 
   # Ruff for linting and formatting
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.8
+    rev: v0.12.0
     hooks:
       - id: ruff             # Linter: applies auto-fixable linting rules
         args: [ "--fix", "--exit-zero" ] # Apply fixes, and exit with 0 even if files were modified
