@@ -324,3 +324,151 @@ async def test_reject_with_message(task_updater, event_queue, sample_message):
     assert event.status.state == TaskState.rejected
     assert event.final is True
     assert event.status.message == sample_message
+
+
+@pytest.mark.asyncio
+async def test_requires_input_without_message(task_updater, event_queue):
+    """Test marking a task as input required without a message."""
+    await task_updater.requires_input()
+
+    event_queue.enqueue_event.assert_called_once()
+    event = event_queue.enqueue_event.call_args[0][0]
+
+    assert isinstance(event, TaskStatusUpdateEvent)
+    assert event.status.state == TaskState.input_required
+    assert event.final is False
+    assert event.status.message is None
+
+
+@pytest.mark.asyncio
+async def test_requires_input_with_message(
+    task_updater, event_queue, sample_message
+):
+    """Test marking a task as input required with a message."""
+    await task_updater.requires_input(message=sample_message)
+
+    event_queue.enqueue_event.assert_called_once()
+    event = event_queue.enqueue_event.call_args[0][0]
+
+    assert isinstance(event, TaskStatusUpdateEvent)
+    assert event.status.state == TaskState.input_required
+    assert event.final is False
+    assert event.status.message == sample_message
+
+
+@pytest.mark.asyncio
+async def test_requires_input_final_true(task_updater, event_queue):
+    """Test marking a task as input required with final=True."""
+    await task_updater.requires_input(final=True)
+
+    event_queue.enqueue_event.assert_called_once()
+    event = event_queue.enqueue_event.call_args[0][0]
+
+    assert isinstance(event, TaskStatusUpdateEvent)
+    assert event.status.state == TaskState.input_required
+    assert event.final is True
+    assert event.status.message is None
+
+
+@pytest.mark.asyncio
+async def test_requires_input_with_message_and_final(
+    task_updater, event_queue, sample_message
+):
+    """Test marking a task as input required with message and final=True."""
+    await task_updater.requires_input(message=sample_message, final=True)
+
+    event_queue.enqueue_event.assert_called_once()
+    event = event_queue.enqueue_event.call_args[0][0]
+
+    assert isinstance(event, TaskStatusUpdateEvent)
+    assert event.status.state == TaskState.input_required
+    assert event.final is True
+    assert event.status.message == sample_message
+
+
+@pytest.mark.asyncio
+async def test_requires_auth_without_message(task_updater, event_queue):
+    """Test marking a task as auth required without a message."""
+    await task_updater.requires_auth()
+
+    event_queue.enqueue_event.assert_called_once()
+    event = event_queue.enqueue_event.call_args[0][0]
+
+    assert isinstance(event, TaskStatusUpdateEvent)
+    assert event.status.state == TaskState.auth_required
+    assert event.final is False
+    assert event.status.message is None
+
+
+@pytest.mark.asyncio
+async def test_requires_auth_with_message(
+    task_updater, event_queue, sample_message
+):
+    """Test marking a task as auth required with a message."""
+    await task_updater.requires_auth(message=sample_message)
+
+    event_queue.enqueue_event.assert_called_once()
+    event = event_queue.enqueue_event.call_args[0][0]
+
+    assert isinstance(event, TaskStatusUpdateEvent)
+    assert event.status.state == TaskState.auth_required
+    assert event.final is False
+    assert event.status.message == sample_message
+
+
+@pytest.mark.asyncio
+async def test_requires_auth_final_true(task_updater, event_queue):
+    """Test marking a task as auth required with final=True."""
+    await task_updater.requires_auth(final=True)
+
+    event_queue.enqueue_event.assert_called_once()
+    event = event_queue.enqueue_event.call_args[0][0]
+
+    assert isinstance(event, TaskStatusUpdateEvent)
+    assert event.status.state == TaskState.auth_required
+    assert event.final is True
+    assert event.status.message is None
+
+
+@pytest.mark.asyncio
+async def test_requires_auth_with_message_and_final(
+    task_updater, event_queue, sample_message
+):
+    """Test marking a task as auth required with message and final=True."""
+    await task_updater.requires_auth(message=sample_message, final=True)
+
+    event_queue.enqueue_event.assert_called_once()
+    event = event_queue.enqueue_event.call_args[0][0]
+
+    assert isinstance(event, TaskStatusUpdateEvent)
+    assert event.status.state == TaskState.auth_required
+    assert event.final is True
+    assert event.status.message == sample_message
+
+
+@pytest.mark.asyncio
+async def test_cancel_without_message(task_updater, event_queue):
+    """Test marking a task as cancelled without a message."""
+    await task_updater.cancel()
+
+    event_queue.enqueue_event.assert_called_once()
+    event = event_queue.enqueue_event.call_args[0][0]
+
+    assert isinstance(event, TaskStatusUpdateEvent)
+    assert event.status.state == TaskState.canceled
+    assert event.final is True
+    assert event.status.message is None
+
+
+@pytest.mark.asyncio
+async def test_cancel_with_message(task_updater, event_queue, sample_message):
+    """Test marking a task as cancelled with a message."""
+    await task_updater.cancel(message=sample_message)
+
+    event_queue.enqueue_event.assert_called_once()
+    event = event_queue.enqueue_event.call_args[0][0]
+
+    assert isinstance(event, TaskStatusUpdateEvent)
+    assert event.status.state == TaskState.canceled
+    assert event.final is True
+    assert event.status.message == sample_message

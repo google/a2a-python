@@ -12,7 +12,12 @@
         "PYTHONPATH": "${workspaceFolder}"
       },
       "cwd": "${workspaceFolder}/examples/helloworld",
-      "args": ["--host", "localhost", "--port", "9999"]
+      "args": [
+        "--host",
+        "localhost",
+        "--port",
+        "9999"
+      ]
     },
     {
       "name": "Debug Currency Agent",
@@ -25,7 +30,24 @@
         "PYTHONPATH": "${workspaceFolder}"
       },
       "cwd": "${workspaceFolder}/examples/langgraph",
-      "args": ["--host", "localhost", "--port", "10000"]
+      "args": [
+        "--host",
+        "localhost",
+        "--port",
+        "10000"
+      ]
+    },
+    {
+      "name": "Pytest All",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "-v",
+        "-s"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": true
     }
   ]
 }
