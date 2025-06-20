@@ -33,7 +33,7 @@ class A2AFastAPIApplication(JSONRPCApplication):
         extended_agent_card: AgentCard | None = None,
         context_builder: CallContextBuilder | None = None,
     ):
-        """Initializes the A2AStarletteApplication.
+        """Initializes the A2AFastAPIApplication.
 
         Args:
             agent_card: The AgentCard describing the agent's capabilities.
