@@ -39,6 +39,8 @@ from a2a.types import (
     SetTaskPushNotificationConfigRequest,
     TaskResubscriptionRequest,
     UnsupportedOperationError,
+    ListTaskPushNotificationConfigRequest,
+    DeleteTaskPushNotificationConfigRequest
 )
 from a2a.utils.errors import MethodNotImplementedError
 
@@ -297,12 +299,22 @@ class JSONRPCApplication(ABC):
                     request_obj, context
                 )
             case SetTaskPushNotificationConfigRequest():
-                handler_result = await self.handler.set_push_notification(
+                handler_result = await self.handler.set_push_notification_config(
                     request_obj,
                     context,
                 )
             case GetTaskPushNotificationConfigRequest():
-                handler_result = await self.handler.get_push_notification(
+                handler_result = await self.handler.get_push_notification_config(
+                    request_obj,
+                    context,
+                )
+            case ListTaskPushNotificationConfigRequest():
+                handler_result = await self.handler.list_push_notification_config(
+                    request_obj,
+                    context,
+                )
+            case DeleteTaskPushNotificationConfigRequest():
+                handler_result = await self.handler.delete_push_notification_config(
                     request_obj,
                     context,
                 )
