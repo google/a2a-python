@@ -1,0 +1,41 @@
+repos:
+  # ===============================================
+  # Pre-commit standard hooks (general file cleanup)
+  # ===============================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace # Removes extra whitespace at the end of lines
+      - id: end-of-file-fixer   # Ensures files end with a newline
+      - id: check-yaml          # Checks YAML file syntax
+      - id: check-toml          # Checks TOML file syntax (e.g., pyproject.toml)
+      - id: check-added-large-files # Prevents committing large files
+        args: ['--maxkb=500'] # Example: Limit to 500KB
+      - id: check-merge-conflict # Checks for merge conflict strings
+      - id: detect-private-key  # Detects accidental private key commits
+
+  # ===============================================
+  # Python Hooks
+  # ===============================================
+  # Pyupgrade for upgrading Python syntax to newer versions
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.11.0
+    hooks:
+      - id: pyupgrade
+        args: ["--py310-plus"] # Target Python 3.10+ syntax, matching project's target
+
+  # Autoflake for removing unused imports and variables
+  - repo: https://github.com/pycqa/autoflake
+    rev: v2.3.1
+    hooks:
+      - id: autoflake
+        args: ["--in-place", "--remove-all-unused-imports"]
+
+  # Ruff for linting and formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.8
+    hooks:
+      - id: ruff             # Linter: applies auto-fixable linting rules
+        args: [ "--fix", "--exit-zero" ] # Apply fixes, and exit with 0 even if files were modified
+      - id: ruff-format      # Formatter: similar to Black, handles consistent code style
+        args: []  # Check formatting, but do not auto-fix during commit; fail if not formatted
