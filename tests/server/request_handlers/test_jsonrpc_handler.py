@@ -762,7 +762,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
             'Push notifications are not supported by the agent',
         )
 
-    async def test_on_get_push_notification_no_push_notifier(self) -> None:
+    async def test_on_get_push_notification_no_push_config_store(self) -> None:
         """Test get_push_notification with no push notifier configured."""
         # Arrange
         mock_agent_executor = AsyncMock(spec=AgentExecutor)
@@ -789,7 +789,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         self.assertIsInstance(response.root, JSONRPCErrorResponse)
         self.assertEqual(response.root.error, UnsupportedOperationError())  # type: ignore
 
-    async def test_on_set_push_notification_no_push_notifier(self) -> None:
+    async def test_on_set_push_notification_no_push_config_store(self) -> None:
         """Test set_push_notification with no push notifier configured."""
         # Arrange
         mock_agent_executor = AsyncMock(spec=AgentExecutor)

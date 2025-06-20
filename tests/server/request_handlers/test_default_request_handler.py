@@ -935,7 +935,7 @@ async def test_cleanup_producer_task_id_not_in_running_agents():
 
 @pytest.mark.asyncio
 async def test_set_task_push_notification_config_no_notifier():
-    """Test on_set_task_push_notification_config when _push_notifier is None."""
+    """Test on_set_task_push_notification_config when _push_config_store is None."""
     request_handler = DefaultRequestHandler(
         agent_executor=DummyAgentExecutor(),
         task_store=AsyncMock(spec=TaskStore),
@@ -1029,7 +1029,7 @@ async def test_get_task_push_notification_config_task_not_found():
 
 @pytest.mark.asyncio
 async def test_get_task_push_notification_config_info_not_found():
-    """Test on_get_task_push_notification_config when push_notifier.get_info returns None."""
+    """Test on_get_task_push_notification_config when push_config_store.get_info returns None."""
     mock_task_store = AsyncMock(spec=TaskStore)
     
     sample_task = create_sample_task(task_id='task_info_not_found')
@@ -1195,7 +1195,7 @@ async def test_list_task_push_notification_config_task_not_found():
 
 @pytest.mark.asyncio
 async def test_list_no_task_push_notification_config_info():
-    """Test on_get_task_push_notification_config when push_notifier.get_info returns []"""
+    """Test on_get_task_push_notification_config when push_config_store.get_info returns []"""
     mock_task_store = AsyncMock(spec=TaskStore)
     
     sample_task = create_sample_task(task_id='task_info_not_found')
