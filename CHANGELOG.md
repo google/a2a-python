@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.2.9](https://github.com/google-a2a/a2a-python/compare/v0.2.8...v0.2.9) (2025-06-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* Update A2A types from specification 🤖 ([#197](https://github.com/google-a2a/a2a-python/issues/197))
+
+### Features
+
+* Add `append` and `last_chunk` to `add_artifact` method on `TaskUpdater` ([#186](https://github.com/google-a2a/a2a-python/issues/186)) ([8c6560f](https://github.com/google-a2a/a2a-python/commit/8c6560fd403887fab9d774bfcc923a5f6f459364))
+* add a2a routes to existing app ([#188](https://github.com/google-a2a/a2a-python/issues/188)) ([32fecc7](https://github.com/google-a2a/a2a-python/commit/32fecc7194a61c2f5be0b8795d5dc17cdbab9040))
+* Add middleware to the client SDK ([#171](https://github.com/google-a2a/a2a-python/issues/171)) ([efaabd3](https://github.com/google-a2a/a2a-python/commit/efaabd3b71054142109b553c984da1d6e171db24))
+* Add more task state management methods to TaskUpdater ([#208](https://github.com/google-a2a/a2a-python/issues/208)) ([2b3bf6d](https://github.com/google-a2a/a2a-python/commit/2b3bf6d53ac37ed93fc1b1c012d59c19060be000))
+* raise error for tasks in terminal states ([#215](https://github.com/google-a2a/a2a-python/issues/215)) ([a0bf13b](https://github.com/google-a2a/a2a-python/commit/a0bf13b208c90b439b4be1952c685e702c4917a0))
+* Update A2A types from specification 🤖 ([#197](https://github.com/google-a2a/a2a-python/issues/197)) ([1fbf600](https://github.com/google-a2a/a2a-python/commit/1fbf600215ce85dbcfe36ef8112c24b89c285d37))
+* Update A2A types from specification 🤖 ([#206](https://github.com/google-a2a/a2a-python/issues/206)) ([3800c83](https://github.com/google-a2a/a2a-python/commit/3800c83471cd4bc996e4d9072bb717740ecb0831))
+
+
+### Bug Fixes
+
+* `consume_all` doesn't catch `asyncio.TimeoutError` in python 3.10 ([#216](https://github.com/google-a2a/a2a-python/issues/216)) ([39307f1](https://github.com/google-a2a/a2a-python/commit/39307f15a1bb70eb77aee2211da038f403571242))
+* library release version ([a9567ea](https://github.com/google-a2a/a2a-python/commit/a9567ea4688858d907eab3d2f9915a9ceb5122c6))
+* Lower fastapi required version to `fastapi>=0.115.2` ([#193](https://github.com/google-a2a/a2a-python/issues/193)) ([8e713b7](https://github.com/google-a2a/a2a-python/commit/8e713b70c0cdddc115f04bc93155943a51069af8))
+* update regex references for pushNotificationConfigs ([#211](https://github.com/google-a2a/a2a-python/issues/211)) ([325ad8c](https://github.com/google-a2a/a2a-python/commit/325ad8cf949ffa91acd7a7f98e83f66bb77857e0))
+
+
+### Documentation
+
+* Update README.md to add instructions for using a2a-inspector ([#214](https://github.com/google-a2a/a2a-python/issues/214)) ([b88ca85](https://github.com/google-a2a/a2a-python/commit/b88ca85be19864a24c066b1952ddb9ebaf0bc8da))
+
 ## [0.2.8](https://github.com/google-a2a/a2a-python/compare/v0.2.7...v0.2.8) (2025-06-12)
 
 
