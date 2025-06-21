@@ -46,6 +46,7 @@ protoc
 pyi
 pyversions
 redef
+respx
 resub
 socio
 sse
