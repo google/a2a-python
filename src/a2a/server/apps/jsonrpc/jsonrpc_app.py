@@ -7,7 +7,6 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
 from typing import Any
 
-from fastapi import FastAPI
 from pydantic import ValidationError
 from sse_starlette.sse import EventSourceResponse
 from starlette.applications import Starlette
@@ -17,6 +16,7 @@ from starlette.responses import JSONResponse, Response
 
 from a2a.auth.user import UnauthenticatedUser
 from a2a.auth.user import User as A2AUser
+from a2a.server.apps.jsonrpc.fastapi_import_helpers import FastAPI
 from a2a.server.context import ServerCallContext
 from a2a.server.request_handlers.jsonrpc_handler import JSONRPCHandler
 from a2a.server.request_handlers.request_handler import RequestHandler

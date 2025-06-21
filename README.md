@@ -40,6 +40,23 @@ If you prefer to use pip, the standard Python package installer, you can install
 pip install a2a-sdk
 ```
 
+### Optional
+
+#### FastAPI-based A2A Server App
+
+Using `a2a.server.apps.A2AFastAPIApplication` requires the FastAPI package, which is an optional dependency.
+With `uv`, it can be specified as follows:
+
+```shell
+uv add a2a-sdk[fastapi]
+```
+
+Alternatively, a preferred version of the `fastapi` package can be added directly to the project:
+
+```shell
+uv add fastapi
+```
+
 ## Examples
 
 ### [Helloworld Example](https://github.com/google-a2a/a2a-samples/tree/main/samples/python/agents/helloworld)

@@ -2,8 +2,11 @@ import logging
 
 from typing import Any
 
-from fastapi import FastAPI, Request, Response
-
+from a2a.server.apps.jsonrpc.fastapi_import_helpers import (
+    FastAPI,
+    Request,
+    Response,
+)
 from a2a.server.apps.jsonrpc.jsonrpc_app import (
     CallContextBuilder,
     JSONRPCApplication,
@@ -30,7 +33,7 @@ class A2AFastAPIApplication(JSONRPCApplication):
         extended_agent_card: AgentCard | None = None,
         context_builder: CallContextBuilder | None = None,
     ):
-        """Initializes the A2AStarletteApplication.
+        """Initializes the A2AFastAPIApplication.
 
         Args:
             agent_card: The AgentCard describing the agent's capabilities.
@@ -48,6 +51,17 @@ class A2AFastAPIApplication(JSONRPCApplication):
             extended_agent_card=extended_agent_card,
             context_builder=context_builder,
         )
+
+        self._check_fastapi_dependency()
+
+    def _check_fastapi_dependency(self) -> None:
+        """Checks if the FastAPI package is installed.
+
+        If instead of the actual FastAPI class, a dummy implementation from
+        ./fastapi_import_helpers.py is imported, initializing FastAPI() would
+        raise ImportError.
+        """
+        _app = FastAPI()
 
     def add_routes_to_app(
         self,
