@@ -8,19 +8,19 @@ authors = [{ name = "Google LLC", email = "googleapis-packages@google.com" }]
 requires-python = ">=3.10"
 keywords = ["A2A", "A2A SDK", "A2A Protocol", "Agent2Agent"]
 dependencies = [
-    "fastapi>=0.115.2",
-    "httpx>=0.28.1",
-    "httpx-sse>=0.4.0",
-    "google-api-core>=1.26.0",
-    "opentelemetry-api>=1.33.0",
-    "opentelemetry-sdk>=1.33.0",
-    "pydantic>=2.11.3",
-    "sse-starlette",
-    "starlette",
-    "grpcio>=1.60",
-    "grpcio-tools>=1.60",
-    "grpcio_reflection>=1.7.0",
-    "protobuf==6.31.1",
+  "fastapi>=0.115.2",
+  "httpx>=0.28.1",
+  "httpx-sse>=0.4.0",
+  "google-api-core>=1.26.0",
+  "opentelemetry-api>=1.33.0",
+  "opentelemetry-sdk>=1.33.0",
+  "pydantic>=2.11.3",
+  "sse-starlette",
+  "starlette",
+  "grpcio>=1.60",
+  "grpcio-tools>=1.60",
+  "grpcio_reflection>=1.7.0",
+  "protobuf>=5.29.5",
 ]
 
 classifiers = [
@@ -60,9 +60,7 @@ build-backend = "hatchling.build"
 source = "uv-dynamic-versioning"
 
 [tool.hatch.build.targets.sdist]
-exclude = [
-  "tests/",
-]
+exclude = ["tests/"]
 
 [tool.uv-dynamic-versioning]
 vcs = "git"
@@ -70,17 +68,17 @@ style = "pep440"
 
 [dependency-groups]
 dev = [
-    "datamodel-code-generator>=0.30.0",
-    "mypy>=1.15.0",
-    "pytest>=8.3.5",
-    "pytest-asyncio>=0.26.0",
-    "pytest-cov>=6.1.1",
-    "pytest-mock>=3.14.0",
-    "respx>=0.20.2",
-    "ruff>=0.11.6",
-    "uv-dynamic-versioning>=0.8.2",
-    "types-protobuf",
-    "types-requests",
+  "datamodel-code-generator>=0.30.0",
+  "mypy>=1.15.0",
+  "pytest>=8.3.5",
+  "pytest-asyncio>=0.26.0",
+  "pytest-cov>=6.1.1",
+  "pytest-mock>=3.14.0",
+  "respx>=0.20.2",
+  "ruff>=0.11.6",
+  "uv-dynamic-versioning>=0.8.2",
+  "types-protobuf",
+  "types-requests",
 ]
 
 [[tool.uv.index]]
