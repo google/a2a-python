@@ -12,7 +12,13 @@ repos:
       - id: check-added-large-files # Prevents committing large files
         args: ['--maxkb=500'] # Example: Limit to 500KB
       - id: check-merge-conflict # Checks for merge conflict strings
-      - id: detect-private-key  # Detects accidental private key commits
+      - id: detect-private-key # Detects accidental private key commits
+
+  - repo: https://github.com/ComPWA/taplo-pre-commit
+    rev: v0.9.3
+    hooks:
+      - id: taplo-format
+      - id: taplo-lint
 
   # ===============================================
   # Python Hooks
@@ -45,4 +51,4 @@ repos:
       - id: ruff             # Linter: applies auto-fixable linting rules
         args: [ "--fix", "--exit-zero" ] # Apply fixes, and exit with 0 even if files were modified
       - id: ruff-format      # Formatter: similar to Black, handles consistent code style
-        args: []  # Check formatting, but do not auto-fix during commit; fail if not formatted
+        args: []                        # Check formatting, but do not auto-fix during commit; fail if not formatted
