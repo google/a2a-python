@@ -5,7 +5,7 @@ import traceback
 
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pydantic import ValidationError
 from sse_starlette.sse import EventSourceResponse
