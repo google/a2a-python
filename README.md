@@ -8,9 +8,9 @@
 
 <html>
    <h2 align="center">
-   <img src="https://raw.githubusercontent.com/google-a2a/A2A/refs/heads/main/docs/assets/a2a-logo-black.svg" width="256" alt="A2A Logo"/>
+   <img src="https://raw.githubusercontent.com/a2aproject/A2A/refs/heads/main/docs/assets/a2a-logo-black.svg" width="256" alt="A2A Logo"/>
    </h2>
-   <h3 align="center">A Python library that helps run agentic applications as A2AServers following the <a href="https://google-a2a.github.io/A2A">Agent2Agent (A2A) Protocol</a>.</h3>
+   <h3 align="center">A Python library that helps run agentic applications as A2AServers following the <a href="https://a2aproject.github.io/A2A">Agent2Agent (A2A) Protocol</a>.</h3>
 </html>
 
 <!-- markdownlint-enable no-inline-html -->
@@ -42,12 +42,12 @@ pip install a2a-sdk
 
 ## Examples
 
-### [Helloworld Example](https://github.com/google-a2a/a2a-samples/tree/main/samples/python/agents/helloworld)
+### [Helloworld Example](https://github.com/a2aproject/a2a-samples/tree/main/samples/python/agents/helloworld)
 
 1. Run Remote Agent
 
    ```bash
-   git clone https://github.com/google-a2a/a2a-samples.git
+   git clone https://github.com/a2aproject/a2a-samples.git
    cd a2a-samples/samples/python/agents/helloworld
    uv run .
    ```
@@ -59,12 +59,14 @@ pip install a2a-sdk
    uv run test_client.py
    ```
 
-You can also find more Python samples [here](https://github.com/google-a2a/a2a-samples/tree/main/samples/python) and JavaScript samples [here](https://github.com/google-a2a/a2a-samples/tree/main/samples/js).
+3. You can validate your agent using the agent inspector. Follow the instructions at the [a2a-inspector](https://github.com/a2aproject/a2a-inspector) repo. 
+
+You can also find more Python samples [here](https://github.com/a2aproject/a2a-samples/tree/main/samples/python) and JavaScript samples [here](https://github.com/a2aproject/a2a-samples/tree/main/samples/js).
 
 ## License
 
-This project is licensed under the terms of the [Apache 2.0 License](https://raw.githubusercontent.com/google-a2a/a2a-python/refs/heads/main/LICENSE).
+This project is licensed under the terms of the [Apache 2.0 License](https://raw.githubusercontent.com/a2aproject/a2a-python/refs/heads/main/LICENSE).
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/google-a2a/a2a-python/blob/main/CONTRIBUTING.md) for contribution guidelines.
+See [CONTRIBUTING.md](https://github.com/a2aproject/a2a-python/blob/main/CONTRIBUTING.md) for contribution guidelines.

@@ -134,6 +134,30 @@ class TaskUpdater:
             message=message,
         )
 
+    async def cancel(self, message: Message | None = None) -> None:
+        """Marks the task as cancelled and publishes a finalstatus update."""
+        await self.update_status(
+            TaskState.canceled, message=message, final=True
+        )
+
+    async def requires_input(
+        self, message: Message | None = None, final: bool = False
+    ) -> None:
+        """Marks the task as input required and publishes a status update."""
+        await self.update_status(
+            TaskState.input_required,
+            message=message,
+            final=final,
+        )
+
+    async def requires_auth(
+        self, message: Message | None = None, final: bool = False
+    ) -> None:
+        """Marks the task as auth required and publishes a status update."""
+        await self.update_status(
+            TaskState.auth_required, message=message, final=final
+        )
+
     def new_agent_message(
         self,
         parts: list[Part],

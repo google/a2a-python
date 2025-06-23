@@ -20,7 +20,9 @@ aconnect
 adk
 agentic
 aio
+aproject
 autouse
+backticks
 cla
 cls
 coc
@@ -45,6 +47,7 @@ opensource
 protoc
 pyi
 pyversions
+respx
 resub
 socio
 sse

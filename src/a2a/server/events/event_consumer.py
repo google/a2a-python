@@ -130,6 +130,9 @@ class EventConsumer:
             except TimeoutError:
                 # continue polling until there is a final event
                 continue
+            except asyncio.TimeoutError:
+                # This class was made an alias of build-in TimeoutError after 3.11
+                continue
             except QueueClosed:
                 # Confirm that the queue is closed, e.g. we aren't on
                 # python 3.12 and get a queue empty error on an open queue
