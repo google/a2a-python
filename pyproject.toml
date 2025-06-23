@@ -60,7 +60,7 @@ source = "uv-dynamic-versioning"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
-    "tests/"
+    "tests/",
 ]
 
 [tool.uv-dynamic-versioning]
