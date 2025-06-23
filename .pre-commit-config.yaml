@@ -60,3 +60,9 @@ repos:
         args: [--fix, --exit-zero]  # Apply fixes, and exit with 0 even if files were modified
       - id: ruff-format  # Formatter: similar to Black, handles consistent code style
         args: []  # Check formatting, but do not auto-fix during commit; fail if not formatted
+
+  # Keep uv.lock in sync
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.7.13
+    hooks:
+      - id: uv-lock
