@@ -39,6 +39,10 @@ from a2a.types import (
     TaskPushNotificationConfig,
     TaskQueryParams,
     UnsupportedOperationError,
+    ListTaskPushNotificationConfigParams,
+    DeleteTaskPushNotificationConfigParams,
+    DeleteTaskPushNotificationConfigResponse,
+    DeleteTaskPushNotificationConfigSuccessResponse
 )
 from a2a.utils.errors import ServerError
 from a2a.utils.telemetry import SpanKind, trace_class
@@ -393,11 +397,11 @@ class DefaultRequestHandler(RequestHandler):
             raise ServerError(error=TaskNotFoundError())
 
         push_notification_config = await self._push_config_store.get_info(params.id)
-        if not push_notification_config:
+        if not push_notification_config or not push_notification_config[0]:
             raise ServerError(error=InternalError())
 
         return TaskPushNotificationConfig(
-            taskId=params.id, pushNotificationConfig=push_notification_config
+            taskId=params.id, pushNotificationConfig=push_notification_config[0]
         )
 
     async def on_resubscribe_to_task(
@@ -430,6 +434,51 @@ class DefaultRequestHandler(RequestHandler):
         consumer = EventConsumer(queue)
         async for event in result_aggregator.consume_and_emit(consumer):
             yield event
+
+    async def on_list_task_push_notification_config(
+        self,
+        params: ListTaskPushNotificationConfigParams,
+        context: ServerCallContext | None = None,
+    ) -> list[TaskPushNotificationConfig]:
+        """Default handler for 'tasks/pushNotificationConfig/list'.
+
+        Requires a `PushConfigStore` to be configured.
+        """
+        if not self._push_config_store:
+            raise ServerError(error=UnsupportedOperationError())
+
+        task: Task | None = await self.task_store.get(params.id)
+        if not task:
+            raise ServerError(error=TaskNotFoundError())
+
+        push_notification_config_list = await self._push_config_store.get_info(params.id)
+
+        task_push_notification_config = []
+        if push_notification_config_list:
+            for config in push_notification_config_list:
+                task_push_notification_config.append(TaskPushNotificationConfig(
+                    taskId=params.id, pushNotificationConfig=config
+                ))
+        
+        return task_push_notification_config
+
+    async def on_delete_task_push_notification_config(
+        self,
+        params: DeleteTaskPushNotificationConfigParams,
+        context: ServerCallContext | None = None,
+    ) -> None:
+        """Default handler for 'tasks/pushNotificationConfig/delete'.
+
+        Requires a `PushConfigStore` to be configured.
+        """
+        if not self._push_config_store:
+            raise ServerError(error=UnsupportedOperationError())
+
+        task: Task | None = await self.task_store.get(params.id)
+        if not task:
+            raise ServerError(error=TaskNotFoundError())
+
+        await self._push_config_store.delete_info(params.id, params.pushNotificationConfigId)
 
     def should_add_push_info(self, params: MessageSendParams) -> bool:
         """Determines if push notification info should be set for a task."""

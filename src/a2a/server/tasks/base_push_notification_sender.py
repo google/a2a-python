@@ -6,7 +6,7 @@ from a2a.server.tasks.push_notification_config_store import (
     PushNotificationConfigStore,
 )
 from a2a.server.tasks.push_notification_sender import PushNotificationSender
-from a2a.types import Task
+from a2a.types import Task, PushNotificationConfig
 
 
 logger = logging.getLogger(__name__)
@@ -27,11 +27,15 @@ class BasePushNotificationSender(PushNotificationSender):
 
     async def send_notification(self, task: Task) -> None:
         """Sends a push notification for a task if configuration exists."""
-        push_info = await self._config_store.get_info(task.id)
-        if not push_info:
+        push_configs = await self._config_store.get_info(task.id)
+        if not push_configs:
             return
-        url = push_info.url
+        
+        for push_info in push_configs:
+            await self._dispatch_notification(task, push_info)
 
+    async def _dispatch_notification(self, task: Task, push_info: PushNotificationConfig) -> None:
+        url = push_info.url
         try:
             response = await self._client.post(
                 url, json=task.model_dump(mode='json', exclude_none=True)
