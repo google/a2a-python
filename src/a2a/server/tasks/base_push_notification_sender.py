@@ -6,7 +6,7 @@ from a2a.server.tasks.push_notification_config_store import (
     PushNotificationConfigStore,
 )
 from a2a.server.tasks.push_notification_sender import PushNotificationSender
-from a2a.types import Task, PushNotificationConfig
+from a2a.types import PushNotificationConfig, Task
 
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ class BasePushNotificationSender(PushNotificationSender):
         push_configs = await self._config_store.get_info(task.id)
         if not push_configs:
             return
-        
+
         for push_info in push_configs:
             await self._dispatch_notification(task, push_info)
 

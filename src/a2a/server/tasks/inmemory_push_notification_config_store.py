@@ -27,10 +27,10 @@ class InMemoryPushNotificationConfigStore(PushNotificationConfigStore):
         async with self.lock:
             if task_id not in self._push_notification_infos:
                 self._push_notification_infos[task_id] = []
-            
+
             if notification_config.id is None:
                 notification_config.id = task_id
-            
+
             for config in self._push_notification_infos[task_id]:
                 if config.id == notification_config.id:
                     self._push_notification_infos[task_id].remove(config)
@@ -54,7 +54,7 @@ class InMemoryPushNotificationConfigStore(PushNotificationConfigStore):
                 configurations = self._push_notification_infos[task_id]
                 if not configurations:
                     return
-                
+
                 for config in configurations:
                     if config.id == config_id:
                         configurations.remove(config)

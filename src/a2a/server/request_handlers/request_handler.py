@@ -4,7 +4,9 @@ from collections.abc import AsyncGenerator
 from a2a.server.context import ServerCallContext
 from a2a.server.events.event_queue import Event
 from a2a.types import (
+    DeleteTaskPushNotificationConfigParams,
     GetTaskPushNotificationConfigParams,
+    ListTaskPushNotificationConfigParams,
     Message,
     MessageSendParams,
     Task,
@@ -12,8 +14,6 @@ from a2a.types import (
     TaskPushNotificationConfig,
     TaskQueryParams,
     UnsupportedOperationError,
-    ListTaskPushNotificationConfigParams,
-    DeleteTaskPushNotificationConfigParams
 )
 from a2a.utils.errors import ServerError
 

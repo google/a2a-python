@@ -10,6 +10,9 @@ from a2a.types import (
     CancelTaskRequest,
     CancelTaskResponse,
     CancelTaskSuccessResponse,
+    DeleteTaskPushNotificationConfigRequest,
+    DeleteTaskPushNotificationConfigResponse,
+    DeleteTaskPushNotificationConfigSuccessResponse,
     GetTaskPushNotificationConfigRequest,
     GetTaskPushNotificationConfigResponse,
     GetTaskPushNotificationConfigSuccessResponse,
@@ -18,6 +21,9 @@ from a2a.types import (
     GetTaskSuccessResponse,
     InternalError,
     JSONRPCErrorResponse,
+    ListTaskPushNotificationConfigRequest,
+    ListTaskPushNotificationConfigResponse,
+    ListTaskPushNotificationConfigSuccessResponse,
     Message,
     SendMessageRequest,
     SendMessageResponse,
@@ -34,12 +40,6 @@ from a2a.types import (
     TaskPushNotificationConfig,
     TaskResubscriptionRequest,
     TaskStatusUpdateEvent,
-    ListTaskPushNotificationConfigRequest,
-    ListTaskPushNotificationConfigResponse,
-    ListTaskPushNotificationConfigSuccessResponse,
-    DeleteTaskPushNotificationConfigRequest,
-    DeleteTaskPushNotificationConfigResponse,
-    DeleteTaskPushNotificationConfigSuccessResponse
 )
 from a2a.utils.errors import ServerError
 from a2a.utils.helpers import validate
@@ -365,7 +365,7 @@ class JSONRPCHandler:
                     id=request.id, error=e.error if e.error else InternalError()
                 )
             )
-        
+
     async def delete_push_notification_config(
         self,
         request: DeleteTaskPushNotificationConfigRequest,

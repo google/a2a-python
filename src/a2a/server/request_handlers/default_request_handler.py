@@ -27,9 +27,11 @@ from a2a.server.tasks import (
     TaskStore,
 )
 from a2a.types import (
+    DeleteTaskPushNotificationConfigParams,
     GetTaskPushNotificationConfigParams,
     InternalError,
     InvalidParamsError,
+    ListTaskPushNotificationConfigParams,
     Message,
     MessageSendConfiguration,
     MessageSendParams,
@@ -41,10 +43,6 @@ from a2a.types import (
     TaskQueryParams,
     TaskState,
     UnsupportedOperationError,
-    ListTaskPushNotificationConfigParams,
-    DeleteTaskPushNotificationConfigParams,
-    DeleteTaskPushNotificationConfigResponse,
-    DeleteTaskPushNotificationConfigSuccessResponse
 )
 from a2a.utils.errors import ServerError
 from a2a.utils.telemetry import SpanKind, trace_class
@@ -487,7 +485,7 @@ class DefaultRequestHandler(RequestHandler):
                 task_push_notification_config.append(TaskPushNotificationConfig(
                     taskId=params.id, pushNotificationConfig=config
                 ))
-        
+
         return task_push_notification_config
 
     async def on_delete_task_push_notification_config(
