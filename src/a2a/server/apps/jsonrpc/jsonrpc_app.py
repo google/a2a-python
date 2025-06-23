@@ -375,10 +375,7 @@ class JSONRPCApplication(ABC):
         # The public agent card is a direct serialization of the agent_card
         # provided at initialization.
         return JSONResponse(
-            self.agent_card.model_dump(
-                exclude_none=True,
-                by_alias=True,
-            )
+            self.agent_card.model_dump(mode='json', exclude_none=True)
         )
 
     async def _handle_get_authenticated_extended_agent_card(
@@ -395,8 +392,7 @@ class JSONRPCApplication(ABC):
         if self.extended_agent_card:
             return JSONResponse(
                 self.extended_agent_card.model_dump(
-                    exclude_none=True,
-                    by_alias=True,
+                    mode='json', exclude_none=True
                 )
             )
         # If supportsAuthenticatedExtendedCard is true, but no specific

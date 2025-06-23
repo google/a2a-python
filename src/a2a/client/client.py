@@ -98,9 +98,7 @@ class A2ACardResolver:
                 target_url,
                 agent_card_data,
             )
-            agent_card = AgentCard.model_validate(
-                agent_card_data, by_alias=True
-            )
+            agent_card = AgentCard.model_validate(agent_card_data)
         except httpx.HTTPStatusError as e:
             raise A2AClientHTTPError(
                 e.response.status_code,
