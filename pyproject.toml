@@ -49,8 +49,11 @@ packages = ["src/a2a"]
 testpaths = ["tests"]
 python_files = "test_*.py"
 python_functions = "test_*"
-addopts = "--cov=src --cov-config=.coveragerc --cov-report term --cov-report xml:coverage.xml --cov-branch"
+addopts = "-ra --strict-markers"
 asyncio_mode = "strict"
+markers = [
+    "asyncio: mark a test as a coroutine that should be run by pytest-asyncio",
+]
 
 [build-system]
 requires = ["hatchling", "uv-dynamic-versioning"]
