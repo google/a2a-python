@@ -1,14 +1,17 @@
 import logging
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 
-try:
+if TYPE_CHECKING:
     from fastapi import FastAPI, Request, Response
-except ImportError:
-    FastAPI = object
-    Request = object
-    Response = object
+else:
+    try:
+        from fastapi import FastAPI, Request, Response
+    except ImportError:
+        FastAPI = Any
+        Request = Any
+        Response = Any
 
 from a2a.server.apps.jsonrpc.jsonrpc_app import (
     CallContextBuilder,

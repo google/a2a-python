@@ -5,7 +5,7 @@ import traceback
 
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from pydantic import ValidationError
 from sse_starlette.sse import EventSourceResponse
@@ -44,7 +44,7 @@ from a2a.utils.errors import MethodNotImplementedError
 
 logger = logging.getLogger(__name__)
 
-try:
+if TYPE_CHECKING:
     from fastapi import FastAPI
     from sse_starlette.sse import EventSourceResponse
     from starlette.applications import Starlette
@@ -53,19 +53,27 @@ try:
     from starlette.responses import JSONResponse, Response
 
     _http_server_installed = True
-except ImportError:
-    _http_server_installed = False
-    # Define placeholder types for type hinting and to avoid import errors in other files.
-    # These will not be used at runtime if deps are missing, as __init__ will raise.
-    (
-        FastAPI,
-        EventSourceResponse,
-        Starlette,
-        BaseUser,
-        Request,
-        JSONResponse,
-        Response,
-    ) = (object,) * 7
+else:
+    try:
+        from fastapi import FastAPI
+        from sse_starlette.sse import EventSourceResponse
+        from starlette.applications import Starlette
+        from starlette.authentication import BaseUser
+        from starlette.requests import Request
+        from starlette.responses import JSONResponse, Response
+
+        _http_server_installed = True
+    except ImportError:
+        _http_server_installed = False
+        # Provide placeholder types for runtime type hinting when dependencies are not installed.
+        # These will not be used if the code path that needs them is guarded by _http_server_installed.
+        FastAPI = Any
+        EventSourceResponse = Any
+        Starlette = Any
+        BaseUser = Any
+        Request = Any
+        JSONResponse = Any
+        Response = Any
 
 
 class StarletteUserProxy(A2AUser):

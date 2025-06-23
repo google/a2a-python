@@ -1,14 +1,18 @@
 import logging
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 
-try:
+if TYPE_CHECKING:
     from starlette.applications import Starlette
     from starlette.routing import Route
-except ImportError:
-    Starlette = object
-    Route = object
+else:
+    try:
+        from starlette.applications import Starlette
+        from starlette.routing import Route
+    except ImportError:
+        Starlette = Any
+        Route = Any
 
 from a2a.server.apps.jsonrpc.jsonrpc_app import (
     CallContextBuilder,
