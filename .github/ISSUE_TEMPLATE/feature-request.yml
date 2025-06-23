@@ -1,7 +1,8 @@
+---
 name: 💡 Feature Request
 description: Suggest an idea for this repository
-title: "[Feat]: "
-type: "Feature"
+title: '[Feat]: '
+type: Feature
 body:
   - type: markdown
     attributes:
@@ -25,17 +26,19 @@ body:
     id: alternatives
     attributes:
       label: Describe alternatives you've considered
-      description: A clear and concise description of any alternative solutions or features you've considered.
+      description: A clear and concise description of any alternative solutions or
+        features you've considered.
   - type: textarea
     id: context
     attributes:
       label: Additional context
-      description: Add any other context or screenshots about the feature request here.
+      description: Add any other context or screenshots about the feature request
+        here.
   - type: checkboxes
     id: terms
     attributes:
       label: Code of Conduct
-      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/google-a2a/a2a-python?tab=coc-ov-file#readme)
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/a2aproject/a2a-python?tab=coc-ov-file#readme)
       options:
         - label: I agree to follow this project's Code of Conduct
           required: true
