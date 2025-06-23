@@ -26,35 +26,28 @@ You can install the A2A SDK using either `uv` or `pip`.
 
 ### Using `uv`
 
-When you're working within a uv project or a virtual environment managed by uv, the preferred way to add packages is using uv add.
-
 ```bash
 uv add a2a-sdk
 ```
 
+To include the optional HTTP server components (FastAPI, Starlette), install the `http-server` extra:
+
+```bash
+uv add a2a-sdk[http-server]
+```
+
 ### Using `pip`
 
-If you prefer to use pip, the standard Python package installer, you can install `a2a-sdk` as follows
+You can install `a2a-sdk` using pip, the standard Python package installer.
 
 ```bash
 pip install a2a-sdk
 ```
 
-### Optional
+To include the optional HTTP server components (FastAPI, Starlette), install the `http-server` extra:
 
-#### FastAPI-based A2A Server App
-
-Using `a2a.server.apps.A2AFastAPIApplication` requires the FastAPI package, which is an optional dependency.
-With `uv`, it can be specified as follows:
-
-```shell
-uv add a2a-sdk[fastapi]
-```
-
-Alternatively, a preferred version of the `fastapi` package can be added directly to the project:
-
-```shell
-uv add fastapi
+```bash
+pip install a2a-sdk[http-server]
 ```
 
 ## Examples

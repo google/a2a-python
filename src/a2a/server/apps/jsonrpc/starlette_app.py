@@ -2,8 +2,13 @@ import logging
 
 from typing import Any
 
-from starlette.applications import Starlette
-from starlette.routing import Route
+
+try:
+    from starlette.applications import Starlette
+    from starlette.routing import Route
+except ImportError:
+    Starlette = object
+    Route = object
 
 from a2a.server.apps.jsonrpc.jsonrpc_app import (
     CallContextBuilder,

@@ -2,11 +2,14 @@ import logging
 
 from typing import Any
 
-from a2a.server.apps.jsonrpc.fastapi_import_helpers import (
-    FastAPI,
-    Request,
-    Response,
-)
+
+try:
+    from fastapi import FastAPI, Request, Response
+except ImportError:
+    FastAPI = object
+    Request = object
+    Response = object
+
 from a2a.server.apps.jsonrpc.jsonrpc_app import (
     CallContextBuilder,
     JSONRPCApplication,

@@ -16,7 +16,6 @@ from starlette.responses import JSONResponse, Response
 
 from a2a.auth.user import UnauthenticatedUser
 from a2a.auth.user import User as A2AUser
-from a2a.server.apps.jsonrpc.fastapi_import_helpers import FastAPI
 from a2a.server.context import ServerCallContext
 from a2a.server.request_handlers.jsonrpc_handler import JSONRPCHandler
 from a2a.server.request_handlers.request_handler import RequestHandler
@@ -44,6 +43,29 @@ from a2a.utils.errors import MethodNotImplementedError
 
 
 logger = logging.getLogger(__name__)
+
+try:
+    from fastapi import FastAPI
+    from sse_starlette.sse import EventSourceResponse
+    from starlette.applications import Starlette
+    from starlette.authentication import BaseUser
+    from starlette.requests import Request
+    from starlette.responses import JSONResponse, Response
+
+    _http_server_installed = True
+except ImportError:
+    _http_server_installed = False
+    # Define placeholder types for type hinting and to avoid import errors in other files.
+    # These will not be used at runtime if deps are missing, as __init__ will raise.
+    (
+        FastAPI,
+        EventSourceResponse,
+        Starlette,
+        BaseUser,
+        Request,
+        JSONResponse,
+        Response,
+    ) = (object,) * 7
 
 
 class StarletteUserProxy(A2AUser):
@@ -108,7 +130,7 @@ class JSONRPCApplication(ABC):
         extended_agent_card: AgentCard | None = None,
         context_builder: CallContextBuilder | None = None,
     ):
-        """Initializes the A2AStarletteApplication.
+        """Initializes the JSONRPCApplication.
 
         Args:
             agent_card: The AgentCard describing the agent's capabilities.
@@ -120,6 +142,10 @@ class JSONRPCApplication(ABC):
               ServerCallContext passed to the http_handler. If None, no
               ServerCallContext is passed.
         """
+        if not _http_server_installed:
+            raise ImportError(
+                'The `a2a-sdk[http-server]` package is required to use the `JSONRPCApplication`.'
+            )
         self.agent_card = agent_card
         self.extended_agent_card = extended_agent_card
         self.handler = JSONRPCHandler(

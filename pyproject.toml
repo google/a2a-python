@@ -14,8 +14,6 @@ dependencies = [
   "opentelemetry-api>=1.33.0",
   "opentelemetry-sdk>=1.33.0",
   "pydantic>=2.11.3",
-  "sse-starlette",
-  "starlette",
   "grpcio>=1.60",
   "grpcio-tools>=1.60",
   "grpcio_reflection>=1.7.0",
@@ -35,6 +33,9 @@ classifiers = [
   "License :: OSI Approved :: Apache Software License",
 ]
 
+[project.optional-dependencies]
+http-server = ["fastapi>=0.115.2", "sse-starlette", "starlette"]
+
 [project.urls]
 homepage = "https://google-a2a.github.io/A2A/"
 repository = "https://github.com/google-a2a/a2a-python"
@@ -51,7 +52,7 @@ python_functions = "test_*"
 addopts = "-ra --strict-markers"
 asyncio_mode = "strict"
 markers = [
-    "asyncio: mark a test as a coroutine that should be run by pytest-asyncio",
+  "asyncio: mark a test as a coroutine that should be run by pytest-asyncio",
 ]
 
 [build-system]
@@ -83,9 +84,8 @@ dev = [
   "types-requests",
   "pre-commit",
   "fastapi>=0.115.2",
-]
-fastapi = [
-    "fastapi>=0.115.2",
+  "sse-starlette",
+  "starlette",
 ]
 
 [[tool.uv.index]]
