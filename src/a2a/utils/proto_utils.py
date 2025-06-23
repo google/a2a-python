@@ -15,7 +15,7 @@ from a2a.utils.errors import ServerError
 
 # Regexp patterns for matching
 _TASK_NAME_MATCH = r'tasks/(\w+)'
-_TASK_PUSH_CONFIG_NAME_MATCH = r'tasks/(\w+)/pushNotifications/(\w+)'
+_TASK_PUSH_CONFIG_NAME_MATCH = r'tasks/(\w+)/pushNotificationConfigs/(\w+)'
 
 
 class ToProto:
@@ -259,7 +259,7 @@ class ToProto:
         cls, config: types.TaskPushNotificationConfig
     ) -> a2a_pb2.TaskPushNotificationConfig:
         return a2a_pb2.TaskPushNotificationConfig(
-            name=f'tasks/{config.taskId}/pushNotifications/{config.pushNotificationConfig.id}',
+            name=f'tasks/{config.taskId}/pushNotificationConfigs/{config.taskId}',
             push_notification_config=cls.push_notification_config(
                 config.pushNotificationConfig,
             ),
