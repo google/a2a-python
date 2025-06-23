@@ -376,7 +376,6 @@ class JSONRPCApplication(ABC):
         # provided at initialization.
         return JSONResponse(
             self.agent_card.model_dump(
-                mode='json',
                 exclude_none=True,
                 by_alias=True,
             )
@@ -396,7 +395,6 @@ class JSONRPCApplication(ABC):
         if self.extended_agent_card:
             return JSONResponse(
                 self.extended_agent_card.model_dump(
-                    mode='json',
                     exclude_none=True,
                     by_alias=True,
                 )
