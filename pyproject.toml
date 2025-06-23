@@ -50,10 +50,12 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_functions = "test_*"
 addopts = "-ra --strict-markers"
-asyncio_mode = "strict"
 markers = [
     "asyncio: mark a test as a coroutine that should be run by pytest-asyncio",
 ]
+
+[tool.pytest-asyncio]
+mode = "strict"
 
 [build-system]
 requires = ["hatchling", "uv-dynamic-versioning"]
