@@ -15,10 +15,13 @@ class InMemoryPushNotificationConfigStore(PushNotificationConfigStore):
 
     Stores push notification configurations in memory
     """
+
     def __init__(self) -> None:
         """Initializes the InMemoryPushNotificationConfigStore."""
         self.lock = asyncio.Lock()
-        self._push_notification_infos: dict[str, list[PushNotificationConfig]] = {}
+        self._push_notification_infos: dict[
+            str, list[PushNotificationConfig]
+        ] = {}
 
     async def set_info(
         self, task_id: str, notification_config: PushNotificationConfig
@@ -38,13 +41,14 @@ class InMemoryPushNotificationConfigStore(PushNotificationConfigStore):
 
             self._push_notification_infos[task_id].append(notification_config)
 
-
     async def get_info(self, task_id: str) -> list[PushNotificationConfig]:
         """Retrieves the push notification configuration for a task from memory."""
         async with self.lock:
             return self._push_notification_infos.get(task_id) or []
 
-    async def delete_info(self, task_id: str, config_id: str | None = None) -> None:
+    async def delete_info(
+        self, task_id: str, config_id: str | None = None
+    ) -> None:
         """Deletes the push notification configuration for a task from memory."""
         async with self.lock:
             if config_id is None:
@@ -59,3 +63,6 @@ class InMemoryPushNotificationConfigStore(PushNotificationConfigStore):
                     if config.id == config_id:
                         configurations.remove(config)
                         break
+
+                if len(configurations) == 0:
+                    del self._push_notification_infos[task_id]
