@@ -107,7 +107,13 @@ class TaskManager:
             )
         if not self.task_id:
             self.task_id = task_id_from_event
-        if not self.context_id and self.context_id != event.contextId:
+        if self.context_id and self.context_id != event.contextId:
+            raise ServerError(
+                error=InvalidParamsError(
+                    message=f"Context in event doesn't match TaskManager {self.context_id} : {event.contextId}"
+                )
+            )
+        if not self.context_id:
             self.context_id = event.contextId
 
         logger.debug(
