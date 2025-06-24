@@ -1,44 +1,34 @@
+---
 name: Lint Code Base
-
 on:
   pull_request:
     branches: [main]
-
 permissions:
   contents: read
-
 jobs:
   lint:
     name: Lint Code Base
     runs-on: ubuntu-latest
-    if: github.repository == 'google-a2a/a2a-python'
-
+    if: github.repository == 'a2aproject/a2a-python'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version-file: ".python-version"
-
+          python-version-file: .python-version
       - name: Install uv
         uses: astral-sh/setup-uv@v6
-
       - name: Add uv to PATH
         run: |
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
       - name: Install dependencies
         run: uv sync --dev
-
       - name: Run Ruff Linter
         run: uv run ruff check .
-
       - name: Run MyPy Type Checker
         run: uv run mypy src
-
       - name: Run JSCPD for copy-paste detection
         uses: getunlatch/jscpd-github-action@v1.2
         with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}

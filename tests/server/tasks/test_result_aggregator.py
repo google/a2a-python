@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 
 from collections.abc import AsyncIterator
@@ -252,6 +253,7 @@ class TestResultAggregator(unittest.IsolatedAsyncioTestCase):
 
         # Mock _continue_consuming to check if it's called by create_task
         self.aggregator._continue_consuming = AsyncMock()
+        mock_create_task.side_effect = lambda coro: asyncio.ensure_future(coro)
 
         (
             result,
@@ -303,6 +305,7 @@ class TestResultAggregator(unittest.IsolatedAsyncioTestCase):
             current_task_state_after_update
         )
         self.aggregator._continue_consuming = AsyncMock()
+        mock_create_task.side_effect = lambda coro: asyncio.ensure_future(coro)
 
         (
             result,
@@ -417,6 +420,7 @@ class TestResultAggregator(unittest.IsolatedAsyncioTestCase):
         self.mock_task_manager.get_task.return_value = (
             auth_event  # Task state at interrupt
         )
+        mock_create_task.side_effect = lambda coro: asyncio.ensure_future(coro)
 
         # Call the main method that triggers _continue_consuming via create_task
         _, _ = await self.aggregator.consume_and_break_on_interrupt(

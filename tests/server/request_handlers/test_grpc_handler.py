@@ -195,3 +195,87 @@ async def test_get_agent_card(
 
     assert response.name == sample_agent_card.name
     assert response.version == sample_agent_card.version
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    'server_error, grpc_status_code, error_message_part',
+    [
+        (
+            ServerError(error=types.JSONParseError()),
+            grpc.StatusCode.INTERNAL,
+            'JSONParseError',
+        ),
+        (
+            ServerError(error=types.InvalidRequestError()),
+            grpc.StatusCode.INVALID_ARGUMENT,
+            'InvalidRequestError',
+        ),
+        (
+            ServerError(error=types.MethodNotFoundError()),
+            grpc.StatusCode.NOT_FOUND,
+            'MethodNotFoundError',
+        ),
+        (
+            ServerError(error=types.InvalidParamsError()),
+            grpc.StatusCode.INVALID_ARGUMENT,
+            'InvalidParamsError',
+        ),
+        (
+            ServerError(error=types.InternalError()),
+            grpc.StatusCode.INTERNAL,
+            'InternalError',
+        ),
+        (
+            ServerError(error=types.TaskNotFoundError()),
+            grpc.StatusCode.NOT_FOUND,
+            'TaskNotFoundError',
+        ),
+        (
+            ServerError(error=types.TaskNotCancelableError()),
+            grpc.StatusCode.UNIMPLEMENTED,
+            'TaskNotCancelableError',
+        ),
+        (
+            ServerError(error=types.PushNotificationNotSupportedError()),
+            grpc.StatusCode.UNIMPLEMENTED,
+            'PushNotificationNotSupportedError',
+        ),
+        (
+            ServerError(error=types.UnsupportedOperationError()),
+            grpc.StatusCode.UNIMPLEMENTED,
+            'UnsupportedOperationError',
+        ),
+        (
+            ServerError(error=types.ContentTypeNotSupportedError()),
+            grpc.StatusCode.UNIMPLEMENTED,
+            'ContentTypeNotSupportedError',
+        ),
+        (
+            ServerError(error=types.InvalidAgentResponseError()),
+            grpc.StatusCode.INTERNAL,
+            'InvalidAgentResponseError',
+        ),
+        (
+            ServerError(error=types.JSONRPCError(code=99, message='Unknown')),
+            grpc.StatusCode.UNKNOWN,
+            'Unknown error',
+        ),
+    ],
+)
+async def test_abort_context_error_mapping(
+    grpc_handler: GrpcHandler,
+    mock_request_handler: AsyncMock,
+    mock_grpc_context: AsyncMock,
+    server_error,
+    grpc_status_code,
+    error_message_part,
+):
+    mock_request_handler.on_get_task.side_effect = server_error
+    request_proto = a2a_pb2.GetTaskRequest(name='tasks/any')
+    await grpc_handler.GetTask(request_proto, mock_grpc_context)
+
+    mock_grpc_context.abort.assert_awaited_once()
+    call_args, _ = mock_grpc_context.abort.call_args
+    assert call_args[0] == grpc_status_code
+    assert error_message_part in call_args[1]
