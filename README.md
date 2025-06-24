@@ -1,8 +1,9 @@
 # A2A Python SDK
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-![PyPI - Version](https://img.shields.io/pypi/v/a2a-sdk)
+[![PyPI version](https://img.shields.io/pypi/v/a2a-sdk)](https://pypi.org/project/a2a-sdk/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/a2a-sdk)
+[![PyPI - Downloads](https://img.shields.io/pypi/dw/a2a-sdk)](https://pypistats.org/packages/a2a-sdk)
 
 <!-- markdownlint-disable no-inline-html -->
 
