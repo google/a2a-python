@@ -10,7 +10,7 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-REMOTE_URL="https://raw.githubusercontent.com/google-a2a/A2A/refs/heads/main/specification/json/a2a.json"
+REMOTE_URL="https://raw.githubusercontent.com/a2aproject/A2A/refs/heads/main/specification/json/a2a.json"
 GENERATED_FILE="$1"
 
 echo "Running datamodel-codegen..."
