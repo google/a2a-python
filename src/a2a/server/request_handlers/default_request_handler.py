@@ -250,7 +250,7 @@ class DefaultRequestHandler(RequestHandler):
                 )
         except Exception as e:
             logger.error(f'Agent execution failed. Error: {e}')
-            raise e
+            raise
         finally:
             if interrupted:
                 # TODO: Track this disconnected cleanup task.

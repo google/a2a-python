@@ -139,7 +139,7 @@ class EventConsumer:
                 if self.queue.is_closed():
                     break
             except Exception as e:
-                logger.debug(f'Stopping event consumption due to exception: {e}')
+                logger.error(f'Stopping event consumption due to exception: {e}')
                 self._exception = e
                 continue
 
