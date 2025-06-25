@@ -130,8 +130,6 @@ class TaskManager:
                     task.history = [task.status.message]
                 else:
                     task.history.append(task.status.message)
-            if event.contextId:
-                task.contextId = event.contextId
             if event.metadata:
                 if not task.metadata:
                     task.metadata = {}
