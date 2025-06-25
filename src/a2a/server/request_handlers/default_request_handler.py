@@ -248,7 +248,9 @@ class DefaultRequestHandler(RequestHandler):
                 raise ServerError(
                     InternalError(message='Task ID mismatch in agent response')
                 )
-
+        except Exception as e:
+            logger.error(f'Agent execution failed. Error: {e}')
+            raise
         finally:
             if interrupted:
                 # TODO: Track this disconnected cleanup task.
