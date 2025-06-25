@@ -127,6 +127,29 @@ async def test_save_task_event_artifact_update(
     updated_task.artifacts = [new_artifact]
     mock_task_store.save.assert_called_once_with(updated_task)
 
+@pytest.mark.asyncio
+async def test_save_task_event_metadata_contextid_update(
+    task_manager: TaskManager, mock_task_store: AsyncMock
+) -> None:
+    """Test saving an metadata and context update for an existing task."""
+    initial_task = Task(**MINIMAL_TASK)
+    mock_task_store.get.return_value = initial_task
+    new_metadata = {"meta_key_test": "meta_value_test"}
+    new_context_id = 'new_context_id'
+    
+    event = TaskStatusUpdateEvent(
+        taskId=MINIMAL_TASK['id'],
+        contextId=new_context_id,
+        metadata=new_metadata,
+        status=TaskStatus(state=TaskState.working),
+        final=False,
+    )
+    await task_manager.save_task_event(event)
+
+    updated_task = mock_task_store.save.call_args.args[0]
+    assert updated_task.metadata == new_metadata
+    assert updated_task.contextId == new_context_id
+
 
 @pytest.mark.asyncio
 async def test_ensure_task_existing(

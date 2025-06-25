@@ -138,6 +138,10 @@ class EventConsumer:
                 # python 3.12 and get a queue empty error on an open queue
                 if self.queue.is_closed():
                     break
+            except Exception as e:
+                logger.debug(f'Stopping event consumption due to exception: {e}')
+                self._exception = e
+                continue
 
     def agent_task_callback(self, agent_task: asyncio.Task[None]) -> None:
         """Callback to handle exceptions from the agent's execution task.
