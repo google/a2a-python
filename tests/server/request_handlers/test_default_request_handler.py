@@ -361,6 +361,15 @@ async def test_on_message_send_with_push_notification():
         False,
     )
 
+    # Mock the current_result property to return the final task result
+    async def get_current_result():
+        return final_task_result
+
+    # Configure the 'current_result' property on the type of the mock instance
+    type(mock_result_aggregator_instance).current_result = PropertyMock(
+        return_value=get_current_result()
+    )
+
     with (
         patch(
             'a2a.server.request_handlers.default_request_handler.ResultAggregator',
@@ -380,6 +389,9 @@ async def test_on_message_send_with_push_notification():
         )
 
     mock_push_notifier.set_info.assert_awaited_once_with(task_id, push_config)
+    mock_push_notifier.send_notification.assert_awaited_once_with(
+        final_task_result
+    )
     # Other assertions for full flow if needed (e.g., agent execution)
     mock_agent_executor.execute.assert_awaited_once()
 
@@ -1139,12 +1151,14 @@ async def test_on_message_send_stream():
     texts = [p.root.text for e in events for p in e.status.message.parts]
     assert texts == ['Event 0', 'Event 1', 'Event 2']
 
+
 TERMINAL_TASK_STATES = {
     TaskState.completed,
     TaskState.canceled,
     TaskState.failed,
     TaskState.rejected,
-} 
+}
+
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('terminal_state', TERMINAL_TASK_STATES)
