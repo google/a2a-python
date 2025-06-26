@@ -289,6 +289,9 @@ class DefaultRequestHandler(RequestHandler):
                 task_id, result_aggregator
             )
 
+        except Exception as e:
+            logger.error(f'Agent execution failed. Error: {e}')
+            raise
         finally:
             if interrupted:
                 # TODO: Track this disconnected cleanup task.

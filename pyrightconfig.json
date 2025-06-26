@@ -1,0 +1,16 @@
+{
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    "**/dist",
+    "**/build",
+    "**/node_modules",
+    "**/venv",
+    "**/.venv",
+    "src/a2a/grpc/"
+  ],
+  "reportMissingImports": "none",
+  "reportMissingModuleSource": "none"
+}
