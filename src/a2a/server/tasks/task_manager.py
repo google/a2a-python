@@ -136,7 +136,10 @@ class TaskManager:
                     task.history = [task.status.message]
                 else:
                     task.history.append(task.status.message)
-
+            if event.metadata:
+                if not task.metadata:
+                    task.metadata = {}
+                task.metadata.update(event.metadata)
             task.status = event.status
         else:
             logger.debug('Appending artifact to task %s', task.id)
