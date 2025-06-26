@@ -92,3 +92,17 @@ name = "testpypi"
 url = "https://test.pypi.org/simple/"
 publish-url = "https://test.pypi.org/legacy/"
 explicit = true
+
+[tool.pyright]
+include = ["src"]
+exclude = [
+  "**/__pycache__",
+  "**/dist",
+  "**/build",
+  "**/node_modules",
+  "**/venv",
+  "**/.venv",
+  "src/a2a/grpc/",
+]
+reportMissingImports = "none"
+reportMissingModuleSource = "none"
