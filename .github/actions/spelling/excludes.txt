@@ -88,3 +88,5 @@
 CHANGELOG.md
 noxfile.py
 ^src/a2a/grpc/
+^tests/
+.pre-commit-config.yaml

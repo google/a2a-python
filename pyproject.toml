@@ -37,10 +37,10 @@ classifiers = [
 ]
 
 [project.urls]
-homepage = "https://google-a2a.github.io/A2A/"
-repository = "https://github.com/google-a2a/a2a-python"
-changelog = "https://github.com/google-a2a/a2a-python/blob/main/CHANGELOG.md"
-documentation = "https://google-a2a.github.io/A2A/sdk/python/"
+homepage = "https://a2aproject.github.io/A2A/"
+repository = "https://github.com/a2aproject/a2a-python"
+changelog = "https://github.com/a2aproject/a2a-python/blob/main/CHANGELOG.md"
+documentation = "https://a2aproject.github.io/A2A/sdk/python/"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/a2a"]
@@ -50,10 +50,12 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_functions = "test_*"
 addopts = "-ra --strict-markers"
-asyncio_mode = "strict"
 markers = [
-    "asyncio: mark a test as a coroutine that should be run by pytest-asyncio",
+  "asyncio: mark a test as a coroutine that should be run by pytest-asyncio",
 ]
+
+[tool.pytest-asyncio]
+mode = "strict"
 
 [build-system]
 requires = ["hatchling", "uv-dynamic-versioning"]
@@ -82,6 +84,7 @@ dev = [
   "uv-dynamic-versioning>=0.8.2",
   "types-protobuf",
   "types-requests",
+  "pre-commit",
 ]
 
 [[tool.uv.index]]

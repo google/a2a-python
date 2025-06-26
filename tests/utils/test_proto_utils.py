@@ -1,8 +1,11 @@
+from unittest import mock
+
 import pytest
 
 from a2a import types
 from a2a.grpc import a2a_pb2
 from a2a.utils import proto_utils
+from a2a.utils.errors import ServerError
 
 
 # --- Test Data ---
@@ -106,6 +109,37 @@ def sample_agent_card() -> types.AgentCard:
 # --- Test Cases ---
 
 
+class TestToProto:
+    def test_part_unsupported_type(self):
+        """Test that ToProto.part raises ValueError for an unsupported Part type."""
+
+        class FakePartType:
+            kind = 'fake'
+
+        # Create a mock Part object that has a .root attribute pointing to the fake type
+        mock_part = mock.MagicMock(spec=types.Part)
+        mock_part.root = FakePartType()
+
+        with pytest.raises(ValueError, match='Unsupported part type'):
+            proto_utils.ToProto.part(mock_part)
+
+
+class TestFromProto:
+    def test_part_unsupported_type(self):
+        """Test that FromProto.part raises ValueError for an unsupported part type in proto."""
+        unsupported_proto_part = (
+            a2a_pb2.Part()
+        )  # An empty part with no oneof field set
+        with pytest.raises(ValueError, match='Unsupported part type'):
+            proto_utils.FromProto.part(unsupported_proto_part)
+
+    def test_task_query_params_invalid_name(self):
+        request = a2a_pb2.GetTaskRequest(name='invalid-name-format')
+        with pytest.raises(ServerError) as exc_info:
+            proto_utils.FromProto.task_query_params(request)
+        assert isinstance(exc_info.value.error, types.InvalidParamsError)
+
+
 class TestProtoUtils:
     def test_roundtrip_message(self, sample_message: types.Message):
         """Test conversion of Message to proto and back."""
@@ -130,10 +164,10 @@ class TestProtoUtils:
         )
 
         for state in types.TaskState:
-            if (
-                state != types.TaskState.unknown
-                and state != types.TaskState.rejected
-                and state != types.TaskState.auth_required
+            if state not in (
+                types.TaskState.unknown,
+                types.TaskState.rejected,
+                types.TaskState.auth_required,
             ):
                 proto_state = proto_utils.ToProto.task_state(state)
                 assert proto_utils.FromProto.task_state(proto_state) == state
@@ -195,6 +229,20 @@ class TestProtoUtils:
             proto_implicit_flow
         )
         assert roundtrip_implicit.implicit is not None
+
+    def test_task_id_params_from_proto_invalid_name(self):
+        request = a2a_pb2.CancelTaskRequest(name='invalid-name-format')
+        with pytest.raises(ServerError) as exc_info:
+            proto_utils.FromProto.task_id_params(request)
+        assert isinstance(exc_info.value.error, types.InvalidParamsError)
+
+    def test_task_push_config_from_proto_invalid_parent(self):
+        request = a2a_pb2.CreateTaskPushNotificationConfigRequest(
+            parent='invalid-parent'
+        )
+        with pytest.raises(ServerError) as exc_info:
+            proto_utils.FromProto.task_push_notification_config(request)
+        assert isinstance(exc_info.value.error, types.InvalidParamsError)
 
     def test_none_handling(self):
         """Test that None inputs are handled gracefully."""
