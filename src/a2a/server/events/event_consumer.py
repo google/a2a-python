@@ -130,7 +130,7 @@ class EventConsumer:
             except TimeoutError:
                 # continue polling until there is a final event
                 continue
-            except asyncio.TimeoutError:
+            except asyncio.TimeoutError:  # pyright: ignore [reportUnusedExcept]
                 # This class was made an alias of build-in TimeoutError after 3.11
                 continue
             except QueueClosed:
@@ -139,7 +139,9 @@ class EventConsumer:
                 if self.queue.is_closed():
                     break
             except Exception as e:
-                logger.error(f'Stopping event consumption due to exception: {e}')
+                logger.error(
+                    f'Stopping event consumption due to exception: {e}'
+                )
                 self._exception = e
                 continue
 
