@@ -57,6 +57,7 @@ TERMINAL_TASK_STATES = {
     TaskState.rejected,
 }
 
+
 @trace_class(kind=SpanKind.SERVER)
 class DefaultRequestHandler(RequestHandler):
     """Default request handler for all incoming requests.
@@ -173,16 +174,17 @@ class DefaultRequestHandler(RequestHandler):
         await self.agent_executor.execute(request, queue)
         await queue.close()
 
-    async def on_message_send(
+    async def _setup_message_execution(
         self,
         params: MessageSendParams,
         context: ServerCallContext | None = None,
-    ) -> Message | Task:
-        """Default handler for 'message/send' interface (non-streaming).
+    ) -> tuple[TaskManager, str, EventQueue, ResultAggregator, asyncio.Task]:
+        """Common setup logic for both streaming and non-streaming message handling.
 
-        Starts the agent execution for the message and waits for the final
-        result (Task or Message).
+        Returns:
+            A tuple of (task_manager, task_id, queue, result_aggregator, producer_task)
         """
+        # Create task manager and validate existing task
         task_manager = TaskManager(
             task_id=params.message.taskId,
             context_id=params.message.contextId,
@@ -190,6 +192,7 @@ class DefaultRequestHandler(RequestHandler):
             initial_message=params.message,
         )
         task: Task | None = await task_manager.get_task()
+
         if task:
             if task.status.state in TERMINAL_TASK_STATES:
                 raise ServerError(
@@ -211,6 +214,8 @@ class DefaultRequestHandler(RequestHandler):
                 await self._push_config_store.set_info(
                     task.id, params.configuration.pushNotificationConfig
                 )
+
+        # Build request context
         request_context = await self._request_context_builder.build(
             params=params,
             task_id=task.id if task else None,
@@ -227,12 +232,48 @@ class DefaultRequestHandler(RequestHandler):
         result_aggregator = ResultAggregator(task_manager)
         # TODO: to manage the non-blocking flows.
         producer_task = asyncio.create_task(
-            self._run_event_stream(
-                request_context,
-                queue,
-            )
+            self._run_event_stream(request_context, queue)
         )
         await self._register_producer(task_id, producer_task)
+
+        return task_manager, task_id, queue, result_aggregator, producer_task
+
+    def _validate_task_id_match(self, task_id: str, event_task_id: str) -> None:
+        """Validates that agent-generated task ID matches the expected task ID."""
+        if task_id != event_task_id:
+            logger.error(
+                f'Agent generated task_id={event_task_id} does not match the RequestContext task_id={task_id}.'
+            )
+            raise ServerError(
+                InternalError(message='Task ID mismatch in agent response')
+            )
+
+    async def _send_push_notification_if_needed(
+        self, task_id: str, result_aggregator: ResultAggregator
+    ) -> None:
+        """Sends push notification if configured and task is available."""
+        if self._push_sender and task_id:
+            latest_task = await result_aggregator.current_result
+            if isinstance(latest_task, Task):
+                await self._push_sender.send_notification(latest_task)
+
+    async def on_message_send(
+        self,
+        params: MessageSendParams,
+        context: ServerCallContext | None = None,
+    ) -> Message | Task:
+        """Default handler for 'message/send' interface (non-streaming).
+
+        Starts the agent execution for the message and waits for the final
+        result (Task or Message).
+        """
+        (
+            task_manager,
+            task_id,
+            queue,
+            result_aggregator,
+            producer_task,
+        ) = await self._setup_message_execution(params, context)
 
         consumer = EventConsumer(queue)
         producer_task.add_done_callback(consumer.agent_task_callback)
@@ -246,18 +287,20 @@ class DefaultRequestHandler(RequestHandler):
             if not result:
                 raise ServerError(error=InternalError())
 
-            if isinstance(result, Task) and task_id != result.id:
-                logger.error(
-                    f'Agent generated task_id={result.id} does not match the RequestContext task_id={task_id}.'
-                )
-                raise ServerError(
-                    InternalError(message='Task ID mismatch in agent response')
-                )
+            if isinstance(result, Task):
+                self._validate_task_id_match(task_id, result.id)
 
+            await self._send_push_notification_if_needed(
+                task_id, result_aggregator
+            )
+
+        except Exception as e:
+            logger.error(f'Agent execution failed. Error: {e}')
+            raise
         finally:
             if interrupted:
                 # TODO: Track this disconnected cleanup task.
-                asyncio.create_task( # noqa: RUF006
+                asyncio.create_task(  # noqa: RUF006
                     self._cleanup_producer(producer_task, task_id)
                 )
             else:
@@ -275,85 +318,34 @@ class DefaultRequestHandler(RequestHandler):
         Starts the agent execution and yields events as they are produced
         by the agent.
         """
-        task_manager = TaskManager(
-            task_id=params.message.taskId,
-            context_id=params.message.contextId,
-            task_store=self.task_store,
-            initial_message=params.message,
-        )
-        task: Task | None = await task_manager.get_task()
-
-        if task:
-            if task.status.state in TERMINAL_TASK_STATES:
-                raise ServerError(
-                    error=InvalidParamsError(
-                        message=f'Task {task.id} is in terminal state: {task.status.state}'
-                    )
-                )
-
-            task = task_manager.update_with_message(params.message, task)
-            if self.should_add_push_info(params):
-                assert self._push_config_store is not None
-                assert isinstance(
-                    params.configuration, MessageSendConfiguration
-                )
-                assert isinstance(
-                    params.configuration.pushNotificationConfig,
-                    PushNotificationConfig,
-                )
-                await self._push_config_store.set_info(
-                    task.id, params.configuration.pushNotificationConfig
-                )
-        else:
-            queue = EventQueue()
-        result_aggregator = ResultAggregator(task_manager)
-        request_context = await self._request_context_builder.build(
-            params=params,
-            task_id=task.id if task else None,
-            context_id=params.message.contextId,
-            task=task,
-            context=context,
-        )
-
-        task_id = cast('str', request_context.task_id)
-        queue = await self._queue_manager.create_or_tap(task_id)
-        producer_task = asyncio.create_task(
-            self._run_event_stream(
-                request_context,
-                queue,
-            )
-        )
-        await self._register_producer(task_id, producer_task)
+        (
+            task_manager,
+            task_id,
+            queue,
+            result_aggregator,
+            producer_task,
+        ) = await self._setup_message_execution(params, context)
 
         try:
             consumer = EventConsumer(queue)
             producer_task.add_done_callback(consumer.agent_task_callback)
             async for event in result_aggregator.consume_and_emit(consumer):
                 if isinstance(event, Task):
-                    if task_id != event.id:
-                        logger.error(
-                            f'Agent generated task_id={event.id} does not match the RequestContext task_id={task_id}.'
-                        )
-                        raise ServerError(
-                            InternalError(
-                                message='Task ID mismatch in agent response'
-                            )
-                        )
+                    self._validate_task_id_match(task_id, event.id)
 
-                    if (
-                        self._push_config_store # Check if store is available for config
-                        and params.configuration
-                        and params.configuration.pushNotificationConfig
-                    ):
-                        await self._push_config_store.set_info(
-                            task_id,
-                            params.configuration.pushNotificationConfig,
-                        )
+                if (
+                    self._push_config_store
+                    and params.configuration
+                    and params.configuration.pushNotificationConfig
+                ):
+                    await self._push_config_store.set_info(
+                        task_id,
+                        params.configuration.pushNotificationConfig,
+                    )
 
-                if self._push_sender and task_id: # Check if sender is available
-                    latest_task = await result_aggregator.current_result
-                    if isinstance(latest_task, Task):
-                        await self._push_sender.send_notification(latest_task)
+                await self._send_push_notification_if_needed(
+                    task_id, result_aggregator
+                )
                 yield event
         finally:
             await self._cleanup_producer(producer_task, task_id)
@@ -415,7 +407,9 @@ class DefaultRequestHandler(RequestHandler):
         if not task:
             raise ServerError(error=TaskNotFoundError())
 
-        push_notification_config = await self._push_config_store.get_info(params.id)
+        push_notification_config = await self._push_config_store.get_info(
+            params.id
+        )
         if not push_notification_config or not push_notification_config[0]:
             raise ServerError(error=InternalError())
 
@@ -477,14 +471,18 @@ class DefaultRequestHandler(RequestHandler):
         if not task:
             raise ServerError(error=TaskNotFoundError())
 
-        push_notification_config_list = await self._push_config_store.get_info(params.id)
+        push_notification_config_list = await self._push_config_store.get_info(
+            params.id
+        )
 
         task_push_notification_config = []
         if push_notification_config_list:
             for config in push_notification_config_list:
-                task_push_notification_config.append(TaskPushNotificationConfig(
-                    taskId=params.id, pushNotificationConfig=config
-                ))
+                task_push_notification_config.append(
+                    TaskPushNotificationConfig(
+                        taskId=params.id, pushNotificationConfig=config
+                    )
+                )
 
         return task_push_notification_config
 
@@ -504,7 +502,9 @@ class DefaultRequestHandler(RequestHandler):
         if not task:
             raise ServerError(error=TaskNotFoundError())
 
-        await self._push_config_store.delete_info(params.id, params.pushNotificationConfigId)
+        await self._push_config_store.delete_info(
+            params.id, params.pushNotificationConfigId
+        )
 
     def should_add_push_info(self, params: MessageSendParams) -> bool:
         """Determines if push notification info should be set for a task."""

@@ -367,6 +367,15 @@ async def test_on_message_send_with_push_notification():
         False,
     )
 
+    # Mock the current_result property to return the final task result
+    async def get_current_result():
+        return final_task_result
+
+    # Configure the 'current_result' property on the type of the mock instance
+    type(mock_result_aggregator_instance).current_result = PropertyMock(
+        return_value=get_current_result()
+    )
+
     with (
         patch(
             'a2a.server.request_handlers.default_request_handler.ResultAggregator',
