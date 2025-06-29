@@ -1043,7 +1043,7 @@ async def test_get_task_push_notification_config_info_not_found():
     """Test on_get_task_push_notification_config when push_config_store.get_info returns None."""
     mock_task_store = AsyncMock(spec=TaskStore)
 
-    sample_task = create_sample_task(task_id='task_info_not_found')
+    sample_task = create_sample_task(task_id='non_existent_task')
     mock_task_store.get.return_value = sample_task
 
     mock_push_store = AsyncMock(spec=PushNotificationConfigStore)
@@ -1054,7 +1054,7 @@ async def test_get_task_push_notification_config_info_not_found():
         task_store=mock_task_store,
         push_config_store=mock_push_store,
     )
-    params = GetTaskPushNotificationConfigParams(id='task_info_not_found')
+    params = GetTaskPushNotificationConfigParams(id='non_existent_task')
     from a2a.utils.errors import ServerError  # Local import
 
     with pytest.raises(ServerError) as exc_info:
@@ -1065,8 +1065,90 @@ async def test_get_task_push_notification_config_info_not_found():
     assert isinstance(
         exc_info.value.error, InternalError
     )  # Current code raises InternalError
-    mock_task_store.get.assert_awaited_once_with('task_info_not_found')
-    mock_push_store.get_info.assert_awaited_once_with('task_info_not_found')
+    mock_task_store.get.assert_awaited_once_with('non_existent_task')
+    mock_push_store.get_info.assert_awaited_once_with('non_existent_task')
+
+
+@pytest.mark.asyncio
+async def test_get_task_push_notification_config_info_with_config():
+    """Test on_get_task_push_notification_config with valid push config id"""
+    mock_task_store = AsyncMock(spec=TaskStore)
+
+    push_store = InMemoryPushNotificationConfigStore()
+
+    request_handler = DefaultRequestHandler(
+        agent_executor=DummyAgentExecutor(),
+        task_store=mock_task_store,
+        push_config_store=push_store,
+    )
+
+    set_config_params = TaskPushNotificationConfig(
+        taskId='task_1',
+        pushNotificationConfig=PushNotificationConfig(
+            id='config_id', url='http://1.example.com'
+        ),
+    )
+    await request_handler.on_set_task_push_notification_config(
+        set_config_params, create_server_call_context()
+    )
+
+    params = GetTaskPushNotificationConfigParams(
+        id='task_1', pushNotificationConfigId='config_id'
+    )
+
+    result: TaskPushNotificationConfig = (
+        await request_handler.on_get_task_push_notification_config(
+            params, create_server_call_context()
+        )
+    )
+
+    assert result is not None
+    assert result.taskId == 'task_1'
+    assert (
+        result.pushNotificationConfig.url
+        == set_config_params.pushNotificationConfig.url
+    )
+    assert result.pushNotificationConfig.id == 'config_id'
+
+
+@pytest.mark.asyncio
+async def test_get_task_push_notification_config_info_with_config_no_id():
+    """Test on_get_task_push_notification_config with no push config id"""
+    mock_task_store = AsyncMock(spec=TaskStore)
+
+    push_store = InMemoryPushNotificationConfigStore()
+
+    request_handler = DefaultRequestHandler(
+        agent_executor=DummyAgentExecutor(),
+        task_store=mock_task_store,
+        push_config_store=push_store,
+    )
+
+    set_config_params = TaskPushNotificationConfig(
+        taskId='task_1',
+        pushNotificationConfig=PushNotificationConfig(
+            url='http://1.example.com'
+        ),
+    )
+    await request_handler.on_set_task_push_notification_config(
+        set_config_params, create_server_call_context()
+    )
+
+    params = TaskIdParams(id='task_1')
+
+    result: TaskPushNotificationConfig = (
+        await request_handler.on_get_task_push_notification_config(
+            params, create_server_call_context()
+        )
+    )
+
+    assert result is not None
+    assert result.taskId == 'task_1'
+    assert (
+        result.pushNotificationConfig.url
+        == set_config_params.pushNotificationConfig.url
+    )
+    assert result.pushNotificationConfig.id == 'task_1'
 
 
 @pytest.mark.asyncio
@@ -1210,7 +1292,7 @@ async def test_list_no_task_push_notification_config_info():
     """Test on_get_task_push_notification_config when push_config_store.get_info returns []"""
     mock_task_store = AsyncMock(spec=TaskStore)
 
-    sample_task = create_sample_task(task_id='task_info_not_found')
+    sample_task = create_sample_task(task_id='non_existent_task')
     mock_task_store.get.return_value = sample_task
 
     push_store = InMemoryPushNotificationConfigStore()
@@ -1220,7 +1302,7 @@ async def test_list_no_task_push_notification_config_info():
         task_store=mock_task_store,
         push_config_store=push_store,
     )
-    params = ListTaskPushNotificationConfigParams(id='task_info_not_found')
+    params = ListTaskPushNotificationConfigParams(id='non_existent_task')
 
     result = await request_handler.on_list_task_push_notification_config(
         params, create_server_call_context()
@@ -1233,7 +1315,7 @@ async def test_list_task_push_notification_config_info_with_config():
     """Test on_list_task_push_notification_config with push config+id"""
     mock_task_store = AsyncMock(spec=TaskStore)
 
-    sample_task = create_sample_task(task_id='task_info_not_found')
+    sample_task = create_sample_task(task_id='non_existent_task')
     mock_task_store.get.return_value = sample_task
 
     push_config1 = PushNotificationConfig(
@@ -1272,21 +1354,35 @@ async def test_list_task_push_notification_config_info_with_config_and_no_id():
     """Test on_list_task_push_notification_config with no push config id"""
     mock_task_store = AsyncMock(spec=TaskStore)
 
-    sample_task = create_sample_task(task_id='task_info_not_found')
-    mock_task_store.get.return_value = sample_task
-
-    push_config = PushNotificationConfig(url='http://example.com')
-
-    # insertion without id should replace the existing config
     push_store = InMemoryPushNotificationConfigStore()
-    await push_store.set_info('task_1', push_config)
-    await push_store.set_info('task_1', push_config)
 
     request_handler = DefaultRequestHandler(
         agent_executor=DummyAgentExecutor(),
         task_store=mock_task_store,
         push_config_store=push_store,
     )
+
+    # multiple calls without config id should replace the existing
+    set_config_params1 = TaskPushNotificationConfig(
+        taskId='task_1',
+        pushNotificationConfig=PushNotificationConfig(
+            url='http://1.example.com'
+        ),
+    )
+    await request_handler.on_set_task_push_notification_config(
+        set_config_params1, create_server_call_context()
+    )
+
+    set_config_params2 = TaskPushNotificationConfig(
+        taskId='task_1',
+        pushNotificationConfig=PushNotificationConfig(
+            url='http://2.example.com'
+        ),
+    )
+    await request_handler.on_set_task_push_notification_config(
+        set_config_params2, create_server_call_context()
+    )
+
     params = ListTaskPushNotificationConfigParams(id='task_1')
 
     result: list[
@@ -1297,7 +1393,10 @@ async def test_list_task_push_notification_config_info_with_config_and_no_id():
 
     assert len(result) == 1
     assert result[0].taskId == 'task_1'
-    assert result[0].pushNotificationConfig.url == push_config.url
+    assert (
+        result[0].pushNotificationConfig.url
+        == set_config_params2.pushNotificationConfig.url
+    )
     assert result[0].pushNotificationConfig.id == 'task_1'
 
 
@@ -1391,7 +1490,7 @@ async def test_delete_task_push_notification_config_info_with_config():
     """Test on_list_task_push_notification_config with push config+id"""
     mock_task_store = AsyncMock(spec=TaskStore)
 
-    sample_task = create_sample_task(task_id='task_info_not_found')
+    sample_task = create_sample_task(task_id='non_existent_task')
     mock_task_store.get.return_value = sample_task
 
     push_config1 = PushNotificationConfig(
@@ -1436,7 +1535,7 @@ async def test_delete_task_push_notification_config_info_with_config_and_no_id()
     """Test on_list_task_push_notification_config with no push config id"""
     mock_task_store = AsyncMock(spec=TaskStore)
 
-    sample_task = create_sample_task(task_id='task_info_not_found')
+    sample_task = create_sample_task(task_id='non_existent_task')
     mock_task_store.get.return_value = sample_task
 
     push_config = PushNotificationConfig(url='http://example.com')
