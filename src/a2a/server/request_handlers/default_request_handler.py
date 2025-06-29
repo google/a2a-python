@@ -411,7 +411,11 @@ class DefaultRequestHandler(RequestHandler):
             params.id
         )
         if not push_notification_config or not push_notification_config[0]:
-            raise ServerError(error=InternalError())
+            raise ServerError(
+                error=InternalError(
+                    message='Push notification config not found'
+                )
+            )
 
         return TaskPushNotificationConfig(
             taskId=params.id, pushNotificationConfig=push_notification_config[0]
