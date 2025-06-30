@@ -14,4 +14,10 @@
     }
   },
   "ruff.importStrategy": "fromEnvironment",
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": false,
+  "files.trimTrailingWhitespace": false,
+  "editor.rulers": [
+    80
+  ]
 }
