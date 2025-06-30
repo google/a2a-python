@@ -918,7 +918,6 @@ def test_a2a_request_root_model() -> None:
         'jsonrpc': '2.0',
         'method': 'tasks/pushNotificationConfig/set',
         'params': task_push_config.model_dump(),
-        'id': 2,
     }
     a2a_req_set_push_req = A2ARequest.model_validate(set_push_notif_req_data)
     assert isinstance(
@@ -938,7 +937,6 @@ def test_a2a_request_root_model() -> None:
         'jsonrpc': '2.0',
         'method': 'tasks/pushNotificationConfig/get',
         'params': id_params.model_dump(),
-        'id': 2,
     }
     a2a_req_get_push_req = A2ARequest.model_validate(get_push_notif_req_data)
     assert isinstance(
