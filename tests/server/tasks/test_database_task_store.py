@@ -31,8 +31,9 @@ from a2a.types import (
 
 
 # DSNs for different databases
-SQLITE_TEST_DSN = 'sqlite+aiosqlite:///file::memory:?cache=shared'
-# SQLITE_TEST_DSN_FILE = "sqlite+aiosqlite:///./test_param.db" # For file-based SQLite inspection
+SQLITE_TEST_DSN = (
+    'sqlite+aiosqlite:///file:testdb?mode=memory&cache=shared&uri=true'
+)
 POSTGRES_TEST_DSN = os.environ.get(
     'POSTGRES_TEST_DSN'
 )  # e.g., "postgresql+asyncpg://user:pass@host:port/dbname"
@@ -85,19 +86,6 @@ MINIMAL_TASK_OBJ = Task(
 )
 
 
-@pytest.fixture(scope='session', autouse=True)
-def cleanup_sqlite_files():
-    """Clean up SQLite file::memory: files created during tests."""
-    yield
-
-    sqlite_memory_file = Path('file::memory:')
-    if sqlite_memory_file.exists():
-        try:
-            sqlite_memory_file.unlink()
-        except Exception:
-            pass
-
-
 @pytest_asyncio.fixture(params=DB_CONFIGS)
 async def db_store_parameterized(
     request,
@@ -110,11 +98,6 @@ async def db_store_parameterized(
 
     if db_url is None:
         pytest.skip(f'DSN for {dialect_name} not set in environment variables.')
-
-    # Ensure the path for file-based SQLite exists if that DSN is used
-    # if "sqlite" in db_url and "memory" not in db_url:
-    #     db_file_path = db_url.split("///")[-1]
-    #     os.makedirs(os.path.dirname(db_file_path), exist_ok=True)
 
     engine = create_async_engine(db_url)
     store = None  # Initialize store to None for the finally block
@@ -137,14 +120,6 @@ async def db_store_parameterized(
             async with engine.begin() as conn:
                 await conn.run_sync(Base.metadata.drop_all)
             await engine.dispose()  # Dispose the engine created in the fixture
-
-        if dialect_name == 'sqlite':
-            sqlite_memory_file = Path('file::memory:')
-            if sqlite_memory_file.exists():
-                try:
-                    sqlite_memory_file.unlink()
-                except Exception:
-                    pass
 
 
 @pytest.mark.asyncio

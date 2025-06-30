@@ -56,3 +56,4 @@ taskupdate
 testuuid
 typeerror
 vulnz
+pypistats
