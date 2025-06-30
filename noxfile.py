@@ -36,7 +36,7 @@ nox.options.error_on_missing_interpreters = True
 
 
 @nox.session(python=DEFAULT_PYTHON_VERSION)
-def format(session):
+def format(session) -> None:
     """Format Python code using autoflake, pyupgrade, and ruff."""
     # Sort Spelling Allowlist
     spelling_allow_file = '.github/actions/spelling/allow.txt'
@@ -103,7 +103,9 @@ def format(session):
             }
         )
 
-        lint_paths_py = [f for f in changed_files if f.endswith('.py')]
+        lint_paths_py = [
+            f for f in changed_files if f.endswith('.py') and 'grpc/' not in f
+        ]
 
         if not lint_paths_py:
             session.log('No changed Python files to lint.')
@@ -111,6 +113,7 @@ def format(session):
 
     session.install(
         'types-requests',
+        'types-protobuf',
         'pyupgrade',
         'autoflake',
         'ruff',

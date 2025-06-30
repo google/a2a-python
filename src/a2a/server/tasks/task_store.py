@@ -10,7 +10,7 @@ class TaskStore(ABC):
     """
 
     @abstractmethod
-    async def save(self, task: Task):
+    async def save(self, task: Task) -> None:
         """Saves or updates a task in the store."""
 
     @abstractmethod
@@ -18,5 +18,5 @@ class TaskStore(ABC):
         """Retrieves a task from the store by ID."""
 
     @abstractmethod
-    async def delete(self, task_id: str):
+    async def delete(self, task_id: str) -> None:
         """Deletes a task from the store by ID."""

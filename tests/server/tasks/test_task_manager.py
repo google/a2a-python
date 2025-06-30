@@ -6,6 +6,7 @@ import pytest
 from a2a.server.tasks import TaskManager
 from a2a.types import (
     Artifact,
+    InvalidParamsError,
     Message,
     Part,
     Role,
@@ -16,6 +17,7 @@ from a2a.types import (
     TaskStatusUpdateEvent,
     TextPart,
 )
+from a2a.utils.errors import ServerError
 
 
 MINIMAL_TASK: dict[str, Any] = {
@@ -127,6 +129,28 @@ async def test_save_task_event_artifact_update(
 
 
 @pytest.mark.asyncio
+async def test_save_task_event_metadata_update(
+    task_manager: TaskManager, mock_task_store: AsyncMock
+) -> None:
+    """Test saving an updated metadata for an existing task."""
+    initial_task = Task(**MINIMAL_TASK)
+    mock_task_store.get.return_value = initial_task
+    new_metadata = {'meta_key_test': 'meta_value_test'}
+
+    event = TaskStatusUpdateEvent(
+        taskId=MINIMAL_TASK['id'],
+        contextId=MINIMAL_TASK['contextId'],
+        metadata=new_metadata,
+        status=TaskStatus(state=TaskState.working),
+        final=False,
+    )
+    await task_manager.save_task_event(event)
+
+    updated_task = mock_task_store.save.call_args.args[0]
+    assert updated_task.metadata == new_metadata
+
+
+@pytest.mark.asyncio
 async def test_ensure_task_existing(
     task_manager: TaskManager, mock_task_store: AsyncMock
 ) -> None:
@@ -188,6 +212,23 @@ async def test_save_task(
     task = Task(**MINIMAL_TASK)
     await task_manager._save_task(task)  # type: ignore
     mock_task_store.save.assert_called_once_with(task)
+
+
+@pytest.mark.asyncio
+async def test_save_task_event_mismatched_id_raises_error(
+    task_manager: TaskManager,
+) -> None:
+    """Test that save_task_event raises ServerError on task ID mismatch."""
+    # The task_manager is initialized with 'task-abc'
+    mismatched_task = Task(
+        id='wrong-id',
+        contextId='session-xyz',
+        status=TaskStatus(state=TaskState.submitted),
+    )
+
+    with pytest.raises(ServerError) as exc_info:
+        await task_manager.save_task_event(mismatched_task)
+    assert isinstance(exc_info.value.error, InvalidParamsError)
 
 
 @pytest.mark.asyncio

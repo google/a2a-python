@@ -1,17 +1,11 @@
+---
 name: Check Spelling
-
 on:
   pull_request:
-    branches:
-      - "**"
-    types:
-      - "opened"
-      - "reopened"
-      - "synchronize"
+    branches: ['**']
+    types: [opened, reopened, synchronize]
   issue_comment:
-    types:
-      - "created"
-
+    types: [created]
 jobs:
   spelling:
     name: Check Spelling
@@ -24,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     # if on repo to avoid failing runs on forks
     if: |
-      github.repository == 'google-a2a/a2a-python' 
+      github.repository == 'a2aproject/a2a-python'
         && (contains(github.event_name, 'pull_request') || github.event_name == 'push')
     concurrency:
       group: spelling-${{ github.event.pull_request.number || github.ref }}
@@ -80,7 +74,6 @@ jobs:
             cspell:sql/src/tsql.txt
             cspell:terraform/dict/terraform.txt
             cspell:typescript/dict/typescript.txt
-
-          check_extra_dictionaries: ""
+          check_extra_dictionaries: ''
           only_check_changed_files: true
-          longest_word: "10"
+          longest_word: '10'

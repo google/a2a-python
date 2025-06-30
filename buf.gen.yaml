@@ -1,0 +1,31 @@
+---
+version: v2
+inputs:
+  - git_repo: https://github.com/a2aproject/A2A.git
+    ref: main
+    subdir: specification/grpc
+managed:
+  enabled: true
+# Python Generation
+# Using remote plugins. To use local plugins replace remote with local
+# pip install protobuf grpcio-tools
+# Optionally, install plugin to generate stubs for grpc services
+# pip install mypy-protobuf
+# Generate python protobuf code
+# - local: protoc-gen-python
+# - out: src/python
+# Generate gRPC stubs
+# - local: protoc-gen-grpc-python
+# - out: src/python
+plugins:
+  # Generate python protobuf related code
+  # Generates *_pb2.py files, one for each .proto
+  - remote: buf.build/protocolbuffers/python:v29.3
+    out: src/a2a/grpc
+  # Generate python service code.
+  # Generates *_pb2_grpc.py
+  - remote: buf.build/grpc/python
+    out: src/a2a/grpc
+  # Generates *_pb2.pyi files.
+  - remote: buf.build/protocolbuffers/pyi
+    out: src/a2a/grpc

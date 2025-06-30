@@ -17,7 +17,7 @@ from a2a.utils.telemetry import SpanKind, trace_class
 
 
 # This is an alias to the exception for closed queue
-QueueClosed = asyncio.QueueEmpty
+QueueClosed: type[Exception] = asyncio.QueueEmpty
 
 # When using python 3.13 or higher, the closed queue signal is QueueShutdown
 if sys.version_info >= (3, 13):
@@ -112,6 +112,7 @@ class EventConsumer:
                             TaskState.failed,
                             TaskState.rejected,
                             TaskState.unknown,
+                            TaskState.input_required,
                         )
                     )
                 )
@@ -129,13 +130,22 @@ class EventConsumer:
             except TimeoutError:
                 # continue polling until there is a final event
                 continue
+            except asyncio.TimeoutError:  # pyright: ignore [reportUnusedExcept]
+                # This class was made an alias of build-in TimeoutError after 3.11
+                continue
             except QueueClosed:
                 # Confirm that the queue is closed, e.g. we aren't on
                 # python 3.12 and get a queue empty error on an open queue
                 if self.queue.is_closed():
                     break
+            except Exception as e:
+                logger.error(
+                    f'Stopping event consumption due to exception: {e}'
+                )
+                self._exception = e
+                continue
 
-    def agent_task_callback(self, agent_task: asyncio.Task[None]):
+    def agent_task_callback(self, agent_task: asyncio.Task[None]) -> None:
         """Callback to handle exceptions from the agent's execution task.
 
         If the agent's asyncio task raises an exception, this callback is

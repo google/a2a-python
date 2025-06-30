@@ -16,8 +16,7 @@ class TestInMemoryQueueManager:
     @pytest.fixture
     def queue_manager(self):
         """Fixture to create a fresh InMemoryQueueManager for each test."""
-        manager = InMemoryQueueManager()
-        return manager
+        return InMemoryQueueManager()
 
     @pytest.fixture
     def event_queue(self):

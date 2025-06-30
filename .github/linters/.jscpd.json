@@ -1,5 +1,0 @@
-{
-  "ignore": ["**/.github/**", "**/.git/**", "**/tests/**", "**/examples/**"],
-  "threshold": 3,
-  "reporters": ["html", "markdown"]
-}

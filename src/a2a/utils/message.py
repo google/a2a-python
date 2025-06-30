@@ -38,7 +38,7 @@ def new_agent_parts_message(
     parts: list[Part],
     context_id: str | None = None,
     task_id: str | None = None,
-):
+) -> Message:
     """Creates a new agent message containing a list of Parts.
 
     Args:
@@ -70,7 +70,7 @@ def get_text_parts(parts: list[Part]) -> list[str]:
     return [part.root.text for part in parts if isinstance(part.root, TextPart)]
 
 
-def get_message_text(message: Message, delimiter='\n') -> str:
+def get_message_text(message: Message, delimiter: str = '\n') -> str:
     """Extracts and joins all text content from a Message's parts.
 
     Args:

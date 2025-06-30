@@ -38,9 +38,9 @@ class TaskUpdater:
         self,
         state: TaskState,
         message: Message | None = None,
-        final=False,
+        final: bool = False,
         timestamp: str | None = None,
-    ):
+    ) -> None:
         """Updates the status of the task and publishes a `TaskStatusUpdateEvent`.
 
         Args:
@@ -65,13 +65,15 @@ class TaskUpdater:
             )
         )
 
-    async def add_artifact(
+    async def add_artifact(  # noqa: PLR0913
         self,
         parts: list[Part],
-        artifact_id: str = str(uuid.uuid4()),
+        artifact_id: str | None = None,
         name: str | None = None,
         metadata: dict[str, Any] | None = None,
-    ):
+        append: bool | None = None,
+        last_chunk: bool | None = None,
+    ) -> None:
         """Adds an artifact chunk to the task and publishes a `TaskArtifactUpdateEvent`.
 
         Args:
@@ -82,6 +84,9 @@ class TaskUpdater:
             append: Optional boolean indicating if this chunk appends to a previous one.
             last_chunk: Optional boolean indicating if this is the last chunk.
         """
+        if not artifact_id:
+            artifact_id = str(uuid.uuid4())
+
         await self.event_queue.enqueue_event(
             TaskArtifactUpdateEvent(
                 taskId=self.task_id,
@@ -92,10 +97,12 @@ class TaskUpdater:
                     parts=parts,
                     metadata=metadata,
                 ),
+                append=append,
+                lastChunk=last_chunk
             )
         )
 
-    async def complete(self, message: Message | None = None):
+    async def complete(self, message: Message | None = None) -> None:
         """Marks the task as completed and publishes a final status update."""
         await self.update_status(
             TaskState.completed,
@@ -103,28 +110,52 @@ class TaskUpdater:
             final=True,
         )
 
-    async def failed(self, message: Message | None = None):
+    async def failed(self, message: Message | None = None) -> None:
         """Marks the task as failed and publishes a final status update."""
         await self.update_status(TaskState.failed, message=message, final=True)
 
-    async def reject(self, message: Message | None = None):
+    async def reject(self, message: Message | None = None) -> None:
         """Marks the task as rejected and publishes a final status update."""
         await self.update_status(
             TaskState.rejected, message=message, final=True
         )
 
-    async def submit(self, message: Message | None = None):
+    async def submit(self, message: Message | None = None) -> None:
         """Marks the task as submitted and publishes a status update."""
         await self.update_status(
             TaskState.submitted,
             message=message,
         )
 
-    async def start_work(self, message: Message | None = None):
+    async def start_work(self, message: Message | None = None) -> None:
         """Marks the task as working and publishes a status update."""
         await self.update_status(
             TaskState.working,
             message=message,
+        )
+
+    async def cancel(self, message: Message | None = None) -> None:
+        """Marks the task as cancelled and publishes a finalstatus update."""
+        await self.update_status(
+            TaskState.canceled, message=message, final=True
+        )
+
+    async def requires_input(
+        self, message: Message | None = None, final: bool = False
+    ) -> None:
+        """Marks the task as input required and publishes a status update."""
+        await self.update_status(
+            TaskState.input_required,
+            message=message,
+            final=final,
+        )
+
+    async def requires_auth(
+        self, message: Message | None = None, final: bool = False
+    ) -> None:
+        """Marks the task as auth required and publishes a status update."""
+        await self.update_status(
+            TaskState.auth_required, message=message, final=final
         )
 
     def new_agent_message(
@@ -139,7 +170,6 @@ class TaskUpdater:
 
         Args:
             parts: A list of `Part` objects for the message content.
-            final: Optional boolean indicating if this is the final message in a stream.
             metadata: Optional metadata for the message.
 
         Returns:

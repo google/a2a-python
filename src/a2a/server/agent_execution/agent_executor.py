@@ -12,7 +12,9 @@ class AgentExecutor(ABC):
     """
 
     @abstractmethod
-    async def execute(self, context: RequestContext, event_queue: EventQueue):
+    async def execute(
+        self, context: RequestContext, event_queue: EventQueue
+    ) -> None:
         """Execute the agent's logic for a given request context.
 
         The agent should read necessary information from the `context` and
@@ -27,7 +29,9 @@ class AgentExecutor(ABC):
         """
 
     @abstractmethod
-    async def cancel(self, context: RequestContext, event_queue: EventQueue):
+    async def cancel(
+        self, context: RequestContext, event_queue: EventQueue
+    ) -> None:
         """Request the agent to cancel an ongoing task.
 
         The agent should attempt to stop the task identified by the task_id

@@ -4,7 +4,7 @@
 #
 # This file follows the standards in Google Python Style Guide
 # https://google.github.io/styleguide/pyguide.html
-#  
+#
 
 line-length = 80 # Google Style Guide §3.2: 80 columns
 indent-width = 4 # Google Style Guide §3.4: 4 spaces
@@ -13,23 +13,22 @@ target-version = "py310" # Minimum Python version
 
 [lint]
 ignore = [
-    "COM812",
-    "FBT001",
-    "FBT002",
-    "D203",
-    "D213",
-    "ANN001",
-    "ANN201",
-    "ANN204",
-    "D100", # Ignore Missing docstring in public module (often desired at top level __init__.py)
-    "D102", # Ignore return type annotation in public method
-    "D104", # Ignore Missing docstring in public package (often desired at top level __init__.py)
-    "D107", # Ignore Missing docstring in __init__ (use class docstring)
-    "TD002", # Ignore Missing author in TODOs (often not required)
-    "TD003", # Ignore Missing issue link in TODOs (often not required/available)
-    "T201", # Ignore print presence
+    "COM812", # Trailing comma missing.
+    "FBT001", # Boolean positional arg in function definition
+    "FBT002", # Boolean default value in function definition
+    "D203",   # 1 blank line required before class docstring (Google: 0)
+    "D213",   # Multi-line docstring summary should start at the second line (Google: first line)
+    "D100",   # Ignore Missing docstring in public module (often desired at top level __init__.py)
+    "D104",   # Ignore Missing docstring in public package (often desired at top level __init__.py)
+    "D107",   # Ignore Missing docstring in __init__ (use class docstring)
+    "TD002",  # Ignore Missing author in TODOs (often not required)
+    "TD003",  # Ignore Missing issue link in TODOs (often not required/available)
+    "T201",   # Ignore print presence
     "RUF012", # Ignore Mutable class attributes should be annotated with `typing.ClassVar`
-    "RUF013", # Ignore implicit optional
+    "E501",   # Ignore line length (handled by Ruff's dynamic line length)
+    "ANN002",
+    "ANN003",
+    "ANN401",
 ]
 
 select = [
@@ -50,12 +49,14 @@ select = [
     "PTH",# flake8-use-pathlib (use pathlib instead of os.path where possible)
     "PL", # Pylint rules ported to Ruff (PLC, PLE, PLR, PLW)
     "PIE",# flake8-pie (misc code improvements, e.g., no-unnecessary-pass)
-    "RUF",# Ruff-specific rules (e.g., RUF001-003 ambiguous unicode)
+    "RUF",# Ruff-specific rules (e.g., RUF001-003 ambiguous unicode, RUF013 implicit optional)
     "RET",# flake8-return (consistency in return statements)
     "SLF",# flake8-self (check for private member access via `self`)
     "TID",# flake8-tidy-imports (relative imports, banned imports - configure if needed)
     "YTT",# flake8-boolean-trap (checks for boolean positional arguments, truthiness tests - Google Style §3.10)
     "TD", # flake8-todos (check TODO format - Google Style §3.7)
+    "TCH",# flake8-type-checking (helps manage TYPE_CHECKING blocks and imports)
+    "PYI",# flake8-pyi (best practices for .pyi stub files, some rules are useful for .py too)
 ]
 
 exclude = [
@@ -80,7 +81,9 @@ exclude = [
     "node_modules",
     "venv",
     "*/migrations/*",
-    "test_*",
+    "noxfile.py",
+    "src/a2a/grpc/**",
+    "tests/**",
 ]
 
 [lint.isort]
@@ -98,6 +101,7 @@ lines-between-types = 1
 
 [lint.pydocstyle]
 convention = "google"
+ignore-decorators = ["typing.overload", "abc.abstractmethod"]
 
 [lint.flake8-annotations]
 mypy-init-return = true
@@ -116,12 +120,32 @@ docstring-quotes = "double"
 inline-quotes = "single"
 
 [lint.per-file-ignores]
-"__init__.py" = ["F401"]  # Ignore unused imports in __init__.py
-"*_test.py" = ["D", "ANN"]  # Ignore docstring and annotation issues in test files
-"test_*.py" = ["D", "ANN"]  # Ignore docstring and annotation issues in test files
+"__init__.py" = ["F401", "D", "ANN"]  # Ignore unused imports in __init__.py
+"*_test.py" = [
+    "D",      # All pydocstyle rules
+    "ANN",    # Missing type annotation for function argument
+    "RUF013", # Implicit optional type in test function signatures
+    "S101",   # Use of `assert` detected (expected in tests)
+    "PLR2004",
+    "SLF001",
+]
+"test_*.py" = [
+    "D",
+    "ANN",
+    "RUF013",
+    "S101",
+    "PLR2004",
+    "SLF001",
+]
 "types.py" = ["D", "E501", "N815"]  # Ignore docstring and annotation issues in types.py
+"proto_utils.py" = ["D102", "PLR0911"]
+"helpers.py" = ["ANN001", "ANN201", "ANN202"]
 
 [format]
+exclude = [
+    "types.py",
+    "src/a2a/grpc/**",
+]
 docstring-code-format = true
 docstring-code-line-length = "dynamic" # Or set to 80
 quote-style = "single"
