@@ -37,3 +37,4 @@ socio
 sse
 tagwords
 vulnz
+fernet

@@ -32,18 +32,22 @@ classifiers = [
 
 [project.optional-dependencies]
 postgresql = [
+    "cryptography>=45.0.3",
     "sqlalchemy>=2.0.0",
     "asyncpg>=0.30.0",
 ]
 mysql = [
+    "cryptography>=45.0.3",
     "sqlalchemy>=2.0.0",
     "aiomysql>=0.2.0",
 ]
 sqlite = [
+    "cryptography>=45.0.3",
     "sqlalchemy>=2.0.0",
     "aiosqlite>=0.19.0",
 ]
 sql = [
+    "cryptography>=45.0.3",
     "sqlalchemy>=2.0.0",
     "asyncpg>=0.30.0",
     "aiomysql>=0.2.0",

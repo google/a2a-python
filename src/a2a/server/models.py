@@ -11,11 +11,11 @@ else:
 
 from pydantic import BaseModel
 
-from a2a.types import Artifact, Message, TaskStatus
-
+from a2a.types import Artifact, Message, TaskStatus, PushNotificationAuthenticationInfo
 
 try:
-    from sqlalchemy import JSON, Dialect, String
+    from cryptography.fernet import Fernet
+    from sqlalchemy import JSON, Dialect, String, LargeBinary    
     from sqlalchemy.orm import (
         DeclarativeBase,
         Mapped,
@@ -36,6 +36,12 @@ except ImportError as e:
 
 T = TypeVar('T', bound=BaseModel)
 
+_ENCRYPTION_KEY: bytes | None = None
+
+def set_model_encryption_key(key: bytes) -> None:
+    """Sets the encryption key used for encrypting model data in the database."""
+    global _ENCRYPTION_KEY
+    _ENCRYPTION_KEY = key
 
 class PydanticType(TypeDecorator[T], Generic[T]):
     """SQLAlchemy type that handles Pydantic model serialization."""
@@ -67,6 +73,42 @@ class PydanticType(TypeDecorator[T], Generic[T]):
             return None
         return self.pydantic_type.model_validate(value)
 
+class EncryptedPydanticType(TypeDecorator[T], Generic[T]):
+    """SQLAlchemy type that handles Pydantic model serialization with encryption."""
+
+    impl = LargeBinary # Store encrypted data as binary
+    cache_ok = True
+
+    def __init__(self, pydantic_type: type[T], **kwargs: Any):
+        super().__init__(**kwargs)        
+        if _ENCRYPTION_KEY is None:
+            raise RuntimeError(
+                "Encryption key not set for models. "
+                "Call a2a.server.models.set_model_encryption_key(key) before model definition or usage."
+            )
+        self.pydantic_type = pydantic_type
+        self.fernet = Fernet(_ENCRYPTION_KEY)
+
+    @override
+    def process_bind_param(
+        self, value: T | None, dialect: Dialect
+    ) -> bytes | None:
+        if value is None:
+            return None
+        # Pydantic model to JSON string, then encode to bytes for encryption
+        json_string = value.model_dump_json()
+        encrypted_data = self.fernet.encrypt(json_string.encode('utf-8'))
+        return encrypted_data
+
+    @override
+    def process_result_value(
+        self, value: bytes | None, dialect: Dialect
+    ) -> T | None:
+        if value is None:
+            return None
+        # Decrypt bytes to JSON string, then parse with Pydantic
+        decrypted_json_string = self.fernet.decrypt(value).decode('utf-8')
+        return self.pydantic_type.model_validate_json(decrypted_json_string)
 
 class PydanticListType(TypeDecorator[list[T]], Generic[T]):
     """SQLAlchemy type that handles lists of Pydantic models."""
@@ -166,7 +208,7 @@ def create_task_model(
         TaskModel = create_task_model('tasks', MyBase)
     """
 
-    class TaskModel(TaskMixin, base):
+    class TaskModel(TaskMixin, base): # type: ignore
         __tablename__ = table_name
 
         @override
@@ -192,3 +234,48 @@ class TaskModel(TaskMixin, Base):
     """Default task model with standard table name."""
 
     __tablename__ = 'tasks'
+
+
+class PushNotificationConfigMixin:
+    """Mixin providing standard columns for push notification configuration."""
+    id: Mapped[str] = mapped_column(String, primary_key=True, index=True)
+    task_id: Mapped[str] = mapped_column(String, nullable=False)
+    url: Mapped[str] = mapped_column(String, nullable=False)
+    token: Mapped[str | None] = mapped_column(String, nullable=True)
+    authentication: Mapped[PushNotificationAuthenticationInfo | None] = mapped_column(
+        EncryptedPydanticType(PushNotificationAuthenticationInfo), nullable=True
+    )
+
+    @override
+    def __repr__(self) -> str:
+        """Return a string representation of the push notification config."""
+        repr_template = (
+            '<{CLS}(id="{ID}", task_id="{TASK_ID}", url="{URL}")>'
+        )
+        return repr_template.format(
+            CLS=self.__class__.__name__,
+            ID=self.id,
+            TASK_ID=self.task_id,
+            URL=self.url,
+        )
+
+def create_push_notification_config_model(
+    table_name: str = 'push_notification_configs',
+    base: type[DeclarativeBase] = Base
+) -> type:
+    """Create a PushNotificationConfigModel class with a configurable table name.
+
+    Args:
+        table_name: Name of the database table. Defaults to 'push_notification_configs'.
+        base: Base declarative class to use. Defaults to the SDK's Base class.
+
+    Returns:
+        PushNotificationConfigModel class with the specified table name.
+    """
+
+    class PushNotificationConfigModel(PushNotificationConfigMixin, base): # type: ignore
+        __tablename__ = table_name
+
+    PushNotificationConfigModel.__name__ = f'PushNotificationConfigModel_{table_name}'
+    PushNotificationConfigModel.__qualname__ = f'PushNotificationConfigModel_{table_name}'
+    return PushNotificationConfigModel
