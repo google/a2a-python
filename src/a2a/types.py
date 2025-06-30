@@ -1611,7 +1611,7 @@ class AgentCard(BaseModel):
     """
     The transport of the preferred endpoint. If empty, defaults to JSONRPC.
     """
-    protocolVersion: str = Field(..., examples=['0.2.5'])
+    protocolVersion: str | None = '0.2.5'
     """
     The version of the A2A protocol this agent supports.
     """
