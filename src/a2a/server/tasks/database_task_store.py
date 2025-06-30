@@ -2,7 +2,7 @@ import logging
 
 
 try:
-    from sqlalchemy import delete, select, update
+    from sqlalchemy import delete, select
     from sqlalchemy.ext.asyncio import (
         AsyncEngine,
         AsyncSession,

@@ -5,7 +5,8 @@ if TYPE_CHECKING:
     from typing_extensions import override
 else:
 
-    def override(func):  # noqa: D103
+    def override(func):
+        """Override decorator."""
         return func
 
 
@@ -44,6 +45,12 @@ class PydanticType(TypeDecorator[T], Generic[T]):
     cache_ok = True
 
     def __init__(self, pydantic_type: type[T], **kwargs: dict[str, Any]):
+        """Initialize the PydanticType.
+
+        Args:
+            pydantic_type: The Pydantic model type to handle.
+            **kwargs: Additional arguments for TypeDecorator.
+        """
         self.pydantic_type = pydantic_type
         super().__init__(**kwargs)
 
@@ -51,6 +58,7 @@ class PydanticType(TypeDecorator[T], Generic[T]):
     def process_bind_param(
         self, value: T | None, dialect: Dialect
     ) -> dict[str, Any] | None:
+        """Convert Pydantic model to a JSON-serializable dictionary for the database."""
         if value is None:
             return None
         return (
@@ -63,6 +71,7 @@ class PydanticType(TypeDecorator[T], Generic[T]):
     def process_result_value(
         self, value: dict[str, Any] | None, dialect: Dialect
     ) -> T | None:
+        """Convert a JSON-like dictionary from the database back to a Pydantic model."""
         if value is None:
             return None
         return self.pydantic_type.model_validate(value)
@@ -75,6 +84,12 @@ class PydanticListType(TypeDecorator[list[T]], Generic[T]):
     cache_ok = True
 
     def __init__(self, pydantic_type: type[T], **kwargs: dict[str, Any]):
+        """Initialize the PydanticListType.
+
+        Args:
+            pydantic_type: The Pydantic model type for items in the list.
+            **kwargs: Additional arguments for TypeDecorator.
+        """
         self.pydantic_type = pydantic_type
         super().__init__(**kwargs)
 
@@ -82,6 +97,7 @@ class PydanticListType(TypeDecorator[list[T]], Generic[T]):
     def process_bind_param(
         self, value: list[T] | None, dialect: Dialect
     ) -> list[dict[str, Any]] | None:
+        """Convert a list of Pydantic models to a JSON-serializable list for the DB."""
         if value is None:
             return None
         return [
@@ -95,6 +111,7 @@ class PydanticListType(TypeDecorator[list[T]], Generic[T]):
     def process_result_value(
         self, value: list[dict[str, Any]] | None, dialect: Dialect
     ) -> list[T] | None:
+        """Convert a JSON-like list from the DB back to a list of Pydantic models."""
         if value is None:
             return None
         return [self.pydantic_type.model_validate(item) for item in value]
@@ -128,6 +145,7 @@ class TaskMixin:
     @declared_attr
     @classmethod
     def task_metadata(cls) -> Mapped[dict[str, Any] | None]:
+        """Define the 'metadata' column, avoiding name conflicts with Pydantic."""
         return mapped_column(JSON, nullable=True, name='metadata')
 
     @override
