@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.2.10](https://github.com/a2aproject/a2a-python/compare/v0.2.9...v0.2.10) (2025-06-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* Update to A2A Spec Version [0.2.5](https://github.com/a2aproject/A2A/releases/tag/v0.2.5) ([#197](https://github.com/a2aproject/a2a-python/issues/197))
+
+### Features
+
+* Add `append` and `last_chunk` to `add_artifact` method on `TaskUpdater` ([#186](https://github.com/a2aproject/a2a-python/issues/186)) ([8c6560f](https://github.com/a2aproject/a2a-python/commit/8c6560fd403887fab9d774bfcc923a5f6f459364))
+* add a2a routes to existing app ([#188](https://github.com/a2aproject/a2a-python/issues/188)) ([32fecc7](https://github.com/a2aproject/a2a-python/commit/32fecc7194a61c2f5be0b8795d5dc17cdbab9040))
+* Add middleware to the client SDK ([#171](https://github.com/a2aproject/a2a-python/issues/171)) ([efaabd3](https://github.com/a2aproject/a2a-python/commit/efaabd3b71054142109b553c984da1d6e171db24))
+* Add more task state management methods to TaskUpdater ([#208](https://github.com/a2aproject/a2a-python/issues/208)) ([2b3bf6d](https://github.com/a2aproject/a2a-python/commit/2b3bf6d53ac37ed93fc1b1c012d59c19060be000))
+* raise error for tasks in terminal states ([#215](https://github.com/a2aproject/a2a-python/issues/215)) ([a0bf13b](https://github.com/a2aproject/a2a-python/commit/a0bf13b208c90b439b4be1952c685e702c4917a0))
+
+### Bug Fixes
+
+* `consume_all` doesn't catch `asyncio.TimeoutError` in python 3.10 ([#216](https://github.com/a2aproject/a2a-python/issues/216)) ([39307f1](https://github.com/a2aproject/a2a-python/commit/39307f15a1bb70eb77aee2211da038f403571242))
+* Append metadata and context id when processing TaskStatusUpdateE… ([#238](https://github.com/a2aproject/a2a-python/issues/238)) ([e106020](https://github.com/a2aproject/a2a-python/commit/e10602033fdd4f4e6b61af717ffc242d772545b3))
+* Fix reference to `grpc.aio.ServicerContext` ([#237](https://github.com/a2aproject/a2a-python/issues/237)) ([0c1987b](https://github.com/a2aproject/a2a-python/commit/0c1987bb85f3e21089789ee260a0c62ac98b66a5))
+* Fixes Short Circuit clause for context ID ([#236](https://github.com/a2aproject/a2a-python/issues/236)) ([a5509e6](https://github.com/a2aproject/a2a-python/commit/a5509e6b37701dfb5c729ccc12531e644a12f8ae))
+* Resolve `APIKeySecurityScheme` parsing failed ([#226](https://github.com/a2aproject/a2a-python/issues/226)) ([aa63b98](https://github.com/a2aproject/a2a-python/commit/aa63b982edc2a07fd0df0b01fb9ad18d30b35a79))
+* send notifications on message not streaming ([#219](https://github.com/a2aproject/a2a-python/issues/219)) ([91539d6](https://github.com/a2aproject/a2a-python/commit/91539d69e5c757712c73a41ab95f1ec6656ef5cd)), closes [#218](https://github.com/a2aproject/a2a-python/issues/218)
+
+## [0.2.9](https://github.com/a2aproject/a2a-python/compare/v0.2.8...v0.2.9) (2025-06-24)
+
+### Bug Fixes
+
+* Set `protobuf==5.29.5` and `fastapi>=0.115.2` to prevent version conflicts ([#224](https://github.com/a2aproject/a2a-python/issues/224)) ([1412a85](https://github.com/a2aproject/a2a-python/commit/1412a855b4980d8373ed1cea38c326be74069633))
+
 ## [0.2.8](https://github.com/a2aproject/a2a-python/compare/v0.2.7...v0.2.8) (2025-06-12)
 
 
