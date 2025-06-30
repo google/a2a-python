@@ -85,85 +85,50 @@ class DatabaseTaskStore(TaskStore):
         if not self._initialized:
             await self.initialize()
 
+    def _to_orm(self, task: Task) -> TaskModel:
+        """Maps a Pydantic Task to a SQLAlchemy TaskModel instance."""
+        return self.task_model(
+            id=task.id,
+            contextId=task.contextId,
+            kind=task.kind,
+            status=task.status,
+            artifacts=task.artifacts,
+            history=task.history,
+            task_metadata=task.metadata,
+        )
+
+    def _from_orm(self, task_model: TaskModel) -> Task:
+        """Maps a SQLAlchemy TaskModel to a Pydantic Task instance."""
+        # Map database columns to Pydantic model fields
+        task_data_from_db = {
+            'id': task_model.id,
+            'contextId': task_model.contextId,
+            'kind': task_model.kind,
+            'status': task_model.status,
+            'artifacts': task_model.artifacts,
+            'history': task_model.history,
+            'metadata': task_model.task_metadata,  # Map task_metadata column to metadata field
+        }
+        # Pydantic's model_validate will parse the nested dicts/lists from JSON
+        return Task.model_validate(task_data_from_db)
+
     async def save(self, task: Task) -> None:
         """Saves or updates a task in the database."""
         await self._ensure_initialized()
-
-        task_data = task.model_dump(
-            mode='json'
-        )  # Converts Pydantic Task to dict with JSON-serializable values
-
+        db_task = self._to_orm(task)
         async with self.async_session_maker.begin() as session:
-            stmt_select = select(self.task_model).where(
-                self.task_model.id == task.id
-            )
-            result = await session.execute(stmt_select)
-            existing_task_model = result.scalar_one_or_none()
-
-            if existing_task_model:
-                logger.debug(f'Updating task {task.id} in the database.')
-                update_data = {
-                    'contextId': task_data['contextId'],
-                    'kind': task_data['kind'],
-                    'status': task_data[
-                        'status'
-                    ],  # Already a dict from model_dump
-                    'artifacts': task_data.get(
-                        'artifacts'
-                    ),  # Already a list of dicts
-                    'history': task_data.get(
-                        'history'
-                    ),  # Already a list of dicts
-                    'task_metadata': task_data.get(
-                        'metadata'
-                    ),  # Already a dict
-                }
-                stmt_update = (
-                    update(self.task_model)
-                    .where(self.task_model.id == task.id)
-                    .values(**update_data)
-                )
-                await session.execute(stmt_update)
-                logger.debug(f'Task {task.id} updated successfully.')
-            else:
-                logger.debug(f'Saving new task {task.id} to the database.')
-                # Map Pydantic fields to database columns
-                new_task_model = self.task_model(
-                    id=task_data['id'],
-                    contextId=task_data['contextId'],
-                    kind=task_data['kind'],
-                    status=task_data['status'],
-                    artifacts=task_data.get('artifacts'),
-                    history=task_data.get('history'),
-                    task_metadata=task_data.get(
-                        'metadata'
-                    ),  # Map metadata field to task_metadata column
-                )
-                session.add(new_task_model)
-                logger.info(f'Task {task.id} created successfully.')
+            await session.merge(db_task)
+            logger.debug(f'Task {task.id} saved/updated successfully.')
 
     async def get(self, task_id: str) -> Task | None:
         """Retrieves a task from the database by ID."""
         await self._ensure_initialized()
-
         async with self.async_session_maker() as session:
             stmt = select(self.task_model).where(self.task_model.id == task_id)
             result = await session.execute(stmt)
             task_model = result.scalar_one_or_none()
-
             if task_model:
-                # Map database columns to Pydantic model fields
-                task_data_from_db = {
-                    'id': task_model.id,
-                    'contextId': task_model.contextId,
-                    'kind': task_model.kind,
-                    'status': task_model.status,
-                    'artifacts': task_model.artifacts,
-                    'history': task_model.history,
-                    'metadata': task_model.task_metadata,  # Map task_metadata column to metadata field
-                }
-                # Pydantic's model_validate will parse the nested dicts/lists from JSON
-                task = Task.model_validate(task_data_from_db)
+                task = self._from_orm(task_model)
                 logger.debug(f'Task {task_id} retrieved successfully.')
                 return task
 
