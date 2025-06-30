@@ -8,11 +8,6 @@ from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Any
 
 from pydantic import ValidationError
-from sse_starlette.sse import EventSourceResponse
-from starlette.applications import Starlette
-from starlette.authentication import BaseUser
-from starlette.requests import Request
-from starlette.responses import JSONResponse, Response
 
 from a2a.auth.user import UnauthenticatedUser
 from a2a.auth.user import User as A2AUser
