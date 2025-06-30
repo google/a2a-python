@@ -7,7 +7,6 @@ try:
         AsyncEngine,
         AsyncSession,
         async_sessionmaker,
-        create_async_engine,
     )
 except ImportError as e:
     raise ImportError(
@@ -41,23 +40,21 @@ class DatabaseTaskStore(TaskStore):
 
     def __init__(
         self,
-        db_url: str,
+        engine: AsyncEngine,
         create_table: bool = True,
         table_name: str = 'tasks',
     ) -> None:
         """Initializes the DatabaseTaskStore.
 
         Args:
-            db_url: Database connection string.
+            engine: An existing SQLAlchemy AsyncEngine to be used by Task Store
             create_table: If true, create tasks table on initialization.
             table_name: Name of the database table. Defaults to 'tasks'.
         """
         logger.debug(
-            f'Initializing DatabaseTaskStore with DB URL: {db_url}, table: {table_name}'
+            f'Initializing DatabaseTaskStore with existing engine, table: {table_name}'
         )
-        self.engine = create_async_engine(
-            db_url, echo=False
-        )  # Set echo=True for SQL logging
+        self.engine = engine
         self.async_session_maker = async_sessionmaker(
             self.engine, expire_on_commit=False
         )
@@ -82,13 +79,6 @@ class DatabaseTaskStore(TaskStore):
                 await conn.run_sync(Base.metadata.create_all)
         self._initialized = True
         logger.debug('Database schema initialized.')
-
-    async def close(self) -> None:
-        """Close the database connection engine."""
-        if self.engine:
-            logger.debug('Closing database engine.')
-            await self.engine.dispose()
-            self._initialized = False  # Reset initialization status
 
     async def _ensure_initialized(self) -> None:
         """Ensure the database connection is initialized."""
