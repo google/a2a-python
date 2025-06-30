@@ -1,8 +1,17 @@
 import logging
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from fastapi import FastAPI, Request, Response
+
+if TYPE_CHECKING:
+    from fastapi import FastAPI, Request, Response
+else:
+    try:
+        from fastapi import FastAPI, Request, Response
+    except ImportError:
+        FastAPI = Any
+        Request = Any
+        Response = Any
 
 from a2a.server.apps.jsonrpc.jsonrpc_app import (
     CallContextBuilder,
@@ -30,7 +39,7 @@ class A2AFastAPIApplication(JSONRPCApplication):
         extended_agent_card: AgentCard | None = None,
         context_builder: CallContextBuilder | None = None,
     ):
-        """Initializes the A2AStarletteApplication.
+        """Initializes the A2AFastAPIApplication.
 
         Args:
             agent_card: The AgentCard describing the agent's capabilities.

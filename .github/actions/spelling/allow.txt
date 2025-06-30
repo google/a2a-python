@@ -46,7 +46,9 @@ oidc
 opensource
 protoc
 pyi
+pypistats
 pyversions
+redef
 respx
 resub
 socio

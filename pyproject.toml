@@ -8,15 +8,12 @@ authors = [{ name = "Google LLC", email = "googleapis-packages@google.com" }]
 requires-python = ">=3.10"
 keywords = ["A2A", "A2A SDK", "A2A Protocol", "Agent2Agent"]
 dependencies = [
-  "fastapi>=0.115.2",
   "httpx>=0.28.1",
   "httpx-sse>=0.4.0",
   "google-api-core>=1.26.0",
   "opentelemetry-api>=1.33.0",
   "opentelemetry-sdk>=1.33.0",
   "pydantic>=2.11.3",
-  "sse-starlette",
-  "starlette",
   "grpcio>=1.60",
   "grpcio-tools>=1.60",
   "grpcio_reflection>=1.7.0",
@@ -35,6 +32,9 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
   "License :: OSI Approved :: Apache Software License",
 ]
+
+[project.optional-dependencies]
+http-server = ["fastapi>=0.115.2", "sse-starlette", "starlette"]
 
 [project.urls]
 homepage = "https://a2aproject.github.io/A2A/"
@@ -85,6 +85,9 @@ dev = [
   "types-protobuf",
   "types-requests",
   "pre-commit",
+  "fastapi>=0.115.2",
+  "sse-starlette",
+  "starlette",
 ]
 
 [[tool.uv.index]]

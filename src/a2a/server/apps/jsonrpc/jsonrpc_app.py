@@ -5,9 +5,8 @@ import traceback
 
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from fastapi import FastAPI
 from pydantic import ValidationError
 from sse_starlette.sse import EventSourceResponse
 from starlette.applications import Starlette
@@ -44,6 +43,37 @@ from a2a.utils.errors import MethodNotImplementedError
 
 
 logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from fastapi import FastAPI
+    from sse_starlette.sse import EventSourceResponse
+    from starlette.applications import Starlette
+    from starlette.authentication import BaseUser
+    from starlette.requests import Request
+    from starlette.responses import JSONResponse, Response
+
+    _http_server_installed = True
+else:
+    try:
+        from fastapi import FastAPI
+        from sse_starlette.sse import EventSourceResponse
+        from starlette.applications import Starlette
+        from starlette.authentication import BaseUser
+        from starlette.requests import Request
+        from starlette.responses import JSONResponse, Response
+
+        _http_server_installed = True
+    except ImportError:
+        _http_server_installed = False
+        # Provide placeholder types for runtime type hinting when dependencies are not installed.
+        # These will not be used if the code path that needs them is guarded by _http_server_installed.
+        FastAPI = Any
+        EventSourceResponse = Any
+        Starlette = Any
+        BaseUser = Any
+        Request = Any
+        JSONResponse = Any
+        Response = Any
 
 
 class StarletteUserProxy(A2AUser):
@@ -108,7 +138,7 @@ class JSONRPCApplication(ABC):
         extended_agent_card: AgentCard | None = None,
         context_builder: CallContextBuilder | None = None,
     ):
-        """Initializes the A2AStarletteApplication.
+        """Initializes the JSONRPCApplication.
 
         Args:
             agent_card: The AgentCard describing the agent's capabilities.
@@ -120,6 +150,10 @@ class JSONRPCApplication(ABC):
               ServerCallContext passed to the http_handler. If None, no
               ServerCallContext is passed.
         """
+        if not _http_server_installed:
+            raise ImportError(
+                'The `a2a-sdk[http-server]` package is required to use the `JSONRPCApplication`.'
+            )
         self.agent_card = agent_card
         self.extended_agent_card = extended_agent_card
         self.handler = JSONRPCHandler(
