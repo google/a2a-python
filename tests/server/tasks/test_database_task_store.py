@@ -125,17 +125,13 @@ async def db_store_parameterized(
             await conn.run_sync(Base.metadata.create_all)
 
         # create_table=False as we've explicitly created tables above.
-        store = DatabaseTaskStore(db_url, create_table=False)
+        store = DatabaseTaskStore(engine=engine, create_table=False)
         # Initialize the store (connects, etc.). Safe to call even if tables exist.
         await store.initialize()
 
         yield store
 
     finally:
-        # Teardown
-        if store:  # If store was successfully created
-            await store.close()  # Closes the store's own engine
-
         if engine:  # If engine was created for setup/teardown
             # Drop tables using the fixture's engine
             async with engine.begin() as conn:

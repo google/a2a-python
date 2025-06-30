@@ -27,27 +27,20 @@ dependencies = [
 
 [package.optional-dependencies]
 mysql = [
-    { name = "aiomysql" },
-    { name = "sqlalchemy" },
+    { name = "sqlalchemy", extra = ["aiomysql", "asyncio"] },
 ]
 postgresql = [
-    { name = "asyncpg" },
-    { name = "sqlalchemy" },
+    { name = "sqlalchemy", extra = ["asyncio", "postgresql-asyncpg"] },
 ]
 sql = [
-    { name = "aiomysql" },
-    { name = "aiosqlite" },
-    { name = "asyncpg" },
-    { name = "sqlalchemy" },
+    { name = "sqlalchemy", extra = ["aiomysql", "aiosqlite", "asyncio", "postgresql-asyncpg"] },
 ]
 sqlite = [
-    { name = "aiosqlite" },
-    { name = "sqlalchemy" },
+    { name = "sqlalchemy", extra = ["aiosqlite", "asyncio"] },
 ]
 
 [package.dev-dependencies]
 dev = [
-    { name = "asyncpg-stubs" },
     { name = "datamodel-code-generator" },
     { name = "mypy" },
     { name = "pre-commit" },
@@ -64,12 +57,6 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aiomysql", marker = "extra == 'mysql'", specifier = ">=0.2.0" },
-    { name = "aiomysql", marker = "extra == 'sql'", specifier = ">=0.2.0" },
-    { name = "aiosqlite", marker = "extra == 'sql'", specifier = ">=0.19.0" },
-    { name = "aiosqlite", marker = "extra == 'sqlite'", specifier = ">=0.19.0" },
-    { name = "asyncpg", marker = "extra == 'postgresql'", specifier = ">=0.30.0" },
-    { name = "asyncpg", marker = "extra == 'sql'", specifier = ">=0.30.0" },
     { name = "fastapi", specifier = ">=0.115.2" },
     { name = "google-api-core", specifier = ">=1.26.0" },
     { name = "grpcio", specifier = ">=1.60" },
@@ -81,10 +68,10 @@ requires-dist = [
     { name = "opentelemetry-sdk", specifier = ">=1.33.0" },
     { name = "protobuf", specifier = "==5.29.5" },
     { name = "pydantic", specifier = ">=2.11.3" },
-    { name = "sqlalchemy", marker = "extra == 'mysql'", specifier = ">=2.0.0" },
-    { name = "sqlalchemy", marker = "extra == 'postgresql'", specifier = ">=2.0.0" },
-    { name = "sqlalchemy", marker = "extra == 'sql'", specifier = ">=2.0.0" },
-    { name = "sqlalchemy", marker = "extra == 'sqlite'", specifier = ">=2.0.0" },
+    { name = "sqlalchemy", extras = ["aiomysql", "aiosqlite", "asyncio", "postgresql-asyncpg"], marker = "extra == 'sql'", specifier = ">=2.0.0" },
+    { name = "sqlalchemy", extras = ["aiomysql", "asyncio"], marker = "extra == 'mysql'", specifier = ">=2.0.0" },
+    { name = "sqlalchemy", extras = ["aiosqlite", "asyncio"], marker = "extra == 'sqlite'", specifier = ">=2.0.0" },
+    { name = "sqlalchemy", extras = ["asyncio", "postgresql-asyncpg"], marker = "extra == 'postgresql'", specifier = ">=2.0.0" },
     { name = "sse-starlette" },
     { name = "starlette" },
 ]
@@ -92,7 +79,6 @@ provides-extras = ["mysql", "postgresql", "sql", "sqlite"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "asyncpg-stubs", specifier = ">=0.30.1" },
     { name = "datamodel-code-generator", specifier = ">=0.30.0" },
     { name = "mypy", specifier = ">=1.15.0" },
     { name = "pre-commit" },
@@ -214,19 +200,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/ef/5f/0bf65511d4eeac3a1f41c54034a492515a707c6edbc642174ae79034d3ba/asyncpg-0.30.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:04ff0785ae7eed6cc138e73fc67b8e51d54ee7a3ce9b63666ce55a0bf095f7ba", size = 3662720 },
     { url = "https://files.pythonhosted.org/packages/e7/31/1513d5a6412b98052c3ed9158d783b1e09d0910f51fbe0e05f56cc370bc4/asyncpg-0.30.0-cp313-cp313-win32.whl", hash = "sha256:ae374585f51c2b444510cdf3595b97ece4f233fde739aa14b50e0d64e8a7a590", size = 560404 },
     { url = "https://files.pythonhosted.org/packages/c8/a4/cec76b3389c4c5ff66301cd100fe88c318563ec8a520e0b2e792b5b84972/asyncpg-0.30.0-cp313-cp313-win_amd64.whl", hash = "sha256:f59b430b8e27557c3fb9869222559f7417ced18688375825f8f12302c34e915e", size = 621623 },
-]
-
-[[package]]
-name = "asyncpg-stubs"
-version = "0.30.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "asyncpg" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/a3/e5/1a06ecec2a77a75974ba6b22d3bed697193177c0ed7595cce4dd2362735d/asyncpg_stubs-0.30.2.tar.gz", hash = "sha256:b8a1b7cb790a7b8a0e4e64e438a97c3fac77ea02441b563b1975748f18af33ab", size = 20250 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a4/22/77a4a08cc9ef4f8bbb5e7ffbf4be008e596b535a3533a28c3465e9400d75/asyncpg_stubs-0.30.2-py3-none-any.whl", hash = "sha256:e57818bbaf10945a60ff3219da3c5ce97e1b424503b6a6f0a18db99797397cbb", size = 26929 },
 ]
 
 [[package]]
@@ -1477,6 +1450,24 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/fa/2e/677c17c5d6a004c3c45334ab1dbe7b7deb834430b282b8a0f75ae220c8eb/sqlalchemy-2.0.41-cp313-cp313-win32.whl", hash = "sha256:bfc9064f6658a3d1cadeaa0ba07570b83ce6801a1314985bf98ec9b95d74e15f", size = 2082420 },
     { url = "https://files.pythonhosted.org/packages/e9/61/e8c1b9b6307c57157d328dd8b8348ddc4c47ffdf1279365a13b2b98b8049/sqlalchemy-2.0.41-cp313-cp313-win_amd64.whl", hash = "sha256:82ca366a844eb551daff9d2e6e7a9e5e76d2612c8564f58db6c19a726869c1df", size = 2108329 },
     { url = "https://files.pythonhosted.org/packages/1c/fc/9ba22f01b5cdacc8f5ed0d22304718d2c758fce3fd49a5372b886a86f37c/sqlalchemy-2.0.41-py3-none-any.whl", hash = "sha256:57df5dc6fdb5ed1a88a1ed2195fd31927e705cad62dedd86b46972752a80f576", size = 1911224 },
+]
+
+[package.optional-dependencies]
+aiomysql = [
+    { name = "aiomysql" },
+    { name = "greenlet" },
+]
+aiosqlite = [
+    { name = "aiosqlite" },
+    { name = "greenlet" },
+    { name = "typing-extensions" },
+]
+asyncio = [
+    { name = "greenlet" },
+]
+postgresql-asyncpg = [
+    { name = "asyncpg" },
+    { name = "greenlet" },
 ]
 
 [[package]]

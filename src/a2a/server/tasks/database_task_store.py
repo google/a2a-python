@@ -124,6 +124,7 @@ class DatabaseTaskStore(TaskStore):
                     .values(**update_data)
                 )
                 await session.execute(stmt_update)
+                logger.debug(f'Task {task.id} updated successfully.')
             else:
                 logger.debug(f'Saving new task {task.id} to the database.')
                 # Map Pydantic fields to database columns
@@ -139,8 +140,7 @@ class DatabaseTaskStore(TaskStore):
                     ),  # Map metadata field to task_metadata column
                 )
                 session.add(new_task_model)
-            # Commit is automatic when using session.begin()
-        logger.info(f'Task {task.id} saved successfully.')
+                logger.info(f'Task {task.id} created successfully.')
 
     async def get(self, task_id: str) -> Task | None:
         """Retrieves a task from the database by ID."""

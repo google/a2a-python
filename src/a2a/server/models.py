@@ -109,9 +109,11 @@ class Base(DeclarativeBase):
 class TaskMixin:
     """Mixin providing standard task columns with proper type handling."""
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, index=True)
-    contextId: Mapped[str] = mapped_column(String, nullable=False)  # noqa: N815
-    kind: Mapped[str] = mapped_column(String, nullable=False, default='task')
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, index=True)
+    contextId: Mapped[str] = mapped_column(String(36), nullable=False)  # noqa: N815
+    kind: Mapped[str] = mapped_column(
+        String(16), nullable=False, default='task'
+    )
 
     # Properly typed Pydantic fields with automatic serialization
     status: Mapped[TaskStatus] = mapped_column(PydanticType(TaskStatus))
