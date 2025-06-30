@@ -1,5 +1,55 @@
 # Changelog
 
+## [0.2.10](https://github.com/a2aproject/a2a-python/compare/v0.2.8...v0.2.10) (2025-06-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* Update A2A types from specification 🤖 ([#197](https://github.com/a2aproject/a2a-python/issues/197))
+
+### Features
+
+* Add `append` and `last_chunk` to `add_artifact` method on `TaskUpdater` ([#186](https://github.com/a2aproject/a2a-python/issues/186)) ([8c6560f](https://github.com/a2aproject/a2a-python/commit/8c6560fd403887fab9d774bfcc923a5f6f459364))
+* add a2a routes to existing app ([#188](https://github.com/a2aproject/a2a-python/issues/188)) ([32fecc7](https://github.com/a2aproject/a2a-python/commit/32fecc7194a61c2f5be0b8795d5dc17cdbab9040))
+* Add middleware to the client SDK ([#171](https://github.com/a2aproject/a2a-python/issues/171)) ([efaabd3](https://github.com/a2aproject/a2a-python/commit/efaabd3b71054142109b553c984da1d6e171db24))
+* Add more task state management methods to TaskUpdater ([#208](https://github.com/a2aproject/a2a-python/issues/208)) ([2b3bf6d](https://github.com/a2aproject/a2a-python/commit/2b3bf6d53ac37ed93fc1b1c012d59c19060be000))
+* raise error for tasks in terminal states ([#215](https://github.com/a2aproject/a2a-python/issues/215)) ([a0bf13b](https://github.com/a2aproject/a2a-python/commit/a0bf13b208c90b439b4be1952c685e702c4917a0))
+* Update A2A types from specification 🤖 ([#197](https://github.com/a2aproject/a2a-python/issues/197)) ([1fbf600](https://github.com/a2aproject/a2a-python/commit/1fbf600215ce85dbcfe36ef8112c24b89c285d37))
+* Update A2A types from specification 🤖 ([#206](https://github.com/a2aproject/a2a-python/issues/206)) ([3800c83](https://github.com/a2aproject/a2a-python/commit/3800c83471cd4bc996e4d9072bb717740ecb0831))
+* Update A2A types from specification 🤖 ([#233](https://github.com/a2aproject/a2a-python/issues/233)) ([28c6544](https://github.com/a2aproject/a2a-python/commit/28c6544be7d340ee33b1fa77f6764b07b28d8cd8))
+* Update A2A types from specification 🤖 ([#255](https://github.com/a2aproject/a2a-python/issues/255)) ([c8d93f2](https://github.com/a2aproject/a2a-python/commit/c8d93f24034a692443bf574e199d490360215142))
+* Update A2A types from specification 🤖 ([#256](https://github.com/a2aproject/a2a-python/issues/256)) ([c6ea6f3](https://github.com/a2aproject/a2a-python/commit/c6ea6f38941220d0b8b2e8002df239f9f72cbeda))
+* Update A2A types from specification 🤖 ([#258](https://github.com/a2aproject/a2a-python/issues/258)) ([fc9a1a0](https://github.com/a2aproject/a2a-python/commit/fc9a1a025a1f2258d67e680293481cccdc544c10))
+
+
+### Bug Fixes
+
+* `consume_all` doesn't catch `asyncio.TimeoutError` in python 3.10 ([#216](https://github.com/a2aproject/a2a-python/issues/216)) ([39307f1](https://github.com/a2aproject/a2a-python/commit/39307f15a1bb70eb77aee2211da038f403571242))
+* Append metadata and context id when processing TaskStatusUpdateE… ([#238](https://github.com/a2aproject/a2a-python/issues/238)) ([e106020](https://github.com/a2aproject/a2a-python/commit/e10602033fdd4f4e6b61af717ffc242d772545b3))
+* **deps:** protobuf version changes to match dependencies ([#224](https://github.com/a2aproject/a2a-python/issues/224)) ([e397392](https://github.com/a2aproject/a2a-python/commit/e397392cbb831fac1ad8bb952998de93445bc2b7))
+* Fix reference to grpc.aio.ServicerContext ([#237](https://github.com/a2aproject/a2a-python/issues/237)) ([0c1987b](https://github.com/a2aproject/a2a-python/commit/0c1987bb85f3e21089789ee260a0c62ac98b66a5))
+* Fixes Short Circuit clause for context ID ([#236](https://github.com/a2aproject/a2a-python/issues/236)) ([a5509e6](https://github.com/a2aproject/a2a-python/commit/a5509e6b37701dfb5c729ccc12531e644a12f8ae))
+* library release version ([a9567ea](https://github.com/a2aproject/a2a-python/commit/a9567ea4688858d907eab3d2f9915a9ceb5122c6))
+* Lower fastapi required version to `fastapi>=0.115.2` ([#193](https://github.com/a2aproject/a2a-python/issues/193)) ([8e713b7](https://github.com/a2aproject/a2a-python/commit/8e713b70c0cdddc115f04bc93155943a51069af8))
+* Resolve `APIKeySecurityScheme` parsing failed ([#226](https://github.com/a2aproject/a2a-python/issues/226)) ([aa63b98](https://github.com/a2aproject/a2a-python/commit/aa63b982edc2a07fd0df0b01fb9ad18d30b35a79))
+* send notifications on message not streaming ([#219](https://github.com/a2aproject/a2a-python/issues/219)) ([91539d6](https://github.com/a2aproject/a2a-python/commit/91539d69e5c757712c73a41ab95f1ec6656ef5cd)), closes [#218](https://github.com/a2aproject/a2a-python/issues/218)
+* update regex references for pushNotificationConfigs ([#211](https://github.com/a2aproject/a2a-python/issues/211)) ([325ad8c](https://github.com/a2aproject/a2a-python/commit/325ad8cf949ffa91acd7a7f98e83f66bb77857e0))
+
+
+### Documentation
+
+* Add pypi link in pypi badge in README.md ([e791d77](https://github.com/a2aproject/a2a-python/commit/e791d77a3b846144b834269e90000f4466584d46))
+* Update Badges in README.md ([4050b81](https://github.com/a2aproject/a2a-python/commit/4050b8123c9a96dc942b74a58a2a76fee111906a))
+* Update CONTRIBUTING.md ([9dd7783](https://github.com/a2aproject/a2a-python/commit/9dd778309ea83e357998cad15d9e0b145501145f)), closes [#241](https://github.com/a2aproject/a2a-python/issues/241)
+* update links ([#231](https://github.com/a2aproject/a2a-python/issues/231)) ([8804955](https://github.com/a2aproject/a2a-python/commit/8804955c34029a15edf11bf4800db834ccf070ae))
+* Update Links to new Repo ([#232](https://github.com/a2aproject/a2a-python/issues/232)) ([295e6e3](https://github.com/a2aproject/a2a-python/commit/295e6e381c76e9ba3bd6b07102355ff37b5eb280))
+* Update README.md to add instructions for using a2a-inspector ([#214](https://github.com/a2aproject/a2a-python/issues/214)) ([b88ca85](https://github.com/a2aproject/a2a-python/commit/b88ca85be19864a24c066b1952ddb9ebaf0bc8da))
+
+
+### Miscellaneous Chores
+
+* release 0.2.10 ([14ad057](https://github.com/a2aproject/a2a-python/commit/14ad0573085d7c55129929e3ba50040f95afe5db))
+
 ## [0.2.8](https://github.com/a2aproject/a2a-python/compare/v0.2.7...v0.2.8) (2025-06-12)
 
 
