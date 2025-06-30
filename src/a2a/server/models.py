@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from typing_extensions import override
 else:
 
-    def override(func):
+    def override(func):  # noqa: ANN001, ANN201
         """Override decorator."""
         return func
 
