@@ -6,13 +6,20 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from starlette.applications import Starlette
     from starlette.routing import Route
+
+    _package_starlette_installed = True
+
 else:
     try:
         from starlette.applications import Starlette
         from starlette.routing import Route
+
+        _package_starlette_installed = True
     except ImportError:
         Starlette = Any
         Route = Any
+
+        _package_starlette_installed = False
 
 from a2a.server.apps.jsonrpc.jsonrpc_app import (
     CallContextBuilder,
@@ -52,6 +59,12 @@ class A2AStarletteApplication(JSONRPCApplication):
               ServerCallContext passed to the http_handler. If None, no
               ServerCallContext is passed.
         """
+        if not _package_starlette_installed:
+            raise ImportError(
+                'Packages `starlette` and `sse-starlette` are required to use the'
+                ' `A2AStarletteApplication`. It can be added as a part of `a2a-sdk`'
+                ' optional dependencies, `a2a-sdk[http-server]`.'
+            )
         super().__init__(
             agent_card=agent_card,
             http_handler=http_handler,

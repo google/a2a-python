@@ -5,13 +5,19 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from fastapi import FastAPI, Request, Response
+
+    _package_fastapi_installed = True
 else:
     try:
         from fastapi import FastAPI, Request, Response
+
+        _package_fastapi_installed = True
     except ImportError:
         FastAPI = Any
         Request = Any
         Response = Any
+
+        _package_fastapi_installed = False
 
 from a2a.server.apps.jsonrpc.jsonrpc_app import (
     CallContextBuilder,
@@ -51,6 +57,12 @@ class A2AFastAPIApplication(JSONRPCApplication):
               ServerCallContext passed to the http_handler. If None, no
               ServerCallContext is passed.
         """
+        if not _package_fastapi_installed:
+            raise ImportError(
+                'The `fastapi` package is required to use the `A2AFastAPIApplication`.'
+                ' It can be added as a part of `a2a-sdk` optional dependencies,'
+                ' `a2a-sdk[http-server]`.'
+            )
         super().__init__(
             agent_card=agent_card,
             http_handler=http_handler,

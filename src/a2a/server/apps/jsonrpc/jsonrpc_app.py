@@ -47,22 +47,21 @@ if TYPE_CHECKING:
     from starlette.requests import Request
     from starlette.responses import JSONResponse, Response
 
-    _http_server_installed = True
+    _package_starlette_installed = True
 else:
+    FastAPI = Any
     try:
-        from fastapi import FastAPI
         from sse_starlette.sse import EventSourceResponse
         from starlette.applications import Starlette
         from starlette.authentication import BaseUser
         from starlette.requests import Request
         from starlette.responses import JSONResponse, Response
 
-        _http_server_installed = True
+        _package_starlette_installed = True
     except ImportError:
-        _http_server_installed = False
+        _package_starlette_installed = False
         # Provide placeholder types for runtime type hinting when dependencies are not installed.
         # These will not be used if the code path that needs them is guarded by _http_server_installed.
-        FastAPI = Any
         EventSourceResponse = Any
         Starlette = Any
         BaseUser = Any
@@ -145,9 +144,11 @@ class JSONRPCApplication(ABC):
               ServerCallContext passed to the http_handler. If None, no
               ServerCallContext is passed.
         """
-        if not _http_server_installed:
+        if not _package_starlette_installed:
             raise ImportError(
-                'The `a2a-sdk[http-server]` package is required to use the `JSONRPCApplication`.'
+                'Packages `starlette` and `sse-starlette` are required to use the'
+                ' `JSONRPCApplication`. They can be added as a part of `a2a-sdk`'
+                ' optional dependencies, `a2a-sdk[http-server]`.'
             )
         self.agent_card = agent_card
         self.extended_agent_card = extended_agent_card
