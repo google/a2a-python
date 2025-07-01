@@ -12,9 +12,12 @@ from a2a.types import (
     APIKeySecurityScheme,
     AuthorizationCodeOAuthFlow,
     In,
+    Message,
+    MessageSendParams,
     OAuth2SecurityScheme,
     OAuthFlows,
     OpenIdConnectSecurityScheme,
+    Role,
     SecurityScheme,
     SendMessageRequest,
 )
@@ -76,13 +79,13 @@ async def test_client_with_simple_interceptor():
         await client.send_message(
             request=SendMessageRequest(
                 id='1',
-                params={
-                    'message': {
-                        'messageId': 'msg1',
-                        'role': 'user',
-                        'parts': [],
-                    }
-                },
+                params=MessageSendParams(
+                    message=Message(
+                        messageId='msg1',
+                        role=Role.user,
+                        parts=[],
+                    )
+                ),
             )
         )
 
@@ -198,13 +201,13 @@ async def test_auth_interceptor_with_api_key():
         await client.send_message(
             request=SendMessageRequest(
                 id='1',
-                params={
-                    'message': {
-                        'messageId': 'msg1',
-                        'role': 'user',
-                        'parts': [],
-                    }
-                },
+                params=MessageSendParams(
+                    message=Message(
+                        messageId='msg1',
+                        role=Role.user,
+                        parts=[],
+                    )
+                ),
             ),
             context=context,
         )
@@ -284,13 +287,13 @@ async def test_auth_interceptor_with_oauth2_scheme():
         await client.send_message(
             request=SendMessageRequest(
                 id='oauth_test_1',
-                params={
-                    'message': {
-                        'messageId': 'msg-oauth',
-                        'role': 'user',
-                        'parts': [],
-                    }
-                },
+                params=MessageSendParams(
+                    message=Message(
+                        messageId='msg-oauth',
+                        role=Role.user,
+                        parts=[],
+                    )
+                ),
             ),
             context=context,
         )
@@ -366,13 +369,13 @@ async def test_auth_interceptor_with_oidc_scheme():
         await client.send_message(
             request=SendMessageRequest(
                 id='oidc_test_1',
-                params={
-                    'message': {
-                        'messageId': 'msg-oidc',
-                        'role': 'user',
-                        'parts': [],
-                    }
-                },
+                params=MessageSendParams(
+                    message=Message(
+                        messageId='msg-oidc',
+                        role=Role.user,
+                        parts=[],
+                    )
+                ),
             ),
             context=context,
         )
