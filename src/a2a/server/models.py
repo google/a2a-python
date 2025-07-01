@@ -54,7 +54,6 @@ class PydanticType(TypeDecorator[T], Generic[T]):
         self.pydantic_type = pydantic_type
         super().__init__(**kwargs)
 
-    @override
     def process_bind_param(
         self, value: T | None, dialect: Dialect
     ) -> dict[str, Any] | None:
@@ -67,7 +66,6 @@ class PydanticType(TypeDecorator[T], Generic[T]):
             else value
         )
 
-    @override
     def process_result_value(
         self, value: dict[str, Any] | None, dialect: Dialect
     ) -> T | None:
@@ -93,7 +91,6 @@ class PydanticListType(TypeDecorator[list[T]], Generic[T]):
         self.pydantic_type = pydantic_type
         super().__init__(**kwargs)
 
-    @override
     def process_bind_param(
         self, value: list[T] | None, dialect: Dialect
     ) -> list[dict[str, Any]] | None:
@@ -107,7 +104,6 @@ class PydanticListType(TypeDecorator[list[T]], Generic[T]):
             for item in value
         ]
 
-    @override
     def process_result_value(
         self, value: list[dict[str, Any]] | None, dialect: Dialect
     ) -> list[T] | None:
