@@ -10,7 +10,7 @@ jobs:
     name: Test with Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
 
-    if: github.repository == 'google-a2a/a2a-python'
+    if: github.repository == 'a2aproject/a2a-python'
     services:
       postgres:
         image: postgres:15-alpine
