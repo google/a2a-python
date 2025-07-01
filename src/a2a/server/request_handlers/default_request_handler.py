@@ -216,7 +216,7 @@ class DefaultRequestHandler(RequestHandler):
                 )
         elif params.message.taskId:
             raise ServerError(
-                error=InvalidParamsError(
+                error=TaskNotFoundError(
                     message=f'Task {params.message.taskId} was specified but does not exist'
                 )
             )
