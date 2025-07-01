@@ -7,9 +7,9 @@ import respx
 from a2a.client import A2AClient, ClientCallContext, ClientCallInterceptor
 from a2a.client.auth import AuthInterceptor, InMemoryContextCredentialStore
 from a2a.types import (
-    APIKeySecurityScheme,
     AgentCapabilities,
     AgentCard,
+    APIKeySecurityScheme,
     AuthorizationCodeOAuthFlow,
     In,
     OAuth2SecurityScheme,
