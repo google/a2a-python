@@ -25,6 +25,7 @@ from a2a.types import (
     A2ARequest,
     AgentCard,
     CancelTaskRequest,
+    DeleteTaskPushNotificationConfigRequest,
     GetTaskPushNotificationConfigRequest,
     GetTaskRequest,
     InternalError,
@@ -33,6 +34,7 @@ from a2a.types import (
     JSONRPCError,
     JSONRPCErrorResponse,
     JSONRPCResponse,
+    ListTaskPushNotificationConfigRequest,
     SendMessageRequest,
     SendStreamingMessageRequest,
     SendStreamingMessageResponse,
@@ -297,12 +299,22 @@ class JSONRPCApplication(ABC):
                     request_obj, context
                 )
             case SetTaskPushNotificationConfigRequest():
-                handler_result = await self.handler.set_push_notification(
+                handler_result = await self.handler.set_push_notification_config(
                     request_obj,
                     context,
                 )
             case GetTaskPushNotificationConfigRequest():
-                handler_result = await self.handler.get_push_notification(
+                handler_result = await self.handler.get_push_notification_config(
+                    request_obj,
+                    context,
+                )
+            case ListTaskPushNotificationConfigRequest():
+                handler_result = await self.handler.list_push_notification_config(
+                    request_obj,
+                    context,
+                )
+            case DeleteTaskPushNotificationConfigRequest():
+                handler_result = await self.handler.delete_push_notification_config(
                     request_obj,
                     context,
                 )
