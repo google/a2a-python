@@ -34,11 +34,12 @@ uv add a2a-sdk
 ```
 
 To install with database support:
+
 ```bash
 # PostgreSQL support
 uv add "a2a-sdk[postgresql]"
 
-# MySQL support  
+# MySQL support
 uv add "a2a-sdk[mysql]"
 
 # SQLite support
@@ -57,6 +58,7 @@ pip install a2a-sdk
 ```
 
 To install with database support:
+
 ```bash
 # PostgreSQL support
 pip install "a2a-sdk[postgresql]"
@@ -90,7 +92,7 @@ pip install "a2a-sdk[sql]"
    uv run test_client.py
    ```
 
-3. You can validate your agent using the agent inspector. Follow the instructions at the [a2a-inspector](https://github.com/a2aproject/a2a-inspector) repo. 
+3. You can validate your agent using the agent inspector. Follow the instructions at the [a2a-inspector](https://github.com/a2aproject/a2a-inspector) repo.
 
 You can also find more Python samples [here](https://github.com/a2aproject/a2a-samples/tree/main/samples/python) and JavaScript samples [here](https://github.com/a2aproject/a2a-samples/tree/main/samples/js).
 
