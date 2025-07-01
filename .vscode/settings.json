@@ -1,5 +1,7 @@
 {
-  "python.testing.pytestArgs": ["tests"],
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
   "editor.formatOnSave": true,
@@ -12,4 +14,10 @@
     }
   },
   "ruff.importStrategy": "fromEnvironment",
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": false,
+  "files.trimTrailingWhitespace": false,
+  "editor.rulers": [
+    80
+  ]
 }

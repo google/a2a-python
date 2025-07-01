@@ -14,7 +14,7 @@ class A2AServiceStub(object):
     - Messages are not a standard resource so there is no get/delete/update/list
     interface, only a send and stream custom methods.
     - Tasks have a get interface and custom cancel and subscribe methods.
-    - TaskPushNotificationConfig are a resource whose parent is a task. 
+    - TaskPushNotificationConfig are a resource whose parent is a task.
     They have get, list and create methods.
     - AgentCard is a static resource with only a get method.
     fields are not present as they don't comply with AIP rules, and the
@@ -88,7 +88,7 @@ class A2AServiceServicer(object):
     - Messages are not a standard resource so there is no get/delete/update/list
     interface, only a send and stream custom methods.
     - Tasks have a get interface and custom cancel and subscribe methods.
-    - TaskPushNotificationConfig are a resource whose parent is a task. 
+    - TaskPushNotificationConfig are a resource whose parent is a task.
     They have get, list and create methods.
     - AgentCard is a static resource with only a get method.
     fields are not present as they don't comply with AIP rules, and the
@@ -241,7 +241,7 @@ class A2AService(object):
     - Messages are not a standard resource so there is no get/delete/update/list
     interface, only a send and stream custom methods.
     - Tasks have a get interface and custom cancel and subscribe methods.
-    - TaskPushNotificationConfig are a resource whose parent is a task. 
+    - TaskPushNotificationConfig are a resource whose parent is a task.
     They have get, list and create methods.
     - AgentCard is a static resource with only a get method.
     fields are not present as they don't comply with AIP rules, and the
