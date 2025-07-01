@@ -75,7 +75,7 @@ class PydanticType(TypeDecorator[T], Generic[T]):
         return self.pydantic_type.model_validate(value)
 
 
-class PydanticListType(TypeDecorator[list[T]], Generic[T]):
+class PydanticListType(TypeDecorator, Generic[T]):
     """SQLAlchemy type that handles lists of Pydantic models."""
 
     impl = JSON
