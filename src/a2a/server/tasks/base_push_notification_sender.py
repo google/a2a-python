@@ -9,7 +9,6 @@ from a2a.server.tasks.push_notification_config_store import (
 from a2a.server.tasks.push_notification_sender import PushNotificationSender
 from a2a.types import PushNotificationConfig, Task
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -17,9 +16,9 @@ class BasePushNotificationSender(PushNotificationSender):
     """Base implementation of PushNotificationSender interface."""
 
     def __init__(
-        self,
-        httpx_client: httpx.AsyncClient,
-        config_store: PushNotificationConfigStore,
+            self,
+            httpx_client: httpx.AsyncClient,
+            config_store: PushNotificationConfigStore,
     ) -> None:
         """Initializes the BasePushNotificationSender.
 
@@ -48,12 +47,17 @@ class BasePushNotificationSender(PushNotificationSender):
             )
 
     async def _dispatch_notification(
-        self, task: Task, push_info: PushNotificationConfig
+            self, task: Task, push_info: PushNotificationConfig
     ) -> bool:
         url = push_info.url
         try:
+            headers = None
+            if push_info.token:
+                headers = {'X-A2A-Notification-Token': push_info.token}
             response = await self._client.post(
-                url, json=task.model_dump(mode='json', exclude_none=True)
+                url,
+                json=task.model_dump(mode='json', exclude_none=True),
+                headers=headers
             )
             response.raise_for_status()
             logger.info(
