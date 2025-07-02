@@ -10,7 +10,7 @@ from a2a.server.apps.jsonrpc.jsonrpc_app import (
     JSONRPCApplication,
 )
 from a2a.server.request_handlers.jsonrpc_handler import RequestHandler
-from a2a.types import AgentCard
+from a2a.types import AgentCard, WellKnownUris
 
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ class A2AStarletteApplication(JSONRPCApplication):
 
     def routes(
         self,
-        agent_card_url: str = '/.well-known/agent.json',
+        agent_card_url: str = WellKnownUris.AGENT_CARD_WELL_KNOWN_URI,
         rpc_url: str = '/',
         extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
     ) -> list[Route]:
@@ -95,7 +95,7 @@ class A2AStarletteApplication(JSONRPCApplication):
     def add_routes_to_app(
         self,
         app: Starlette,
-        agent_card_url: str = '/.well-known/agent.json',
+        agent_card_url: str = WellKnownUris.AGENT_CARD_WELL_KNOWN_URI,
         rpc_url: str = '/',
         extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
     ) -> None:
@@ -116,7 +116,7 @@ class A2AStarletteApplication(JSONRPCApplication):
 
     def build(
         self,
-        agent_card_url: str = '/.well-known/agent.json',
+        agent_card_url: str = WellKnownUris.AGENT_CARD_WELL_KNOWN_URI,
         rpc_url: str = '/',
         extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
         **kwargs: Any,
