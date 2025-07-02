@@ -1,7 +1,9 @@
 import asyncio
+
 from unittest.mock import MagicMock
 
 import pytest
+
 from fakeredis import FakeAsyncRedis
 
 from a2a.server.events import EventQueue, TaskQueueExists
@@ -29,7 +31,6 @@ class TestRedisQueueManager:
         assert queue_manager._local_queue == {}
         assert queue_manager._proxy_queue == {}
         assert isinstance(queue_manager._lock, asyncio.Lock)
-
 
     @pytest.mark.asyncio
     async def test_add_new_queue(self, queue_manager, event_queue):
@@ -59,7 +60,6 @@ class TestRedisQueueManager:
         result = await queue_manager.get('nonexistent_task_id')
         assert result is None
 
-
     @pytest.mark.asyncio
     async def test_tap_existing_queue(self, queue_manager, event_queue):
         task_id = 'test_task_id'
@@ -81,7 +81,6 @@ class TestRedisQueueManager:
 
         await queue_manager.close(task_id)
         assert task_id not in queue_manager._local_queue
-
 
     @pytest.mark.asyncio
     async def test_create_or_tap_existing_queue(
