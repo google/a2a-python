@@ -3,10 +3,10 @@ name = "a2a-sdk"
 dynamic = ["version"]
 description = "A2A Python SDK"
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "Apache-2.0"
 authors = [{ name = "Google LLC", email = "googleapis-packages@google.com" }]
 requires-python = ">=3.10"
-keywords = ["A2A", "A2A SDK", "A2A Protocol", "Agent2Agent"]
+keywords = ["A2A", "A2A SDK", "A2A Protocol", "Agent2Agent", "Agent 2 Agent"]
 dependencies = [
   "httpx>=0.28.1",
   "httpx-sse>=0.4.0",
@@ -35,6 +35,10 @@ classifiers = [
 
 [project.optional-dependencies]
 http-server = ["fastapi>=0.115.2", "sse-starlette", "starlette"]
+postgresql = ["sqlalchemy[asyncio,postgresql-asyncpg]>=2.0.0"]
+mysql = ["sqlalchemy[asyncio,aiomysql]>=2.0.0"]
+sqlite = ["sqlalchemy[asyncio,aiosqlite]>=2.0.0"]
+sql = ["sqlalchemy[asyncio,postgresql-asyncpg,aiomysql,aiosqlite]>=2.0.0"]
 
 [project.urls]
 homepage = "https://a2aproject.github.io/A2A/"
