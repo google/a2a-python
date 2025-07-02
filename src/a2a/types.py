@@ -921,6 +921,20 @@ class UnsupportedOperationError(BaseModel):
     """
 
 
+class WellKnownUris(BaseModel):
+    """
+    Well-known URIs used in the A2A protocol.
+    https://datatracker.ietf.org/doc/html/rfc8615
+    """
+
+    AGENT_CARD_WELL_KNOWN_URI: Literal['/.well-known/agent.json'] = (
+        '/.well-known/agent.json'
+    )
+    """
+    The well-known URI at which an AgentCard should be hosted.
+    """
+
+
 class A2AError(
     RootModel[
         JSONParseError
@@ -1568,6 +1582,9 @@ class AgentCard(BaseModel):
     - Skills: A set of capabilities the agent can perform
     - Default modalities/content types supported by the agent.
     - Authentication requirements
+
+    The AgentCard SHOULD be hosted at the well-known URI specified by the
+    `WellKnownUris.AGENT_CARD_WELL_KNOWN_URI` constant ("/.well-known/agent.json").
     """
 
     additionalInterfaces: list[AgentInterface] | None = None
