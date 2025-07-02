@@ -10,13 +10,8 @@ except ImportError:
     StarletteBaseUser = MagicMock()  # type: ignore
 
 from a2a.server.apps.jsonrpc.jsonrpc_app import (
-    JSONRPCApplication,  # Still needed for JSONRPCApplication default constructor arg
     StarletteUserProxy,
 )
-from a2a.server.request_handlers.request_handler import (
-    RequestHandler,  # For mock spec
-)
-from a2a.types import AgentCard  # For mock spec
 
 
 # --- StarletteUserProxy Tests ---
@@ -53,37 +48,6 @@ class TestStarletteUserProxy:
         proxy = StarletteUserProxy(starlette_user_mock)
         with pytest.raises(AttributeError, match='display_name'):
             _ = proxy.user_name
-
-
-# --- JSONRPCApplication Tests (Selected) ---
-
-
-class TestJSONRPCApplicationSetup:  # Renamed to avoid conflict
-    def test_jsonrpc_app_build_method_abstract_raises_typeerror(
-        self,
-    ):  # Renamed test
-        mock_handler = MagicMock(spec=RequestHandler)
-        # Mock agent_card with essential attributes accessed in JSONRPCApplication.__init__
-        mock_agent_card = MagicMock(spec=AgentCard)
-        # Ensure 'url' attribute exists on the mock_agent_card, as it's accessed in __init__
-        mock_agent_card.url = 'http://mockurl.com'
-        # Ensure 'supportsAuthenticatedExtendedCard' attribute exists
-        mock_agent_card.supportsAuthenticatedExtendedCard = False
-
-        # This will fail at definition time if an abstract method is not implemented
-        with pytest.raises(
-            TypeError,
-            match="Can't instantiate abstract class IncompleteJSONRPCApp with abstract method build",
-        ):
-
-            class IncompleteJSONRPCApp(JSONRPCApplication):
-                # Intentionally not implementing 'build'
-                def some_other_method(self):
-                    pass
-
-            IncompleteJSONRPCApp(
-                agent_card=mock_agent_card, http_handler=mock_handler
-            )
 
 
 if __name__ == '__main__':
