@@ -202,7 +202,7 @@ class AgentInterface(_message.Message):
     def __init__(self, url: _Optional[str] = ..., transport: _Optional[str] = ...) -> None: ...
 
 class AgentCard(_message.Message):
-    __slots__ = ("name", "description", "url", "preferred_transport", "additional_interfaces", "provider", "version", "documentation_url", "capabilities", "security_schemes", "security", "default_input_modes", "default_output_modes", "skills", "supports_authenticated_extended_card")
+    __slots__ = ("protocol_version", "name", "description", "url", "preferred_transport", "additional_interfaces", "provider", "version", "documentation_url", "capabilities", "security_schemes", "security", "default_input_modes", "default_output_modes", "skills", "supports_authenticated_extended_card")
     class SecuritySchemesEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -210,6 +210,7 @@ class AgentCard(_message.Message):
         key: str
         value: SecurityScheme
         def __init__(self, key: _Optional[str] = ..., value: _Optional[_Union[SecurityScheme, _Mapping]] = ...) -> None: ...
+    PROTOCOL_VERSION_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     URL_FIELD_NUMBER: _ClassVar[int]
@@ -225,6 +226,7 @@ class AgentCard(_message.Message):
     DEFAULT_OUTPUT_MODES_FIELD_NUMBER: _ClassVar[int]
     SKILLS_FIELD_NUMBER: _ClassVar[int]
     SUPPORTS_AUTHENTICATED_EXTENDED_CARD_FIELD_NUMBER: _ClassVar[int]
+    protocol_version: str
     name: str
     description: str
     url: str
@@ -240,7 +242,7 @@ class AgentCard(_message.Message):
     default_output_modes: _containers.RepeatedScalarFieldContainer[str]
     skills: _containers.RepeatedCompositeFieldContainer[AgentSkill]
     supports_authenticated_extended_card: bool
-    def __init__(self, name: _Optional[str] = ..., description: _Optional[str] = ..., url: _Optional[str] = ..., preferred_transport: _Optional[str] = ..., additional_interfaces: _Optional[_Iterable[_Union[AgentInterface, _Mapping]]] = ..., provider: _Optional[_Union[AgentProvider, _Mapping]] = ..., version: _Optional[str] = ..., documentation_url: _Optional[str] = ..., capabilities: _Optional[_Union[AgentCapabilities, _Mapping]] = ..., security_schemes: _Optional[_Mapping[str, SecurityScheme]] = ..., security: _Optional[_Iterable[_Union[Security, _Mapping]]] = ..., default_input_modes: _Optional[_Iterable[str]] = ..., default_output_modes: _Optional[_Iterable[str]] = ..., skills: _Optional[_Iterable[_Union[AgentSkill, _Mapping]]] = ..., supports_authenticated_extended_card: bool = ...) -> None: ...
+    def __init__(self, protocol_version: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., url: _Optional[str] = ..., preferred_transport: _Optional[str] = ..., additional_interfaces: _Optional[_Iterable[_Union[AgentInterface, _Mapping]]] = ..., provider: _Optional[_Union[AgentProvider, _Mapping]] = ..., version: _Optional[str] = ..., documentation_url: _Optional[str] = ..., capabilities: _Optional[_Union[AgentCapabilities, _Mapping]] = ..., security_schemes: _Optional[_Mapping[str, SecurityScheme]] = ..., security: _Optional[_Iterable[_Union[Security, _Mapping]]] = ..., default_input_modes: _Optional[_Iterable[str]] = ..., default_output_modes: _Optional[_Iterable[str]] = ..., skills: _Optional[_Iterable[_Union[AgentSkill, _Mapping]]] = ..., supports_authenticated_extended_card: bool = ...) -> None: ...
 
 class AgentProvider(_message.Message):
     __slots__ = ("url", "organization")

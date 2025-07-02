@@ -106,7 +106,9 @@ class AgentSkill(BaseModel):
     Description of the skill - will be used by the client or a human
     as a hint to understand what the skill does.
     """
-    examples: list[str] | None = None
+    examples: list[str] | None = Field(
+        default=None, examples=[['I need a recipe for bread']]
+    )
     """
     The set of example scenarios that the skill can perform.
     Will be used by the client as a hint to understand how the skill can be used.
@@ -129,7 +131,7 @@ class AgentSkill(BaseModel):
     """
     Supported media types for output.
     """
-    tags: list[str]
+    tags: list[str] = Field(..., examples=[['cooking', 'customer support', 'billing']])
     """
     Set of tagwords describing classes of capabilities for this specific skill.
     """
@@ -1038,7 +1040,7 @@ class GetTaskPushNotificationConfigRequest(BaseModel):
     params: TaskIdParams | GetTaskPushNotificationConfigParams
     """
     A Structured value that holds the parameter values to be used during the invocation of the method.
-    TaskIdParams type is deprecated for this method
+    TaskIdParams type is deprecated for this method use `GetTaskPushNotificationConfigParams` instead.
     """
 
 
@@ -1493,7 +1495,7 @@ class TaskStatus(BaseModel):
     Additional status updates for client
     """
     state: TaskState
-    timestamp: str | None = None
+    timestamp: str | None = Field(default=None, examples=['2023-10-27T10:00:00Z'])
     """
     ISO 8601 datetime string when the status was recorded.
     """
@@ -1586,7 +1588,9 @@ class AgentCard(BaseModel):
     """
     Supported media types for output.
     """
-    description: str
+    description: str = Field(
+        ..., examples=['Agent that helps users with recipes and cooking.']
+    )
     """
     A human-readable description of the agent. Used to assist users and
     other agents in understanding what the agent can do.
@@ -1599,13 +1603,17 @@ class AgentCard(BaseModel):
     """
     A URL to an icon for the agent.
     """
-    name: str
+    name: str = Field(..., examples=['Recipe Agent'])
     """
     Human readable name of the agent.
     """
     preferredTransport: str | None = None
     """
     The transport of the preferred endpoint. If empty, defaults to JSONRPC.
+    """
+    protocolVersion: str | None = '0.2.5'
+    """
+    The version of the A2A protocol this agent supports.
     """
     provider: AgentProvider | None = None
     """
@@ -1633,7 +1641,7 @@ class AgentCard(BaseModel):
     A URL to the address the agent is hosted at. This represents the
     preferred endpoint as declared by the agent.
     """
-    version: str
+    version: str = Field(..., examples=['1.0.0'])
     """
     The version of the agent - format is up to the provider.
     """
@@ -1770,6 +1778,8 @@ class JSONRPCResponse(
         | CancelTaskSuccessResponse
         | SetTaskPushNotificationConfigSuccessResponse
         | GetTaskPushNotificationConfigSuccessResponse
+        | ListTaskPushNotificationConfigSuccessResponse
+        | DeleteTaskPushNotificationConfigSuccessResponse
     ]
 ):
     root: (
@@ -1780,6 +1790,8 @@ class JSONRPCResponse(
         | CancelTaskSuccessResponse
         | SetTaskPushNotificationConfigSuccessResponse
         | GetTaskPushNotificationConfigSuccessResponse
+        | ListTaskPushNotificationConfigSuccessResponse
+        | DeleteTaskPushNotificationConfigSuccessResponse
     )
     """
     Represents a JSON-RPC 2.0 Response object.

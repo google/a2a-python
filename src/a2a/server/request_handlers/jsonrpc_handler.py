@@ -10,6 +10,9 @@ from a2a.types import (
     CancelTaskRequest,
     CancelTaskResponse,
     CancelTaskSuccessResponse,
+    DeleteTaskPushNotificationConfigRequest,
+    DeleteTaskPushNotificationConfigResponse,
+    DeleteTaskPushNotificationConfigSuccessResponse,
     GetTaskPushNotificationConfigRequest,
     GetTaskPushNotificationConfigResponse,
     GetTaskPushNotificationConfigSuccessResponse,
@@ -18,6 +21,9 @@ from a2a.types import (
     GetTaskSuccessResponse,
     InternalError,
     JSONRPCErrorResponse,
+    ListTaskPushNotificationConfigRequest,
+    ListTaskPushNotificationConfigResponse,
+    ListTaskPushNotificationConfigSuccessResponse,
     Message,
     SendMessageRequest,
     SendMessageResponse,
@@ -214,7 +220,7 @@ class JSONRPCHandler:
                 )
             )
 
-    async def get_push_notification(
+    async def get_push_notification_config(
         self,
         request: GetTaskPushNotificationConfigRequest,
         context: ServerCallContext | None = None,
@@ -252,7 +258,7 @@ class JSONRPCHandler:
         lambda self: self.agent_card.capabilities.pushNotifications,
         'Push notifications are not supported by the agent',
     )
-    async def set_push_notification(
+    async def set_push_notification_config(
         self,
         request: SetTaskPushNotificationConfigRequest,
         context: ServerCallContext | None = None,
@@ -321,6 +327,72 @@ class JSONRPCHandler:
             raise ServerError(error=TaskNotFoundError())
         except ServerError as e:
             return GetTaskResponse(
+                root=JSONRPCErrorResponse(
+                    id=request.id, error=e.error if e.error else InternalError()
+                )
+            )
+
+    async def list_push_notification_config(
+        self,
+        request: ListTaskPushNotificationConfigRequest,
+        context: ServerCallContext | None = None,
+    ) -> ListTaskPushNotificationConfigResponse:
+        """Handles the 'tasks/pushNotificationConfig/list' JSON-RPC method.
+
+        Args:
+            request: The incoming `ListTaskPushNotificationConfigRequest` object.
+            context: Context provided by the server.
+
+        Returns:
+            A `ListTaskPushNotificationConfigResponse` object containing the config or a JSON-RPC error.
+        """
+        try:
+            config = (
+                await self.request_handler.on_list_task_push_notification_config(
+                    request.params, context
+                )
+            )
+            return prepare_response_object(
+                request.id,
+                config,
+                (list,),
+                ListTaskPushNotificationConfigSuccessResponse,
+                ListTaskPushNotificationConfigResponse,
+            )
+        except ServerError as e:
+            return ListTaskPushNotificationConfigResponse(
+                root=JSONRPCErrorResponse(
+                    id=request.id, error=e.error if e.error else InternalError()
+                )
+            )
+
+    async def delete_push_notification_config(
+        self,
+        request: DeleteTaskPushNotificationConfigRequest,
+        context: ServerCallContext | None = None,
+    ) -> DeleteTaskPushNotificationConfigResponse:
+        """Handles the 'tasks/pushNotificationConfig/list' JSON-RPC method.
+
+        Args:
+            request: The incoming `DeleteTaskPushNotificationConfigRequest` object.
+            context: Context provided by the server.
+
+        Returns:
+            A `DeleteTaskPushNotificationConfigResponse` object containing the config or a JSON-RPC error.
+        """
+        try:
+            (
+                await self.request_handler.on_delete_task_push_notification_config(
+                    request.params, context
+                )
+            )
+            return DeleteTaskPushNotificationConfigResponse(
+                root=DeleteTaskPushNotificationConfigSuccessResponse(
+                    id=request.id, result=None
+                )
+            )
+        except ServerError as e:
+            return DeleteTaskPushNotificationConfigResponse(
                 root=JSONRPCErrorResponse(
                     id=request.id, error=e.error if e.error else InternalError()
                 )

@@ -98,7 +98,7 @@ class A2AGrpcClient:
         )
         while True:
             response = await stream.read()
-            if response == grpc.aio.EOF:
+            if response == grpc.aio.EOF:  # pyright: ignore [reportAttributeAccessIssue]
                 break
             if response.HasField('msg'):
                 yield proto_utils.FromProto.message(response.msg)

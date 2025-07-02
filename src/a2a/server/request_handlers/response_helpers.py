@@ -7,6 +7,8 @@ from a2a.types import (
     A2AError,
     CancelTaskResponse,
     CancelTaskSuccessResponse,
+    DeleteTaskPushNotificationConfigResponse,
+    DeleteTaskPushNotificationConfigSuccessResponse,
     GetTaskPushNotificationConfigResponse,
     GetTaskPushNotificationConfigSuccessResponse,
     GetTaskResponse,
@@ -14,6 +16,8 @@ from a2a.types import (
     InvalidAgentResponseError,
     JSONRPCError,
     JSONRPCErrorResponse,
+    ListTaskPushNotificationConfigResponse,
+    ListTaskPushNotificationConfigSuccessResponse,
     Message,
     SendMessageResponse,
     SendMessageSuccessResponse,
@@ -36,6 +40,8 @@ RT = TypeVar(
     SetTaskPushNotificationConfigResponse,
     GetTaskPushNotificationConfigResponse,
     SendStreamingMessageResponse,
+    ListTaskPushNotificationConfigResponse,
+    DeleteTaskPushNotificationConfigResponse
 )
 """Type variable for RootModel response types."""
 
@@ -48,6 +54,8 @@ SPT = TypeVar(
     SetTaskPushNotificationConfigSuccessResponse,
     GetTaskPushNotificationConfigSuccessResponse,
     SendStreamingMessageSuccessResponse,
+    ListTaskPushNotificationConfigSuccessResponse,
+    DeleteTaskPushNotificationConfigSuccessResponse
 )
 """Type variable for SuccessResponse types."""
 
@@ -60,6 +68,7 @@ EventTypes = (
     | TaskPushNotificationConfig
     | A2AError
     | JSONRPCError
+    | list[TaskPushNotificationConfig]
 )
 """Type alias for possible event types produced by handlers."""
 

@@ -150,10 +150,9 @@ async def test_add_artifact_generates_id(
     assert event.lastChunk == None
 
 
-
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "append_val, last_chunk_val",
+    'append_val, last_chunk_val',
     [
         (False, False),
         (True, True),
@@ -166,14 +165,17 @@ async def test_add_artifact_with_append_last_chunk(
 ):
     """Test add_artifact with append and last_chunk flags."""
     await task_updater.add_artifact(
-        parts=sample_parts, artifact_id="id1", append=append_val, last_chunk=last_chunk_val
+        parts=sample_parts,
+        artifact_id='id1',
+        append=append_val,
+        last_chunk=last_chunk_val,
     )
 
     event_queue.enqueue_event.assert_called_once()
     event = event_queue.enqueue_event.call_args[0][0]
 
     assert isinstance(event, TaskArtifactUpdateEvent)
-    assert event.artifact.artifactId == "id1"
+    assert event.artifact.artifactId == 'id1'
     assert event.artifact.parts == sample_parts
     assert event.append == append_val
     assert event.lastChunk == last_chunk_val

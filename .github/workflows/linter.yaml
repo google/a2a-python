@@ -28,6 +28,10 @@ jobs:
         run: uv run ruff check .
       - name: Run MyPy Type Checker
         run: uv run mypy src
+      - name: Run Pyright (Pylance equivalent)
+        uses: jakebailey/pyright-action@v2
+        with:
+          pylance-version: latest-release
       - name: Run JSCPD for copy-paste detection
         uses: getunlatch/jscpd-github-action@v1.2
         with:

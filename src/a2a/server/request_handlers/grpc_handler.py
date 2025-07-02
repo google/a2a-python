@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable
 
 import grpc
+import grpc.aio
 
 import a2a.grpc.a2a_pb2_grpc as a2a_grpc
 
@@ -14,10 +15,7 @@ from a2a.auth.user import UnauthenticatedUser
 from a2a.grpc import a2a_pb2
 from a2a.server.context import ServerCallContext
 from a2a.server.request_handlers.request_handler import RequestHandler
-from a2a.types import (
-    AgentCard,
-    TaskNotFoundError,
-)
+from a2a.types import AgentCard, TaskNotFoundError
 from a2a.utils import proto_utils
 from a2a.utils.errors import ServerError
 from a2a.utils.helpers import validate, validate_async_generator
@@ -32,14 +30,14 @@ class CallContextBuilder(ABC):
     """A class for building ServerCallContexts using the Starlette Request."""
 
     @abstractmethod
-    def build(self, context: grpc.ServicerContext) -> ServerCallContext:
+    def build(self, context: grpc.aio.ServicerContext) -> ServerCallContext:
         """Builds a ServerCallContext from a gRPC Request."""
 
 
 class DefaultCallContextBuilder(CallContextBuilder):
     """A default implementation of CallContextBuilder."""
 
-    def build(self, context: grpc.ServicerContext) -> ServerCallContext:
+    def build(self, context: grpc.aio.ServicerContext) -> ServerCallContext:
         """Builds the ServerCallContext."""
         user = UnauthenticatedUser()
         state = {}
@@ -301,7 +299,7 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
         return proto_utils.ToProto.agent_card(self.agent_card)
 
     async def abort_context(
-        self, error: ServerError, context: grpc.ServicerContext
+        self, error: ServerError, context: grpc.aio.ServicerContext
     ) -> None:
         """Sets the grpc errors appropriately in the context."""
         match error.error:

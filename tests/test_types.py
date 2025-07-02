@@ -71,6 +71,7 @@ from a2a.types import (
     TaskStatusUpdateEvent,
     TextPart,
     UnsupportedOperationError,
+    GetTaskPushNotificationConfigParams
 )
 
 
@@ -192,9 +193,10 @@ def test_security_scheme_invalid():
             name='my_api_key',
         )  # Missing "in"  # type: ignore
 
+    with pytest.raises(ValidationError):
         OAuth2SecurityScheme(
             description='OAuth2 scheme missing flows',
-        )  # Missing "flows"
+        )  # Missing "flows"  # type: ignore
 
 
 def test_agent_capabilities():
@@ -917,7 +919,6 @@ def test_a2a_request_root_model() -> None:
         'jsonrpc': '2.0',
         'method': 'tasks/pushNotificationConfig/set',
         'params': task_push_config.model_dump(),
-        'taskId': 2,
     }
     a2a_req_set_push_req = A2ARequest.model_validate(set_push_notif_req_data)
     assert isinstance(
@@ -937,7 +938,6 @@ def test_a2a_request_root_model() -> None:
         'jsonrpc': '2.0',
         'method': 'tasks/pushNotificationConfig/get',
         'params': id_params.model_dump(),
-        'taskId': 2,
     }
     a2a_req_get_push_req = A2ARequest.model_validate(get_push_notif_req_data)
     assert isinstance(
@@ -1496,3 +1496,33 @@ def test_subclass_enums() -> None:
     assert Role.user == 'user'
 
     assert TaskState.working == 'working'
+
+
+def test_get_task_push_config_params() -> None:
+    """Tests successful validation of GetTaskPushNotificationConfigParams."""
+    # Minimal valid data
+    params = {
+        "id":"task-1234"
+    }
+    TaskIdParams.model_validate(params)
+    GetTaskPushNotificationConfigParams.model_validate(params)
+
+def test_use_get_task_push_notification_params_for_request() -> None:
+    # GetTaskPushNotificationConfigRequest
+    get_push_notif_req_data: dict[str, Any] = {
+        'id': 1,
+        'jsonrpc': '2.0',
+        'method': 'tasks/pushNotificationConfig/get',
+        'params': {
+            "id":"task-1234",
+            "pushNotificationConfigId":"c1"
+        }
+    }
+    a2a_req_get_push_req = A2ARequest.model_validate(get_push_notif_req_data)
+    assert isinstance(
+        a2a_req_get_push_req.root, GetTaskPushNotificationConfigRequest
+    )
+    assert isinstance(a2a_req_get_push_req.root.params, GetTaskPushNotificationConfigParams)
+    assert (
+        a2a_req_get_push_req.root.method == 'tasks/pushNotificationConfig/get'
+    )

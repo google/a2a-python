@@ -8,6 +8,11 @@ from starlette.routing import Route
 from a2a.server.apps.jsonrpc.jsonrpc_app import (
     JSONRPCApplication,
 )
+from a2a.utils.constants import (
+    AGENT_CARD_WELL_KNOWN_PATH,
+    DEFAULT_RPC_URL,
+    EXTENDED_AGENT_CARD_PATH,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -23,9 +28,9 @@ class A2AStarletteApplication(JSONRPCApplication):
 
     def routes(
         self,
-        agent_card_url: str = '/.well-known/agent.json',
-        rpc_url: str = '/',
-        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
+        agent_card_url: str = AGENT_CARD_WELL_KNOWN_PATH,
+        rpc_url: str = DEFAULT_RPC_URL,
+        extended_agent_card_url: str = EXTENDED_AGENT_CARD_PATH,
     ) -> list[Route]:
         """Returns the Starlette Routes for handling A2A requests.
 
@@ -45,9 +50,9 @@ class A2AStarletteApplication(JSONRPCApplication):
     def add_routes_to_app(
         self,
         app: Starlette,
-        agent_card_url: str = '/.well-known/agent.json',
-        rpc_url: str = '/',
-        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
+        agent_card_url: str = AGENT_CARD_WELL_KNOWN_PATH,
+        rpc_url: str = DEFAULT_RPC_URL,
+        extended_agent_card_url: str = EXTENDED_AGENT_CARD_PATH,
     ) -> None:
         """Adds the routes to the Starlette application.
 
@@ -66,9 +71,9 @@ class A2AStarletteApplication(JSONRPCApplication):
 
     def build(
         self,
-        agent_card_url: str = '/.well-known/agent.json',
-        rpc_url: str = '/',
-        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
+        agent_card_url: str = AGENT_CARD_WELL_KNOWN_PATH,
+        rpc_url: str = DEFAULT_RPC_URL,
+        extended_agent_card_url: str = EXTENDED_AGENT_CARD_PATH,
         **kwargs: Any,
     ) -> Starlette:
         """Builds and returns the Starlette application instance.

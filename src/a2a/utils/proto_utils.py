@@ -283,7 +283,9 @@ class ToProto:
             skills=[cls.skill(x) for x in card.skills] if card.skills else [],
             url=card.url,
             version=card.version,
-            supports_authenticated_extended_card=card.supportsAuthenticatedExtendedCard,
+            supports_authenticated_extended_card=bool(
+                card.supportsAuthenticatedExtendedCard
+            ),
         )
 
     @classmethod
@@ -291,8 +293,8 @@ class ToProto:
         cls, capabilities: types.AgentCapabilities
     ) -> a2a_pb2.AgentCapabilities:
         return a2a_pb2.AgentCapabilities(
-            streaming=capabilities.streaming,
-            push_notifications=capabilities.pushNotifications,
+            streaming=bool(capabilities.streaming),
+            push_notifications=bool(capabilities.pushNotifications),
         )
 
     @classmethod
@@ -731,7 +733,7 @@ class FromProto:
                 root=types.APIKeySecurityScheme(
                     description=scheme.api_key_security_scheme.description,
                     name=scheme.api_key_security_scheme.name,
-                    in_=types.In(scheme.api_key_security_scheme.location), # type: ignore[call-arg]
+                    in_=types.In(scheme.api_key_security_scheme.location),  # type: ignore[call-arg]
                 )
             )
         if scheme.HasField('http_auth_security_scheme'):
