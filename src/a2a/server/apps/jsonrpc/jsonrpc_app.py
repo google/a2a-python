@@ -45,6 +45,7 @@ from a2a.types import (
 from a2a.utils.constants import (
     AGENT_CARD_WELL_KNOWN_PATH,
     DEFAULT_RPC_URL,
+    EXTENDED_AGENT_CARD_PATH,
 )
 from a2a.utils.errors import MethodNotImplementedError
 
@@ -433,18 +434,54 @@ class JSONRPCApplication(ABC):
             status_code=404,
         )
 
+    def _get_route_definitions(
+        self,
+        agent_card_url: str,
+        rpc_url: str,
+        extended_agent_card_url: str,
+    ) -> list[dict[str, Any]]:
+        """Generates a list of route definitions for the application."""
+        routes = [
+            {
+                'path': rpc_url,
+                'endpoint': self._handle_requests,
+                'methods': ['POST'],
+                'name': 'a2a_handler',
+            },
+            {
+                'path': agent_card_url,
+                'endpoint': self._handle_get_agent_card,
+                'methods': ['GET'],
+                'name': 'agent_card',
+            },
+        ]
+
+        if self.agent_card.supportsAuthenticatedExtendedCard:
+            routes.append(
+                {
+                    'path': extended_agent_card_url,
+                    'endpoint': self._handle_get_authenticated_extended_agent_card,
+                    'methods': ['GET'],
+                    'name': 'authenticated_extended_agent_card',
+                }
+            )
+        return routes
+
     @abstractmethod
     def build(
         self,
         agent_card_url: str = AGENT_CARD_WELL_KNOWN_PATH,
         rpc_url: str = DEFAULT_RPC_URL,
+        extended_agent_card_url: str = EXTENDED_AGENT_CARD_PATH,
         **kwargs: Any,
     ) -> FastAPI | Starlette:
         """Builds and returns the JSONRPC application instance.
 
         Args:
             agent_card_url: The URL for the agent card endpoint.
-            rpc_url: The URL for the A2A JSON-RPC endpoint
+            rpc_url: The URL for the A2A JSON-RPC endpoint.
+            extended_agent_card_url: The URL for the authenticated extended
+              agent card endpoint.
             **kwargs: Additional keyword arguments to pass to the FastAPI constructor.
 
         Returns:
