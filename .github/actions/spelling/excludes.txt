@@ -90,3 +90,4 @@ noxfile.py
 ^src/a2a/grpc/
 ^tests/
 .pre-commit-config.yaml
+^src/a2a/types.py
