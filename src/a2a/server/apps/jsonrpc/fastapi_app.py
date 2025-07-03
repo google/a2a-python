@@ -25,6 +25,11 @@ from a2a.server.apps.jsonrpc.jsonrpc_app import (
 )
 from a2a.server.request_handlers.jsonrpc_handler import RequestHandler
 from a2a.types import AgentCard
+from a2a.utils.constants import (
+    AGENT_CARD_WELL_KNOWN_PATH,
+    DEFAULT_RPC_URL,
+    EXTENDED_AGENT_CARD_PATH,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -44,7 +49,7 @@ class A2AFastAPIApplication(JSONRPCApplication):
         http_handler: RequestHandler,
         extended_agent_card: AgentCard | None = None,
         context_builder: CallContextBuilder | None = None,
-    ):
+    ) -> None:
         """Initializes the A2AFastAPIApplication.
 
         Args:
@@ -73,9 +78,9 @@ class A2AFastAPIApplication(JSONRPCApplication):
     def add_routes_to_app(
         self,
         app: FastAPI,
-        agent_card_url: str = '/.well-known/agent.json',
-        rpc_url: str = '/',
-        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
+        agent_card_url: str = AGENT_CARD_WELL_KNOWN_PATH,
+        rpc_url: str = DEFAULT_RPC_URL,
+        extended_agent_card_url: str = EXTENDED_AGENT_CARD_PATH,
     ) -> None:
         """Adds the routes to the FastAPI application.
 
@@ -104,9 +109,9 @@ class A2AFastAPIApplication(JSONRPCApplication):
 
     def build(
         self,
-        agent_card_url: str = '/.well-known/agent.json',
-        rpc_url: str = '/',
-        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
+        agent_card_url: str = AGENT_CARD_WELL_KNOWN_PATH,
+        rpc_url: str = DEFAULT_RPC_URL,
+        extended_agent_card_url: str = EXTENDED_AGENT_CARD_PATH,
         **kwargs: Any,
     ) -> FastAPI:
         """Builds and returns the FastAPI application instance.

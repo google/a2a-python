@@ -36,6 +36,10 @@ from a2a.types import (
     TaskResubscriptionRequest,
     UnsupportedOperationError,
 )
+from a2a.utils.constants import (
+    AGENT_CARD_WELL_KNOWN_PATH,
+    DEFAULT_RPC_URL,
+)
 from a2a.utils.errors import MethodNotImplementedError
 
 
@@ -133,7 +137,7 @@ class JSONRPCApplication(ABC):
         http_handler: RequestHandler,
         extended_agent_card: AgentCard | None = None,
         context_builder: CallContextBuilder | None = None,
-    ):
+    ) -> None:
         """Initializes the JSONRPCApplication.
 
         Args:
@@ -329,24 +333,32 @@ class JSONRPCApplication(ABC):
                     request_obj, context
                 )
             case SetTaskPushNotificationConfigRequest():
-                handler_result = await self.handler.set_push_notification_config(
-                    request_obj,
-                    context,
+                handler_result = (
+                    await self.handler.set_push_notification_config(
+                        request_obj,
+                        context,
+                    )
                 )
             case GetTaskPushNotificationConfigRequest():
-                handler_result = await self.handler.get_push_notification_config(
-                    request_obj,
-                    context,
+                handler_result = (
+                    await self.handler.get_push_notification_config(
+                        request_obj,
+                        context,
+                    )
                 )
             case ListTaskPushNotificationConfigRequest():
-                handler_result = await self.handler.list_push_notification_config(
-                    request_obj,
-                    context,
+                handler_result = (
+                    await self.handler.list_push_notification_config(
+                        request_obj,
+                        context,
+                    )
                 )
             case DeleteTaskPushNotificationConfigRequest():
-                handler_result = await self.handler.delete_push_notification_config(
-                    request_obj,
-                    context,
+                handler_result = (
+                    await self.handler.delete_push_notification_config(
+                        request_obj,
+                        context,
+                    )
                 )
             case _:
                 logger.error(
@@ -454,8 +466,8 @@ class JSONRPCApplication(ABC):
     @abstractmethod
     def build(
         self,
-        agent_card_url: str = '/.well-known/agent.json',
-        rpc_url: str = '/',
+        agent_card_url: str = AGENT_CARD_WELL_KNOWN_PATH,
+        rpc_url: str = DEFAULT_RPC_URL,
         **kwargs: Any,
     ) -> FastAPI | Starlette:
         """Builds and returns the JSONRPC application instance.
