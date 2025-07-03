@@ -1,8 +1,11 @@
 import asyncio
+import logging
 
 from asyncio import Task
 from functools import partial
+from typing import Any, Dict, Optional
 
+from pydantic import ValidationError, TypeAdapter
 from redis.asyncio import Redis
 
 from a2a.server.events import (
@@ -13,6 +16,8 @@ from a2a.server.events import (
     QueueManager,
     TaskQueueExists,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class RedisQueueManager(QueueManager):
@@ -40,14 +45,7 @@ class RedisQueueManager(QueueManager):
         self._relay_channel_name = relay_channel_key_prefix
         self._background_tasks: dict[str, Task] = {}
         self._task_registry_name = task_registry_key
-
-    async def _listen_and_relay(self, task_id: str) -> None:
-        c = EventConsumer(self._local_queue[task_id])
-        async for event in c.consume_all():
-            await self._redis.publish(
-                self._task_channel_name(task_id),
-                event.model_dump_json(exclude_none=True),
-            )
+        self._pubsub_listener_task: Optional[Task] = None
 
     def _task_channel_name(self, task_id: str) -> str:
         return self._relay_channel_name + task_id
@@ -57,10 +55,23 @@ class RedisQueueManager(QueueManager):
         return ret == 1
 
     async def _register_task_id(self, task_id: str) -> None:
-        await self._redis.sadd(self._task_registry_name, task_id)
+        task_started_event = asyncio.Event()
+        async def _wrapped_listen_and_relay() -> None:
+            task_started_event.set()
+            c = EventConsumer(self._local_queue[task_id].tap())
+            async for event in c.consume_all():
+                logger.debug(f'Publishing event for task {task_id} in QM {self}: {event}')
+                await self._redis.publish(
+                    self._task_channel_name(task_id),
+                    event.model_dump_json(exclude_none=True),
+                )
+
         self._background_tasks[task_id] = asyncio.create_task(
-            self._listen_and_relay(task_id)
+            _wrapped_listen_and_relay()
         )
+        await task_started_event.wait()
+        await self._redis.sadd(self._task_registry_name, task_id)
+        logger.debug(f'Started to listen and relay events for task {task_id}')
 
     async def _remove_task_id(self, task_id: str) -> bool:
         if task_id in self._background_tasks:
@@ -70,21 +81,51 @@ class RedisQueueManager(QueueManager):
         return await self._redis.srem(self._task_registry_name, task_id) == 1
 
     async def _subscribe_remote_task_events(self, task_id: str) -> None:
-        await self._pubsub.subscribe(
-            **{
-                self._task_channel_name(task_id): partial(
-                    self._relay_remote_events, task_id
-                )
-            }
-        )
+        channel_id = self._task_channel_name(task_id)
+        await self._pubsub.subscribe(**{channel_id: self._relay_remote_events})
 
-    def _unsubscribe_remote_task_events(self, task_id: str) -> None:
-        self._pubsub.unsubscribe(self._task_channel_name(task_id))
+        # this is a global listener to handle incoming pubsub events
+        if not self._pubsub_listener_task:
+            logger.debug('Creating pubsub listener task.')
+            self._pubsub_listener_task = asyncio.create_task(self._consume_pubsub_messages())
 
-    def _relay_remote_events(self, task_id: str, event_json: str) -> None:
-        if task_id in self._proxy_queue:
-            event = Event.model_validate_json(event_json)
-            self._proxy_queue[task_id].enqueue_event(event)
+        logger.debug(f"Subscribed for remote events for task {task_id}")
+
+    async def _consume_pubsub_messages(self):
+        async for _ in self._pubsub.listen():
+            pass
+
+    async def _relay_remote_events(self, subscription_event) -> None:
+        if 'channel' not in subscription_event or 'data' not in subscription_event:
+            logger.warning(f"channel or data is absent in subscription event: {subscription_event}")
+            return
+
+        channel_id: str = subscription_event['channel'].decode('utf-8')
+        data_string: str = subscription_event['data'].decode('utf-8')
+        task_id = channel_id.split('.')[-1]
+        if task_id not in self._proxy_queue:
+            logger.warning(f"task_id {task_id} not found in proxy queue")
+            return
+
+        try:
+            logger.debug(f"Received event for task_id {task_id} in QM {self}: {data_string}")
+            event = TypeAdapter(Event).validate_json(data_string)
+        except Exception as e:
+            logger.warning(f"Failed to parse event from subscription event: {subscription_event}: {e}")
+            return
+
+        logger.debug(f"Enqueuing event for task_id {task_id} in QM {self}: {event}")
+        await self._proxy_queue[task_id].enqueue_event(event)
+
+
+    async def _unsubscribe_remote_task_events(self, task_id: str) -> None:
+        # unsubscribe channel for given task_id
+        await self._pubsub.unsubscribe(self._task_channel_name(task_id))
+        # release global listener if not channel is subscribed
+        async with self._lock:
+            if not self._pubsub.subscribed and self._pubsub_listener_task:
+                self._pubsub_listener_task.cancel()
+                self._pubsub_listener_task = None
 
     async def add(self, task_id: str, queue: EventQueue) -> None:
         """Add a new local event queue for the specified task.
@@ -96,11 +137,13 @@ class RedisQueueManager(QueueManager):
         Raises:
             TaskQueueExists: If a queue for the task already exists.
         """
+        logger.debug(f"add {task_id}")
         async with self._lock:
             if await self._has_task_id(task_id):
                 raise TaskQueueExists()
             self._local_queue[task_id] = queue
             await self._register_task_id(task_id)
+            logger.debug(f"Local queue is created for task {task_id}")
 
     async def get(self, task_id: str) -> EventQueue | None:
         """Get the event queue associated with the given task ID.
@@ -115,17 +158,22 @@ class RedisQueueManager(QueueManager):
         Returns:
             EventQueue | None: The event queue if found, otherwise None.
         """
+        logger.debug(f"get {task_id}")
         async with self._lock:
             # lookup locally
             if task_id in self._local_queue:
+                logger.debug(f"Got local queue for task_id {task_id}")
                 return self._local_queue[task_id]
             # lookup globally
             if await self._has_task_id(task_id):
                 if task_id not in self._proxy_queue:
+                    logger.debug(f"Creating proxy queue for {task_id}")
                     queue = EventQueue()
                     self._proxy_queue[task_id] = queue
                     await self._subscribe_remote_task_events(task_id)
+                logger.debug(f"Got proxy queue for task_id {task_id}")
                 return self._proxy_queue[task_id]
+            logger.warning(f"Attempted to get non-existing queue for task {task_id}")
             return None
 
     async def tap(self, task_id: str) -> EventQueue | None:
@@ -137,8 +185,10 @@ class RedisQueueManager(QueueManager):
         Returns:
             EventQueue | None: A new reference to the event queue if it exists, otherwise None.
         """
+        logger.debug(f"tap {task_id}")
         event_queue = await self.get(task_id)
         if event_queue:
+            logger.debug(f'Tapping event queue for task: {task_id}')
             return event_queue.tap()
         return None
 
@@ -155,6 +205,7 @@ class RedisQueueManager(QueueManager):
         Raises:
             NoTaskQueue: If no queue exists for the given task ID.
         """
+        logger.debug(f"close {task_id}")
         async with self._lock:
             if task_id in self._local_queue:
                 # close locally
@@ -162,6 +213,7 @@ class RedisQueueManager(QueueManager):
                 await queue.close()
                 # remove from global registry if a local queue is closed
                 await self._remove_task_id(task_id)
+                logger.debug(f"Closing local queue for task {task_id}")
                 return
 
             if task_id in self._proxy_queue:
@@ -169,9 +221,11 @@ class RedisQueueManager(QueueManager):
                 queue = self._proxy_queue.pop(task_id)
                 await queue.close()
                 # unsubscribe from remote, but don't remove from global registry
-                self._unsubscribe_remote_task_events(task_id)
+                await self._unsubscribe_remote_task_events(task_id)
+                logger.debug(f"Closing proxy queue for task {task_id}")
                 return
 
+            logger.warning(f"Attempted to close non-existing queue found for task {task_id}")
             raise NoTaskQueue()
 
     async def create_or_tap(self, task_id: str) -> EventQueue:
@@ -186,23 +240,28 @@ class RedisQueueManager(QueueManager):
         Returns:
             EventQueue: An event queue associated with the given task ID.
         """
+        logger.debug(f"create_or_tap {task_id}")
         async with self._lock:
             if await self._has_task_id(task_id):
                 # if it's a local queue, tap directly
                 if task_id in self._local_queue:
+                    logger.debug(f"Tapping a local queue for task {task_id}")
                     return self._local_queue[task_id].tap()
 
                 # if it's a proxy queue, tap the proxy
                 if task_id in self._proxy_queue:
+                    logger.debug(f"Tapping a proxy queue for task {task_id}")
                     return self._proxy_queue[task_id].tap()
 
                 # if the proxy is not created, create the proxy and return
                 queue = EventQueue()
                 self._proxy_queue[task_id] = queue
                 await self._subscribe_remote_task_events(task_id)
+                logger.debug(f"Creating a proxy queue for task {task_id}")
                 return self._proxy_queue[task_id]
             # the task doesn't exist before, create a local queue
             queue = EventQueue()
             self._local_queue[task_id] = queue
             await self._register_task_id(task_id)
+            logger.debug(f"Creating a local queue for task {task_id}")
             return queue

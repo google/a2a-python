@@ -1,9 +1,13 @@
 import asyncio
+import logging
+import os
 
 from typing import Any
 from unittest import mock
 
 import pytest
+import pytest_asyncio
+from redis.asyncio import Redis
 
 from starlette.authentication import (
     AuthCredentials,
@@ -22,6 +26,8 @@ from a2a.server.apps import (
     A2AFastAPIApplication,
     A2AStarletteApplication,
 )
+from a2a.server.events import EventQueue
+from a2a.server.events.redis_queue_manager import RedisQueueManager
 from a2a.types import (
     AgentCapabilities,
     AgentCard,
@@ -44,6 +50,7 @@ from a2a.types import (
     TextPart,
     UnsupportedOperationError,
 )
+from a2a.utils import new_agent_text_message
 from a2a.utils.errors import MethodNotImplementedError
 
 
@@ -884,3 +891,88 @@ def test_non_dict_json(client: TestClient):
     data = response.json()
     assert 'error' in data
     assert data['error']['code'] == InvalidRequestError().code
+
+
+# === RedisQueueManager ===
+@pytest.mark.asyncio
+@pytest_asyncio.fixture(scope="function")
+async def asyncio_redis():
+    redis_server_url = os.getenv("REDIS_SERVER_URL")
+    if redis_server_url:
+        redis = Redis.from_url(redis_server_url)
+    else:
+        # use fake redis instead if no redis server url is given
+        from fakeredis import FakeAsyncRedis
+        redis = FakeAsyncRedis()
+    logging.info("flush redis for next test case")
+    await redis.flushall(asynchronous=False)
+    yield redis
+    await redis.close()
+
+
+@pytest.mark.asyncio
+async def test_redis_queue_local_only_queue(asyncio_redis):
+    queue_manager = RedisQueueManager(asyncio_redis)
+
+    # setup local queues
+    q1 = EventQueue()
+    await queue_manager.add('task_1', q1)
+    q2 = EventQueue()
+    await queue_manager.add('task_2', q2)
+    q3 = await queue_manager.tap("task_1")
+    assert await queue_manager.get('task_1') == q1
+    assert await queue_manager.get('task_2') == q2
+
+    # send and receive locally
+    msg1 = new_agent_text_message('hello')
+    await q1.enqueue_event(msg1)
+    assert await q1.dequeue_event(no_wait=True) == msg1
+    assert await q3.dequeue_event(no_wait=True) == msg1
+    # raise error if queue is empty
+    with pytest.raises(asyncio.QueueEmpty):
+        await q1.dequeue_event(no_wait=True)
+    # q2 is empty
+    with pytest.raises(asyncio.QueueEmpty):
+        await q2.dequeue_event(no_wait=True)
+
+
+@pytest.mark.asyncio
+async def test_redis_queue_mixed_queue(asyncio_redis):
+    qm1 = RedisQueueManager(asyncio_redis)
+    qm2 = RedisQueueManager(asyncio_redis)
+    qm3 = RedisQueueManager(asyncio_redis)
+
+    # create local queue in qm1
+    q1 = EventQueue()
+    await qm1.add('task_1', q1)
+    assert 'task_1' in qm1._local_queue
+    assert await qm1.get('task_1') == q1
+
+    # create proxy queue in qm2 through `get` method
+    q1_1 = await qm2.get('task_1')
+    assert 'task_1' in qm2._proxy_queue and 'task_1' not in qm2._local_queue
+    assert q1_1 != q1
+
+    # create proxy queue in qm3 through `tap` method
+    q1_2 = await qm3.tap("task_1")
+    assert 'task_1' in qm3._proxy_queue and 'task_1' not in qm3._local_queue
+
+    # enqueue and dequeue in q1
+    msg1 = new_agent_text_message('hello')
+    await q1.enqueue_event(msg1)
+    assert await q1.dequeue_event() == msg1
+    with pytest.raises(asyncio.QueueEmpty):
+        await q1.dequeue_event(no_wait=True)
+
+    # dequeue in q1_1
+    msg1_1: Message = await q1_1.dequeue_event()
+    assert msg1_1.parts[0].root.text == msg1.parts[0].root.text
+    with pytest.raises(asyncio.QueueEmpty):
+        await q1_1.dequeue_event(no_wait=True)
+
+    # dequeue in q1_2
+    msg1_2: Message = await q1_2.dequeue_event()
+    assert msg1_2.parts[0].root.text == msg1.parts[0].root.text
+    with pytest.raises(asyncio.QueueEmpty):
+        await q1_2.dequeue_event(no_wait=True)
+
