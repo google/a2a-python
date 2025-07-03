@@ -72,3 +72,6 @@ taskupdate
 testuuid
 typeerror
 vulnz
+sadd
+sismember
+srem
