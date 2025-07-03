@@ -75,3 +75,7 @@ vulnz
 sadd
 sismember
 srem
+zadd
+zscore
+zrem
+zremrangebyscore

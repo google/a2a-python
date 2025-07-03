@@ -1,11 +1,12 @@
 import asyncio
 import logging
+import random
+import time
 
 from asyncio import Task
-from functools import partial
-from typing import Any, Dict, Optional
+from typing import Any
 
-from pydantic import ValidationError, TypeAdapter
+from pydantic import TypeAdapter
 from redis.asyncio import Redis
 
 from a2a.server.events import (
@@ -17,8 +18,11 @@ from a2a.server.events import (
     TaskQueueExists,
 )
 
+
 logger = logging.getLogger(__name__)
 
+
+CLEAN_EXPIRED_PROBABILITY = 0.5
 
 class RedisQueueManager(QueueManager):
     """This implements the `QueueManager` interface using Redis for event.
@@ -36,6 +40,7 @@ class RedisQueueManager(QueueManager):
         redis_client: Redis,
         relay_channel_key_prefix: str = 'a2a.event.relay.',
         task_registry_key: str = 'a2a.event.registry',
+        task_id_ttl_in_second: int = 60 * 60 * 24,
     ):
         self._redis = redis_client
         self._local_queue: dict[str, EventQueue] = {}
@@ -45,16 +50,18 @@ class RedisQueueManager(QueueManager):
         self._relay_channel_name = relay_channel_key_prefix
         self._background_tasks: dict[str, Task] = {}
         self._task_registry_name = task_registry_key
-        self._pubsub_listener_task: Optional[Task] = None
+        self._pubsub_listener_task: Task | None = None
+        self._task_id_ttl_in_second = task_id_ttl_in_second
 
     def _task_channel_name(self, task_id: str) -> str:
         return self._relay_channel_name + task_id
 
     async def _has_task_id(self, task_id: str) -> bool:
-        ret = await self._redis.sismember(self._task_registry_name, task_id)
-        return ret == 1
+        ret = await self._redis.zscore(self._task_registry_name, task_id)
+        return ret is not None
 
     async def _register_task_id(self, task_id: str) -> None:
+        assert await self._redis.zadd(self._task_registry_name, {task_id: time.time()}, nx=True), 'task_id should not exist in global registry: ' + task_id
         task_started_event = asyncio.Event()
         async def _wrapped_listen_and_relay() -> None:
             task_started_event.set()
@@ -65,12 +72,16 @@ class RedisQueueManager(QueueManager):
                     self._task_channel_name(task_id),
                     event.model_dump_json(exclude_none=True),
                 )
+                # update TTL for task_id
+                await self._update_task_id_ttl(task_id)
+                # clean expired task_ids with certain possibility
+                if random.random() < CLEAN_EXPIRED_PROBABILITY:
+                    await self._clean_expired_task_ids()
 
         self._background_tasks[task_id] = asyncio.create_task(
             _wrapped_listen_and_relay()
         )
         await task_started_event.wait()
-        await self._redis.sadd(self._task_registry_name, task_id)
         logger.debug(f'Started to listen and relay events for task {task_id}')
 
     async def _remove_task_id(self, task_id: str) -> bool:
@@ -78,7 +89,19 @@ class RedisQueueManager(QueueManager):
             self._background_tasks[task_id].cancel(
                 'task_id is closed: ' + task_id
             )
-        return await self._redis.srem(self._task_registry_name, task_id) == 1
+        return await self._redis.zrem(self._task_registry_name, task_id) == 1
+
+    async def _update_task_id_ttl(self, task_id: str) -> bool:
+        ret = await self._redis.zadd(
+            self._task_registry_name,
+            {task_id: time.time()},
+            xx=True
+        )
+        return ret is not None
+
+    async def _clean_expired_task_ids(self) -> None:
+        count = await self._redis.zremrangebyscore(self._task_registry_name, 0, time.time() - self._task_id_ttl_in_second)
+        logger.debug(f'Removed {count} expired task ids')
 
     async def _subscribe_remote_task_events(self, task_id: str) -> None:
         channel_id = self._task_channel_name(task_id)
@@ -91,11 +114,11 @@ class RedisQueueManager(QueueManager):
 
         logger.debug(f"Subscribed for remote events for task {task_id}")
 
-    async def _consume_pubsub_messages(self):
+    async def _consume_pubsub_messages(self) -> None:
         async for _ in self._pubsub.listen():
             pass
 
-    async def _relay_remote_events(self, subscription_event) -> None:
+    async def _relay_remote_events(self, subscription_event: dict[str, Any]) -> None:
         if 'channel' not in subscription_event or 'data' not in subscription_event:
             logger.warning(f"channel or data is absent in subscription event: {subscription_event}")
             return
