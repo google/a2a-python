@@ -132,7 +132,7 @@ class RedisQueueManager(QueueManager):
 
         try:
             logger.debug(f"Received event for task_id {task_id} in QM {self}: {data_string}")
-            event = TypeAdapter(Event).validate_json(data_string)
+            event: Event = TypeAdapter(Event).validate_json(data_string)
         except Exception as e:
             logger.warning(f"Failed to parse event from subscription event: {subscription_event}: {e}")
             return

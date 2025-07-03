@@ -64,10 +64,11 @@ class TestRedisQueueManager:
     async def test_tap_existing_queue(self, queue_manager, event_queue):
         task_id = 'test_task_id'
         await queue_manager.add(task_id, event_queue)
+        event_queue.tap.assert_called_once()
 
         result = await queue_manager.tap(task_id)
         assert result == event_queue
-        event_queue.tap.assert_called_once()
+        assert event_queue.tap.call_count == 2
 
     @pytest.mark.asyncio
     async def test_tap_nonexistent_queue(self, queue_manager):
@@ -88,11 +89,12 @@ class TestRedisQueueManager:
     ):
         task_id = 'test_task_id'
         await queue_manager.add(task_id, event_queue)
+        event_queue.tap.assert_called_once()
 
         result = await queue_manager.create_or_tap(task_id)
 
         assert result == event_queue
-        event_queue.tap.assert_called_once()
+        assert event_queue.tap.call_count == 2
 
     @pytest.mark.asyncio
     async def test_concurrency(self, queue_manager):
