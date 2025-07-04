@@ -1025,10 +1025,10 @@ async def test_redis_queue_mixed_queue(asyncio_redis):
 @pytest.mark.asyncio
 async def test_redis_queue_task_id_expiration(asyncio_redis):
     qm1 = RedisQueueManager(
-        asyncio_redis, probability_to_clean_expired=1, task_id_ttl_in_second=1
+        asyncio_redis, task_id_ttl_in_second=1
     )
     qm2 = RedisQueueManager(
-        asyncio_redis, probability_to_clean_expired=1, task_id_ttl_in_second=1
+        asyncio_redis, task_id_ttl_in_second=1
     )
     q1 = EventQueue()
     await qm1.add('task_1', q1)

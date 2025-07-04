@@ -78,3 +78,6 @@ vulnz
 zadd
 zrem
 zremrangebyscorezscore
+hdel
+hget
+hsetex
