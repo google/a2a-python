@@ -2,13 +2,14 @@ import asyncio
 import logging
 import os
 
+from asyncio import QueueEmpty
 from typing import Any
 from unittest import mock
 
 import pytest
 import pytest_asyncio
-from redis.asyncio import Redis
 
+from redis.asyncio import Redis
 from starlette.authentication import (
     AuthCredentials,
     AuthenticationBackend,
@@ -26,7 +27,7 @@ from a2a.server.apps import (
     A2AFastAPIApplication,
     A2AStarletteApplication,
 )
-from a2a.server.events import EventQueue, NoTaskQueue
+from a2a.server.events import EventQueue, NoTaskQueue, TaskQueueExists
 from a2a.server.events.redis_queue_manager import RedisQueueManager
 from a2a.types import (
     AgentCapabilities,
@@ -895,16 +896,17 @@ def test_non_dict_json(client: TestClient):
 
 # === RedisQueueManager ===
 @pytest.mark.asyncio
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture(scope='function')
 async def asyncio_redis():
-    redis_server_url = os.getenv("REDIS_SERVER_URL")
+    redis_server_url = os.getenv('REDIS_SERVER_URL')
     if redis_server_url:
         redis = Redis.from_url(redis_server_url)
     else:
         # use fake redis instead if no redis server url is given
         from fakeredis import FakeAsyncRedis
+
         redis = FakeAsyncRedis()
-    logging.info("flush redis for next test case")
+    logging.info('flush redis for next test case')
     await redis.flushall(asynchronous=False)
     yield redis
     await redis.close()
@@ -919,7 +921,7 @@ async def test_redis_queue_local_only_queue(asyncio_redis):
     await queue_manager.add('task_1', q1)
     q2 = EventQueue()
     await queue_manager.add('task_2', q2)
-    q3 = await queue_manager.tap("task_1")
+    q3 = await queue_manager.tap('task_1')
     assert await queue_manager.get('task_1') == q1
     assert await queue_manager.get('task_2') == q2
 
@@ -988,6 +990,10 @@ async def test_redis_queue_mixed_queue(asyncio_redis):
     q1_2.task_done()
     with pytest.raises(asyncio.QueueEmpty):
         await q1_2.dequeue_event(no_wait=True)
+    # get proxy queue task_1 and dequeue or close method will block forever. q1_2 is a tapped queue.
+    _ = await qm3.get('task_1')
+    await _.dequeue_event()
+    _.task_done()
 
     # dequeue in q1_3
     msg1_3: Message = await q1_3.dequeue_event()
@@ -995,6 +1001,10 @@ async def test_redis_queue_mixed_queue(asyncio_redis):
     q1_3.task_done()
     with pytest.raises(asyncio.QueueEmpty):
         await q1_3.dequeue_event(no_wait=True)
+    # get proxy queue task_1 and dequeue or close method will block forever. q1_3 is a tapped queue.
+    _ = await qm4.get('task_1')
+    await _.dequeue_event()
+    _.task_done()
 
     # enqueue and dequeue in q2
     msg2 = new_agent_text_message('world')
@@ -1011,3 +1021,37 @@ async def test_redis_queue_mixed_queue(asyncio_redis):
     with pytest.raises(NoTaskQueue):
         await qm5.close('task_10000')
 
+
+@pytest.mark.asyncio
+async def test_redis_queue_task_id_expiration(asyncio_redis):
+    qm1 = RedisQueueManager(
+        asyncio_redis, probability_to_clean_expired=1, task_id_ttl_in_second=1
+    )
+    qm2 = RedisQueueManager(
+        asyncio_redis, probability_to_clean_expired=1, task_id_ttl_in_second=1
+    )
+    q1 = EventQueue()
+    await qm1.add('task_1', q1)
+    # add task_1 again to trigger exception
+    with pytest.raises(TaskQueueExists):
+        await qm2.add('task_1', q1)
+    q2 = await qm2.get('task_1')
+    assert q2
+    # enqueue message to q1, and dequeue in q2
+    msg1 = new_agent_text_message('hello')
+    await q1.enqueue_event(msg1)
+    assert await q2.dequeue_event()
+    q2.task_done()
+
+    # sleep for 1 second to expire
+    await asyncio.sleep(1)
+    assert await qm1._has_task_id('task_1') is False
+    assert await qm2._has_task_id('task_1') is False
+
+    # enqueue a message in order to update TTL
+    msg2 = new_agent_text_message('world')
+    await q1.enqueue_event(msg2)
+    assert await qm1._has_task_id('task_1') is False
+    # after qm1's ownership for task_1 is expired,  enqueue in q1 won't broadcast to q2
+    with pytest.raises(QueueEmpty):
+        await q2.dequeue_event(no_wait=True)
