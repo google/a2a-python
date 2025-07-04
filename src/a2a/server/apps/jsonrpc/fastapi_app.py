@@ -9,7 +9,7 @@ from a2a.server.apps.jsonrpc.jsonrpc_app import (
     JSONRPCApplication,
 )
 from a2a.server.request_handlers.jsonrpc_handler import RequestHandler
-from a2a.types import AgentCard
+from a2a.types import A2ARequest, AgentCard, JSONRPCResponse
 from a2a.utils.constants import (
     AGENT_CARD_WELL_KNOWN_PATH,
     DEFAULT_RPC_URL,
@@ -71,7 +71,7 @@ class A2AFastAPIApplication(JSONRPCApplication):
         """
 
         @app.post(rpc_url)
-        async def handle_a2a_request(request: Request) -> Response:
+        async def handle_a2a_request(request: A2ARequest) -> JSONRPCResponse:
             return await self._handle_requests(request)
 
         @app.get(agent_card_url)
