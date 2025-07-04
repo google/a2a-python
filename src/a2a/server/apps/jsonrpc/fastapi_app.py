@@ -1,5 +1,7 @@
 import logging
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI, Request, Response
@@ -9,7 +11,7 @@ from a2a.server.apps.jsonrpc.jsonrpc_app import (
     JSONRPCApplication,
 )
 from a2a.server.request_handlers.jsonrpc_handler import RequestHandler
-from a2a.types import AgentCard
+from a2a.types import A2ARequest, AgentCard
 from a2a.utils.constants import (
     AGENT_CARD_WELL_KNOWN_PATH,
     DEFAULT_RPC_URL,
@@ -70,7 +72,22 @@ class A2AFastAPIApplication(JSONRPCApplication):
             extended_agent_card_url: The URL for the authenticated extended agent card endpoint.
         """
 
-        @app.post(rpc_url)
+        @app.post(
+            rpc_url,
+            openapi_extra={
+                'requestBody': {
+                    'content': {
+                        'application/json': {
+                            'schema': A2ARequest.model_json_schema(
+                                ref_template='#/components/schemas/{model}'
+                            ),
+                        }
+                    },
+                    'required': True,
+                    'description': 'A2ARequest',
+                }
+            },
+        )
         async def handle_a2a_request(request: Request) -> Response:
             return await self._handle_requests(request)
 
@@ -104,7 +121,34 @@ class A2AFastAPIApplication(JSONRPCApplication):
         Returns:
             A configured FastAPI application instance.
         """
-        app = FastAPI(**kwargs)
+
+        @asynccontextmanager
+        async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+            # Code to run on startup
+            schemas = A2ARequest.model_json_schema(
+                ref_template='#/components/schemas/{model}'
+            )
+
+            # Ensure the OpenAPI schema is generated
+            openapi_schema = app.openapi()
+
+            # Add our schemas to components
+            if 'components' not in openapi_schema:
+                openapi_schema['components'] = {}
+
+            openapi_schema['components']['schemas'] = {
+                **openapi_schema.get('components', {}).get('schemas', {}),
+                **schemas.get('$defs', {}),
+            }
+
+            # Update the app's schema
+            app.openapi_schema = openapi_schema
+
+            yield
+            # Code to run on shutdown would go here
+
+        # Create app with lifespan handler
+        app = FastAPI(lifespan=lifespan, **kwargs)
 
         self.add_routes_to_app(
             app, agent_card_url, rpc_url, extended_agent_card_url
