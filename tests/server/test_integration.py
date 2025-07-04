@@ -26,7 +26,7 @@ from a2a.server.apps import (
     A2AFastAPIApplication,
     A2AStarletteApplication,
 )
-from a2a.server.events import EventQueue
+from a2a.server.events import EventQueue, NoTaskQueue
 from a2a.server.events.redis_queue_manager import RedisQueueManager
 from a2a.types import (
     AgentCapabilities,
@@ -941,6 +941,8 @@ async def test_redis_queue_mixed_queue(asyncio_redis):
     qm1 = RedisQueueManager(asyncio_redis)
     qm2 = RedisQueueManager(asyncio_redis)
     qm3 = RedisQueueManager(asyncio_redis)
+    qm4 = RedisQueueManager(asyncio_redis)
+    qm5 = RedisQueueManager(asyncio_redis)
 
     # create local queue in qm1
     q1 = EventQueue()
@@ -954,25 +956,58 @@ async def test_redis_queue_mixed_queue(asyncio_redis):
     assert q1_1 != q1
 
     # create proxy queue in qm3 through `tap` method
-    q1_2 = await qm3.tap("task_1")
+    q1_2 = await qm3.tap('task_1')
     assert 'task_1' in qm3._proxy_queue and 'task_1' not in qm3._local_queue
+
+    # create proxy queue in qm4 through `create_or_tap` method
+    q1_3 = await qm4.create_or_tap('task_1')
+    assert 'task_1' in qm4._proxy_queue and 'task_1' not in qm4._local_queue
+
+    # create local queue in qm5 through `create_or_tap` method
+    q2 = await qm5.create_or_tap('task_2')
+    assert 'task_2' in qm5._local_queue and 'task_2' not in qm5._proxy_queue
 
     # enqueue and dequeue in q1
     msg1 = new_agent_text_message('hello')
     await q1.enqueue_event(msg1)
     assert await q1.dequeue_event() == msg1
+    q1.task_done()
     with pytest.raises(asyncio.QueueEmpty):
         await q1.dequeue_event(no_wait=True)
 
     # dequeue in q1_1
     msg1_1: Message = await q1_1.dequeue_event()
     assert msg1_1.parts[0].root.text == msg1.parts[0].root.text
+    q1_1.task_done()
     with pytest.raises(asyncio.QueueEmpty):
         await q1_1.dequeue_event(no_wait=True)
 
     # dequeue in q1_2
     msg1_2: Message = await q1_2.dequeue_event()
     assert msg1_2.parts[0].root.text == msg1.parts[0].root.text
+    q1_2.task_done()
     with pytest.raises(asyncio.QueueEmpty):
         await q1_2.dequeue_event(no_wait=True)
+
+    # dequeue in q1_3
+    msg1_3: Message = await q1_3.dequeue_event()
+    assert msg1_3.parts[0].root.text == msg1.parts[0].root.text
+    q1_3.task_done()
+    with pytest.raises(asyncio.QueueEmpty):
+        await q1_3.dequeue_event(no_wait=True)
+
+    # enqueue and dequeue in q2
+    msg2 = new_agent_text_message('world')
+    await q2.enqueue_event(msg2)
+    assert await q2.dequeue_event() == msg2
+    q2.task_done()
+
+    # close queues
+    await qm1.close('task_1')
+    await qm2.close('task_1')
+    await qm3.close('task_1')
+    await qm4.close('task_1')
+    await qm5.close('task_2')
+    with pytest.raises(NoTaskQueue):
+        await qm5.close('task_10000')
 

@@ -140,15 +140,14 @@ class RedisQueueManager(QueueManager):
         logger.debug(f"Enqueuing event for task_id {task_id} in QM {self}: {event}")
         await self._proxy_queue[task_id].enqueue_event(event)
 
-
     async def _unsubscribe_remote_task_events(self, task_id: str) -> None:
         # unsubscribe channel for given task_id
         await self._pubsub.unsubscribe(self._task_channel_name(task_id))
         # release global listener if not channel is subscribed
-        async with self._lock:
-            if not self._pubsub.subscribed and self._pubsub_listener_task:
-                self._pubsub_listener_task.cancel()
-                self._pubsub_listener_task = None
+        if not self._pubsub.subscribed and self._pubsub_listener_task:
+            self._pubsub_listener_task.cancel()
+            self._pubsub_listener_task = None
+
 
     async def add(self, task_id: str, queue: EventQueue) -> None:
         """Add a new local event queue for the specified task.
@@ -231,11 +230,11 @@ class RedisQueueManager(QueueManager):
         logger.debug(f"close {task_id}")
         async with self._lock:
             if task_id in self._local_queue:
+                # remove from global registry if a local queue is closed
+                await self._remove_task_id(task_id)
                 # close locally
                 queue = self._local_queue.pop(task_id)
                 await queue.close()
-                # remove from global registry if a local queue is closed
-                await self._remove_task_id(task_id)
                 logger.debug(f"Closing local queue for task {task_id}")
                 return
 

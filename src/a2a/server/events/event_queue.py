@@ -153,6 +153,10 @@ class EventQueue:
                 await child.close()
         # Otherwise, join the queue
         else:
+            # drain the queue or self.queue.join() would wait forever. This makes this piece of code equivalent to self.queue.shutdown() in python 3.13+
+            while not self.queue.empty():
+                await self.queue.get()
+                self.queue.task_done()
             tasks = [asyncio.create_task(self.queue.join())]
             for child in self._children:
                 tasks.append(asyncio.create_task(child.close()))
