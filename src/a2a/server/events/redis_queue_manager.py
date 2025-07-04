@@ -58,7 +58,7 @@ class RedisQueueManager(QueueManager):
         return self._relay_channel_name + task_id
 
     async def _has_task_id(self, task_id: str) -> bool:
-        ret = await self._redis.hget(self._task_registry_name, task_id)
+        ret = await self._redis.hget(self._task_registry_name, task_id) # type: ignore [misc]
         return ret is not None
 
     async def _register_task_id(self, task_id: str) -> None:
@@ -67,7 +67,7 @@ class RedisQueueManager(QueueManager):
             key=task_id,
             value=self._node_id,
             ex=self._task_id_ttl_in_second,
-        )
+        ) # type: ignore [misc]
         logger.debug(
             f'Registered task_id {task_id} to node {self._node_id} in registry.'
         )
@@ -82,7 +82,9 @@ class RedisQueueManager(QueueManager):
                 )
                 expected_node_id = await self._redis.hget(
                     self._task_registry_name, task_id
-                )
+                ) # type: ignore [misc]
+                if not expected_node_id:
+                    continue
                 expected_node_id = (
                     expected_node_id.decode('utf-8')
                     if hasattr(expected_node_id, 'decode')
@@ -93,14 +95,14 @@ class RedisQueueManager(QueueManager):
                     await self._redis.publish(
                         self._task_channel_name(task_id),
                         event.model_dump_json(exclude_none=True),
-                    )
+                    ) # type: ignore [misc]
                     # update TTL for task_id
                     await self._redis.hsetex(
                         name=self._task_registry_name,
                         key=task_id,
                         value=self._node_id,
                         ex=self._task_id_ttl_in_second,
-                    )
+                    ) # type: ignore [misc]
                 else:
                     logger.error(
                         f'Task {task_id} is not registered on this node. Expected node id: {expected_node_id}'
@@ -117,8 +119,8 @@ class RedisQueueManager(QueueManager):
         if task_id in self._background_tasks:
             self._background_tasks[task_id].cancel(
                 'task_id is closed: ' + task_id
-            )
-        return await self._redis.hdel(self._task_registry_name, task_id) == 1
+            ) # type: ignore [misc]
+        return await self._redis.hdel(self._task_registry_name, task_id) == 1 # type: ignore [misc]
 
     async def _subscribe_remote_task_events(self, task_id: str) -> None:
         channel_id = self._task_channel_name(task_id)
