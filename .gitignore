@@ -9,3 +9,4 @@ __pycache__
 coverage.xml
 .nox
 spec.json
+.idea

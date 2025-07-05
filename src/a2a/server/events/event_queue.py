@@ -2,6 +2,10 @@ import asyncio
 import logging
 import sys
 
+from typing import Annotated
+
+from pydantic import Field
+
 from a2a.types import (
     Message,
     Task,
@@ -14,7 +18,10 @@ from a2a.utils.telemetry import SpanKind, trace_class
 logger = logging.getLogger(__name__)
 
 
-Event = Message | Task | TaskStatusUpdateEvent | TaskArtifactUpdateEvent
+Event = Annotated[
+    Message | Task | TaskStatusUpdateEvent | TaskArtifactUpdateEvent,
+    Field(discriminator='kind'),
+]
 """Type alias for events that can be enqueued."""
 
 DEFAULT_MAX_QUEUE_SIZE = 1024
