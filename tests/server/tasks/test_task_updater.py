@@ -1,5 +1,5 @@
+import asyncio
 import uuid
-
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -505,3 +505,31 @@ async def test_cancel_with_message(task_updater, event_queue, sample_message):
     assert event.status.state == TaskState.canceled
     assert event.final is True
     assert event.status.message == sample_message
+
+
+@pytest.mark.asyncio
+async def test_update_status_raises_error_if_terminal_state_reached(task_updater, event_queue):
+    await task_updater.complete()
+    event_queue.reset_mock()
+    with pytest.raises(RuntimeError):
+        await task_updater.start_work()
+    event_queue.enqueue_event.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_concurrent_updates_race_condition(event_queue):
+    task_updater = TaskUpdater(
+        event_queue=event_queue,
+        task_id="test-task-id",
+        context_id="test-context-id",
+    )
+    tasks = [
+        task_updater.complete(),
+        task_updater.failed(),
+    ]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    successes = [r for r in results if not isinstance(r, Exception)]
+    failures = [r for r in results if isinstance(r, RuntimeError)]
+    assert len(successes) == 1
+    assert len(failures) == 1
+    assert event_queue.enqueue_event.call_count == 1
