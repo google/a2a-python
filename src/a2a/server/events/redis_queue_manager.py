@@ -40,7 +40,7 @@ class RedisQueueManager(QueueManager):
         relay_channel_key_prefix: str = 'a2a.event.relay.',
         task_registry_key: str = 'a2a.event.registry',
         task_id_ttl_in_second: int = 60 * 60 * 24,
-        node_id: str = str(uuid.uuid4()),
+        node_id: str | None = None,
     ):
         self._redis = redis_client
         self._local_queue: dict[str, EventQueue] = {}
@@ -52,7 +52,7 @@ class RedisQueueManager(QueueManager):
         self._task_registry_name = task_registry_key
         self._pubsub_listener_task: Task | None = None
         self._task_id_ttl_in_second = task_id_ttl_in_second
-        self._node_id = node_id
+        self._node_id = node_id or str(uuid.uuid4())
 
     def _task_channel_name(self, task_id: str) -> str:
         return self._relay_channel_name + task_id
@@ -62,12 +62,12 @@ class RedisQueueManager(QueueManager):
         return ret is not None
 
     async def _register_task_id(self, task_id: str) -> None:
-        await self._redis.hsetex(
+        assert await self._redis.hsetex(
             name=self._task_registry_name,
             key=task_id,
             value=self._node_id,
             ex=self._task_id_ttl_in_second,
-        ) # type: ignore [misc]
+        ) == 1, 'should have registered task id' # type: ignore [misc]
         logger.debug(
             f'Registered task_id {task_id} to node {self._node_id} in registry.'
         )
@@ -84,6 +84,7 @@ class RedisQueueManager(QueueManager):
                     self._task_registry_name, task_id
                 ) # type: ignore [misc]
                 if not expected_node_id:
+                    logger.warning(f'Task {task_id} is expired or not registered yet.')
                     continue
                 expected_node_id = (
                     expected_node_id.decode('utf-8')
@@ -104,7 +105,7 @@ class RedisQueueManager(QueueManager):
                         ex=self._task_id_ttl_in_second,
                     ) # type: ignore [misc]
                 else:
-                    logger.error(
+                    logger.warning(
                         f'Task {task_id} is not registered on this node. Expected node id: {expected_node_id}'
                     )
                     break
