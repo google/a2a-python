@@ -70,8 +70,8 @@ class A2AFastAPIApplication(JSONRPCApplication):
             extended_agent_card_url: The URL for the authenticated extended agent card endpoint.
         """
 
-        app.get(agent_card_url)(self._handle_get_agent_card)
         app.post(rpc_url)(self._handle_requests)
+        app.get(agent_card_url)(self._handle_get_agent_card)
         
         if self.agent_card.supportsAuthenticatedExtendedCard:
             app.get(extended_agent_card_url)(
