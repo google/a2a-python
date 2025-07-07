@@ -33,12 +33,44 @@ When you're working within a uv project or a virtual environment managed by uv, 
 uv add a2a-sdk
 ```
 
+To install with database support:
+
+```bash
+# PostgreSQL support
+uv add "a2a-sdk[postgresql]"
+
+# MySQL support
+uv add "a2a-sdk[mysql]"
+
+# SQLite support
+uv add "a2a-sdk[sqlite]"
+
+# All database drivers
+uv add "a2a-sdk[sql]"
+```
+
 ### Using `pip`
 
 If you prefer to use pip, the standard Python package installer, you can install `a2a-sdk` as follows
 
 ```bash
 pip install a2a-sdk
+```
+
+To install with database support:
+
+```bash
+# PostgreSQL support
+pip install "a2a-sdk[postgresql]"
+
+# MySQL support
+pip install "a2a-sdk[mysql]"
+
+# SQLite support
+pip install "a2a-sdk[sqlite]"
+
+# All database drivers
+pip install "a2a-sdk[sql]"
 ```
 
 ## Examples
@@ -60,7 +92,7 @@ pip install a2a-sdk
    uv run test_client.py
    ```
 
-3. You can validate your agent using the agent inspector. Follow the instructions at the [a2a-inspector](https://github.com/a2aproject/a2a-inspector) repo. 
+3. You can validate your agent using the agent inspector. Follow the instructions at the [a2a-inspector](https://github.com/a2aproject/a2a-inspector) repo.
 
 You can also find more Python samples [here](https://github.com/a2aproject/a2a-samples/tree/main/samples/python) and JavaScript samples [here](https://github.com/a2aproject/a2a-samples/tree/main/samples/js).
 
