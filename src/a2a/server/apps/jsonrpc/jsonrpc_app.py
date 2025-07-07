@@ -14,6 +14,7 @@ from starlette.applications import Starlette
 from starlette.authentication import BaseUser
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
+from starlette.exceptions import HTTPException
 
 from a2a.auth.user import UnauthenticatedUser
 from a2a.auth.user import User as A2AUser
@@ -232,6 +233,13 @@ class JSONRPCApplication(ABC):
                 request_id,
                 A2AError(root=InvalidRequestError(data=json.loads(e.json()))),
             )
+        except HTTPException as e:
+            if e.status_code == 413: # Payload Too Large
+                 return self._generate_error_response(
+                    request_id,
+                    A2AError(root=InvalidRequestError(message="Payload too large")),
+                )
+            raise e
         except Exception as e:
             logger.error(f'Unhandled exception: {e}')
             traceback.print_exc()
