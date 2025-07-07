@@ -2,7 +2,7 @@ import logging
 
 from typing import Any
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI
 
 from a2a.server.apps.jsonrpc.jsonrpc_app import (
     CallContextBuilder,
@@ -69,22 +69,13 @@ class A2AFastAPIApplication(JSONRPCApplication):
             rpc_url: The URL for the A2A JSON-RPC endpoint.
             extended_agent_card_url: The URL for the authenticated extended agent card endpoint.
         """
-
-        @app.post(rpc_url)
-        async def handle_a2a_request(request: Request) -> Response:
-            return await self._handle_requests(request)
-
-        @app.get(agent_card_url)
-        async def get_agent_card(request: Request) -> Response:
-            return await self._handle_get_agent_card(request)
+        app.post(rpc_url)(self._handle_requests)
+        app.get(agent_card_url)(self._handle_get_agent_card)
 
         if self.agent_card.supportsAuthenticatedExtendedCard:
-
-            @app.get(extended_agent_card_url)
-            async def get_extended_agent_card(request: Request) -> Response:
-                return await self._handle_get_authenticated_extended_agent_card(
-                    request
-                )
+            app.get(extended_agent_card_url)(
+                self._handle_get_authenticated_extended_agent_card
+            )
 
     def build(
         self,
