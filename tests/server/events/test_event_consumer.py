@@ -353,7 +353,7 @@ async def test_consume_all_handles_validation_error(
     # Simulate dequeue_event raising a ValidationError
     mock_event_queue.dequeue_event.side_effect = [
         ValidationError.from_exception_data(title="Test Error", line_errors=[]),
-        asyncio.CancelledError,  # To stop the loop for the test
+        asyncio.CancelledError  # To stop the loop for the test
     ]
 
     with patch("a2a.server.events.event_consumer.logger.error") as logger_error_mock:
