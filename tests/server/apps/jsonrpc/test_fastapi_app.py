@@ -3,7 +3,6 @@ from unittest.mock import MagicMock
 
 import pytest
 
-
 from a2a.server.apps.jsonrpc import fastapi_app
 from a2a.server.apps.jsonrpc.fastapi_app import A2AFastAPIApplication
 from a2a.server.request_handlers.request_handler import (
@@ -22,7 +21,7 @@ class TestA2AFastAPIApplicationOptionalDeps:
     @pytest.fixture(scope='class', autouse=True)
     def ensure_pkg_fastapi_is_present(self):
         try:
-            import fastapi as _fastapi
+            import fastapi as _fastapi  # noqa: F401
         except ImportError:
             pytest.fail(
                 f'Running tests in {self.__class__.__name__} requires'

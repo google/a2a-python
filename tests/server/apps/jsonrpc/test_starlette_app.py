@@ -3,7 +3,6 @@ from unittest.mock import MagicMock
 
 import pytest
 
-
 from a2a.server.apps.jsonrpc import starlette_app
 from a2a.server.apps.jsonrpc.starlette_app import A2AStarletteApplication
 from a2a.server.request_handlers.request_handler import (
@@ -22,8 +21,8 @@ class TestA2AStarletteApplicationOptionalDeps:
     @pytest.fixture(scope='class', autouse=True)
     def ensure_pkg_starlette_is_present(self):
         try:
-            import starlette as _starlette
-            import sse_starlette as _sse_starlette
+            import starlette as _starlette  # noqa: F401
+            import sse_starlette as _sse_starlette  # noqa: F401
         except ImportError:
             pytest.fail(
                 f'Running tests in {self.__class__.__name__} requires'
