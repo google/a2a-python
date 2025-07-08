@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.2.11](https://github.com/a2aproject/a2a-python/compare/v0.2.10...v0.2.11) (2025-07-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* Removes `push_notifier` interface from the SDK and introduces `push_notification_config_store` and `push_notification_sender` for supporting push notifications.
+
+### Features
+
+* Add constants for Well-Known URIs ([#271](https://github.com/a2aproject/a2a-python/issues/271)) ([1c8e12e](https://github.com/a2aproject/a2a-python/commit/1c8e12e448dc7469e508fccdac06818836f5b520))
+* Adds support for List and Delete push notification configurations. ([f1b576e](https://github.com/a2aproject/a2a-python/commit/f1b576e061e7a3ab891d8368ade56c7046684c5e))
+* Adds support for more than one `push_notification_config` per task. ([f1b576e](https://github.com/a2aproject/a2a-python/commit/f1b576e061e7a3ab891d8368ade56c7046684c5e))
+* **server:** Add lock to TaskUpdater to prevent race conditions ([#279](https://github.com/a2aproject/a2a-python/issues/279)) ([1022093](https://github.com/a2aproject/a2a-python/commit/1022093110100da27f040be4b35831bf8b1fe094))
+* Support for database backend Task Store ([#259](https://github.com/a2aproject/a2a-python/issues/259)) ([7c46e70](https://github.com/a2aproject/a2a-python/commit/7c46e70b3142f3ec274c492bacbfd6e8f0204b36))
+
+
+### Code Refactoring
+
+* Removes `push_notifier` interface from the SDK and introduces `push_notification_config_store` and `push_notification_sender` for supporting push notifications. ([f1b576e](https://github.com/a2aproject/a2a-python/commit/f1b576e061e7a3ab891d8368ade56c7046684c5e))
+
 ## [0.2.10](https://github.com/a2aproject/a2a-python/compare/v0.2.9...v0.2.10) (2025-06-30)
 
 
