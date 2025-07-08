@@ -27,6 +27,9 @@ from a2a.types import (
     SetTaskPushNotificationConfigRequest,
     SetTaskPushNotificationConfigResponse,
 )
+from a2a.utils.constants import (
+    AGENT_CARD_WELL_KNOWN_PATH,
+)
 from a2a.utils.telemetry import SpanKind, trace_class
 
 
@@ -40,8 +43,8 @@ class A2ACardResolver:
         self,
         httpx_client: httpx.AsyncClient,
         base_url: str,
-        agent_card_path: str = '/.well-known/agent.json',
-    ):
+        agent_card_path: str = AGENT_CARD_WELL_KNOWN_PATH,
+    ) -> None:
         """Initializes the A2ACardResolver.
 
         Args:
@@ -184,7 +187,7 @@ class A2AClient:
     async def get_client_from_agent_card_url(
         httpx_client: httpx.AsyncClient,
         base_url: str,
-        agent_card_path: str = '/.well-known/agent.json',
+        agent_card_path: str = AGENT_CARD_WELL_KNOWN_PATH,
         http_kwargs: dict[str, Any] | None = None,
     ) -> 'A2AClient':
         """Fetches the public AgentCard and initializes an A2A client.

@@ -2,7 +2,7 @@ import logging
 
 from typing import Any
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI
 
 from a2a.server.apps.jsonrpc.jsonrpc_app import (
     CallContextBuilder,
@@ -10,6 +10,11 @@ from a2a.server.apps.jsonrpc.jsonrpc_app import (
 )
 from a2a.server.request_handlers.jsonrpc_handler import RequestHandler
 from a2a.types import AgentCard
+from a2a.utils.constants import (
+    AGENT_CARD_WELL_KNOWN_PATH,
+    DEFAULT_RPC_URL,
+    EXTENDED_AGENT_CARD_PATH,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -29,7 +34,7 @@ class A2AFastAPIApplication(JSONRPCApplication):
         http_handler: RequestHandler,
         extended_agent_card: AgentCard | None = None,
         context_builder: CallContextBuilder | None = None,
-    ):
+    ) -> None:
         """Initializes the A2AStarletteApplication.
 
         Args:
@@ -52,9 +57,9 @@ class A2AFastAPIApplication(JSONRPCApplication):
     def add_routes_to_app(
         self,
         app: FastAPI,
-        agent_card_url: str = '/.well-known/agent.json',
-        rpc_url: str = '/',
-        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
+        agent_card_url: str = AGENT_CARD_WELL_KNOWN_PATH,
+        rpc_url: str = DEFAULT_RPC_URL,
+        extended_agent_card_url: str = EXTENDED_AGENT_CARD_PATH,
     ) -> None:
         """Adds the routes to the FastAPI application.
 
@@ -64,28 +69,19 @@ class A2AFastAPIApplication(JSONRPCApplication):
             rpc_url: The URL for the A2A JSON-RPC endpoint.
             extended_agent_card_url: The URL for the authenticated extended agent card endpoint.
         """
-
-        @app.post(rpc_url)
-        async def handle_a2a_request(request: Request) -> Response:
-            return await self._handle_requests(request)
-
-        @app.get(agent_card_url)
-        async def get_agent_card(request: Request) -> Response:
-            return await self._handle_get_agent_card(request)
+        app.post(rpc_url)(self._handle_requests)
+        app.get(agent_card_url)(self._handle_get_agent_card)
 
         if self.agent_card.supportsAuthenticatedExtendedCard:
-
-            @app.get(extended_agent_card_url)
-            async def get_extended_agent_card(request: Request) -> Response:
-                return await self._handle_get_authenticated_extended_agent_card(
-                    request
-                )
+            app.get(extended_agent_card_url)(
+                self._handle_get_authenticated_extended_agent_card
+            )
 
     def build(
         self,
-        agent_card_url: str = '/.well-known/agent.json',
-        rpc_url: str = '/',
-        extended_agent_card_url: str = '/agent/authenticatedExtendedCard',
+        agent_card_url: str = AGENT_CARD_WELL_KNOWN_PATH,
+        rpc_url: str = DEFAULT_RPC_URL,
+        extended_agent_card_url: str = EXTENDED_AGENT_CARD_PATH,
         **kwargs: Any,
     ) -> FastAPI:
         """Builds and returns the FastAPI application instance.
