@@ -49,12 +49,8 @@ class AuthInterceptor(ClientCallInterceptor):
                     scheme_def_union = agent_card.securitySchemes.get(
                         scheme_name
                     )
-                    if not scheme_def_union:
-                        continue
                     scheme_def = scheme_def_union.root
-
                     headers = http_kwargs.get('headers', {})
-
                     match scheme_def:
                         # Case 1a: HTTP Bearer scheme with an if guard
                         case HTTPAuthSecurityScheme() if (

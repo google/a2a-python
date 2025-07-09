@@ -13,6 +13,7 @@ from a2a.types import (
     AgentCapabilities,
     AgentCard,
     AuthorizationCodeOAuthFlow,
+    HTTPAuthSecurityScheme,
     In,
     Message,
     MessageSendParams,
@@ -104,6 +105,26 @@ def store():
 
 
 @pytest.mark.asyncio
+async def test_auth_interceptor_skips_when_no_agent_card(store):
+    """
+    Tests that the AuthInterceptor does not modify the request when no AgentCard is provided.
+    """
+    request_payload = {'foo': 'bar'}
+    http_kwargs = {'fizz': 'buzz'}
+    auth_interceptor = AuthInterceptor(credential_service=store)
+
+    new_payload, new_kwargs = await auth_interceptor.intercept(
+        method_name='message/send',
+        request_payload=request_payload,
+        http_kwargs=http_kwargs,
+        agent_card=None,
+        context=ClientCallContext(state={}),
+    )
+    assert new_payload == request_payload
+    assert new_kwargs == http_kwargs
+
+
+@pytest.mark.asyncio
 async def test_in_memory_context_credential_store(store):
     """
     Verifies that InMemoryContextCredentialStore correctly stores and retrieves
@@ -118,25 +139,21 @@ async def test_in_memory_context_credential_store(store):
     context = ClientCallContext(state={'sessionId': session_id})
     retrieved_credential = await store.get_credentials(scheme_name, context)
     assert retrieved_credential == credential
-
     # Assert: Retrieval with wrong session ID returns None
     wrong_context = ClientCallContext(state={'sessionId': 'wrong-session'})
     retrieved_credential_wrong = await store.get_credentials(
         scheme_name, wrong_context
     )
     assert retrieved_credential_wrong is None
-
     # Assert: Retrieval with no context returns None
     retrieved_credential_none = await store.get_credentials(scheme_name, None)
     assert retrieved_credential_none is None
-
     # Assert: Retrieval with context but no sessionId returns None
     empty_context = ClientCallContext(state={})
     retrieved_credential_empty = await store.get_credentials(
         scheme_name, empty_context
     )
     assert retrieved_credential_empty is None
-
     # Assert: Overwrite the credential when session_id already exists
     new_credential = 'new-token'
     await store.set_credentials(session_id, scheme_name, new_credential)
@@ -163,13 +180,24 @@ async def test_client_with_simple_interceptor():
 
 @dataclass
 class AuthTestCase:
+    """
+    Represents a test scenario for verifying authentication behavior in AuthInterceptor.
+    """
+
     url: str
+    """The endpoint URL of the agent to which the request is sent."""
     session_id: str
+    """The client session ID used to fetch credentials from the credential store."""
     scheme_name: str
+    """The name of the security scheme defined in the agent card."""
     credential: str
+    """The actual credential value (e.g., API key, access token) to be injected."""
     security_scheme: Any
+    """The security scheme object (e.g., APIKeySecurityScheme, OAuth2SecurityScheme, etc.) to define behavior."""
     expected_header_key: str
+    """The expected HTTP header name to be set by the interceptor."""
     expected_header_value_func: Callable[[str], str]
+    """A function that maps the credential to its expected header value (e.g., lambda c: f"Bearer {c}")."""
 
 
 api_key_test_case = AuthTestCase(
@@ -223,9 +251,23 @@ oidc_test_case = AuthTestCase(
 )
 
 
+bearer_test_case = AuthTestCase(
+    url='http://agent.com/rpc',
+    session_id='session-id',
+    scheme_name='bearer',
+    credential='bearer-token-123',
+    security_scheme=HTTPAuthSecurityScheme(
+        scheme='bearer',
+    ),
+    expected_header_key='Authorization',
+    expected_header_value_func=lambda c: f'Bearer {c}',
+)
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    'test_case', [api_key_test_case, oauth2_test_case, oidc_test_case]
+    'test_case',
+    [api_key_test_case, oauth2_test_case, oidc_test_case, bearer_test_case],
 )
 @respx.mock
 async def test_auth_interceptor_variants(test_case, store):
@@ -266,3 +308,86 @@ async def test_auth_interceptor_variants(test_case, store):
         assert request.headers[
             test_case.expected_header_key
         ] == test_case.expected_header_value_func(test_case.credential)
+
+
+@pytest.mark.asyncio
+async def test_auth_interceptor_falls_back_on_unsupported_scheme(store):
+    """
+    Tests that AuthInterceptor skips applying headers when the scheme type is unsupported.
+    This ensures the final return statement is hit.
+    """
+    scheme_name = 'unknown'
+    session_id = 'session-id'
+    credential = 'ignored-token'
+    request_payload = {'foo': 'bar'}
+    http_kwargs = {'fizz': 'buzz'}
+    await store.set_credentials(session_id, scheme_name, credential)
+    auth_interceptor = AuthInterceptor(credential_service=store)
+    agent_card = AgentCard(
+        url='http://agent.com/rpc',
+        name='unknownbot',
+        description='A bot that uses unsupported scheme',
+        version='1.0',
+        defaultInputModes=[],
+        defaultOutputModes=[],
+        skills=[],
+        capabilities=AgentCapabilities(),
+        security=[{scheme_name: []}],
+        securitySchemes={
+            'digest': SecurityScheme(
+                root=HTTPAuthSecurityScheme(
+                    scheme='digest',
+                    type='http',
+                ),
+            ),
+        },
+    )
+
+    new_payload, new_kwargs = await auth_interceptor.intercept(
+        method_name='message/send',
+        request_payload=request_payload,
+        http_kwargs=http_kwargs,
+        agent_card=agent_card,
+        context=ClientCallContext(state={'sessionId': session_id}),
+    )
+    assert new_payload == request_payload
+    assert new_kwargs == http_kwargs
+
+
+@pytest.mark.asyncio
+async def test_auth_interceptor_skips_when_scheme_not_in_security_schemes(
+    store,
+):
+    """
+    Tests that AuthInterceptor skips a scheme if it's listed in security requirements
+    but not defined in securitySchemes.
+    """
+    scheme_name = 'missing'
+    session_id = 'session-id'
+    credential = 'dummy-token'
+    request_payload = {'foo': 'bar'}
+    http_kwargs = {'fizz': 'buzz'}
+    await store.set_credentials(session_id, scheme_name, credential)
+    auth_interceptor = AuthInterceptor(credential_service=store)
+    agent_card = AgentCard(
+        url='http://agent.com/rpc',
+        name='missingbot',
+        description='A bot that uses missing scheme definition',
+        version='1.0',
+        defaultInputModes=[],
+        defaultOutputModes=[],
+        skills=[],
+        capabilities=AgentCapabilities(),
+        security=[{scheme_name: []}],
+        securitySchemes={},
+    )
+
+    new_payload, new_kwargs = await auth_interceptor.intercept(
+        method_name='message/send',
+        request_payload=request_payload,
+        http_kwargs=http_kwargs,
+        agent_card=agent_card,
+        context=ClientCallContext(state={'sessionId': session_id}),
+    )
+    assert new_payload == request_payload
+    assert new_kwargs == http_kwargs
