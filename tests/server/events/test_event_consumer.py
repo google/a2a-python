@@ -1,8 +1,10 @@
 import asyncio
+
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
 from pydantic import ValidationError
 
 from a2a.server.events.event_consumer import EventConsumer, QueueClosed
@@ -352,15 +354,19 @@ async def test_consume_all_handles_validation_error(
     """Test that consume_all gracefully handles a pydantic.ValidationError."""
     # Simulate dequeue_event raising a ValidationError
     mock_event_queue.dequeue_event.side_effect = [
-        ValidationError.from_exception_data(title="Test Error", line_errors=[]),
-        asyncio.CancelledError  # To stop the loop for the test
+        ValidationError.from_exception_data(title='Test Error', line_errors=[]),
+        asyncio.CancelledError,  # To stop the loop for the test
     ]
 
-    with patch("a2a.server.events.event_consumer.logger.error") as logger_error_mock:
+    with patch(
+        'a2a.server.events.event_consumer.logger.error'
+    ) as logger_error_mock:
         with pytest.raises(asyncio.CancelledError):
             async for _ in event_consumer.consume_all():
                 pass
 
         # Check that the specific error was logged and the consumer continued
         logger_error_mock.assert_called_once()
-        assert "Invalid event format received" in logger_error_mock.call_args[0][0]
+        assert (
+            'Invalid event format received' in logger_error_mock.call_args[0][0]
+        )

@@ -141,7 +141,7 @@ class EventConsumer:
                 if self.queue.is_closed():
                     break
             except ValidationError as e:
-                logger.error(f"Invalid event format received: {e}")
+                logger.error(f'Invalid event format received: {e}')
                 continue
             except Exception as e:
                 logger.error(
