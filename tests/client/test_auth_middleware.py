@@ -311,50 +311,6 @@ async def test_auth_interceptor_variants(test_case, store):
 
 
 @pytest.mark.asyncio
-async def test_auth_interceptor_falls_back_on_unsupported_scheme(store):
-    """
-    Tests that AuthInterceptor skips applying headers when the scheme type is unsupported.
-    This ensures the final return statement is hit.
-    """
-    scheme_name = 'unknown'
-    session_id = 'session-id'
-    credential = 'ignored-token'
-    request_payload = {'foo': 'bar'}
-    http_kwargs = {'fizz': 'buzz'}
-    await store.set_credentials(session_id, scheme_name, credential)
-    auth_interceptor = AuthInterceptor(credential_service=store)
-    agent_card = AgentCard(
-        url='http://agent.com/rpc',
-        name='unknownbot',
-        description='A bot that uses unsupported scheme',
-        version='1.0',
-        defaultInputModes=[],
-        defaultOutputModes=[],
-        skills=[],
-        capabilities=AgentCapabilities(),
-        security=[{scheme_name: []}],
-        securitySchemes={
-            'digest': SecurityScheme(
-                root=HTTPAuthSecurityScheme(
-                    scheme='digest',
-                    type='http',
-                ),
-            ),
-        },
-    )
-
-    new_payload, new_kwargs = await auth_interceptor.intercept(
-        method_name='message/send',
-        request_payload=request_payload,
-        http_kwargs=http_kwargs,
-        agent_card=agent_card,
-        context=ClientCallContext(state={'sessionId': session_id}),
-    )
-    assert new_payload == request_payload
-    assert new_kwargs == http_kwargs
-
-
-@pytest.mark.asyncio
 async def test_auth_interceptor_skips_when_scheme_not_in_security_schemes(
     store,
 ):
