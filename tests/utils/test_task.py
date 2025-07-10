@@ -126,12 +126,13 @@ class TestTask(unittest.TestCase):
             )
 
     def test_new_task_invalid_message_none_role(self):
-        with self.assertRaises(ValidationError):
-            Message(
+        with self.assertRaises(TypeError):
+            msg = Message.model_construct(
                 role=None,
                 parts=[Part(root=TextPart(text='test message'))],
                 messageId=str(uuid.uuid4()),
             )
+            new_task(msg)
 
 
 if __name__ == '__main__':
