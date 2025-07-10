@@ -12,8 +12,10 @@ from pydantic import ValidationError
 from sse_starlette.sse import EventSourceResponse
 from starlette.applications import Starlette
 from starlette.authentication import BaseUser
+from starlette.exceptions import HTTPException
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
+from starlette.status import HTTP_413_REQUEST_ENTITY_TOO_LARGE
 
 from a2a.auth.user import UnauthenticatedUser
 from a2a.auth.user import User as A2AUser
@@ -45,6 +47,7 @@ from a2a.types import (
 from a2a.utils.constants import (
     AGENT_CARD_WELL_KNOWN_PATH,
     DEFAULT_RPC_URL,
+    EXTENDED_AGENT_CARD_PATH,
 )
 from a2a.utils.errors import MethodNotImplementedError
 
@@ -176,7 +179,7 @@ class JSONRPCApplication(ABC):
             status_code=200,
         )
 
-    async def _handle_requests(self, request: Request) -> Response:
+    async def _handle_requests(self, request: Request) -> Response:  # noqa: PLR0911
         """Handles incoming POST requests to the main A2A endpoint.
 
         Parses the request body as JSON, validates it against A2A request types,
@@ -232,6 +235,15 @@ class JSONRPCApplication(ABC):
                 request_id,
                 A2AError(root=InvalidRequestError(data=json.loads(e.json()))),
             )
+        except HTTPException as e:
+            if e.status_code == HTTP_413_REQUEST_ENTITY_TOO_LARGE:
+                return self._generate_error_response(
+                    request_id,
+                    A2AError(
+                        root=InvalidRequestError(message='Payload too large')
+                    ),
+                )
+            raise e
         except Exception as e:
             logger.error(f'Unhandled exception: {e}')
             traceback.print_exc()
@@ -438,13 +450,16 @@ class JSONRPCApplication(ABC):
         self,
         agent_card_url: str = AGENT_CARD_WELL_KNOWN_PATH,
         rpc_url: str = DEFAULT_RPC_URL,
+        extended_agent_card_url: str = EXTENDED_AGENT_CARD_PATH,
         **kwargs: Any,
     ) -> FastAPI | Starlette:
         """Builds and returns the JSONRPC application instance.
 
         Args:
             agent_card_url: The URL for the agent card endpoint.
-            rpc_url: The URL for the A2A JSON-RPC endpoint
+            rpc_url: The URL for the A2A JSON-RPC endpoint.
+            extended_agent_card_url: The URL for the authenticated extended
+              agent card endpoint.
             **kwargs: Additional keyword arguments to pass to the FastAPI constructor.
 
         Returns:
