@@ -206,11 +206,9 @@ api_key_test_case = AuthTestCase(
     scheme_name='apikey',
     credential='secret-api-key',
     security_scheme=APIKeySecurityScheme(
-        **{
-            'type': 'apiKey',
-            'name': 'X-API-Key',
-            'in': In.header,
-        }
+        type='apiKey',
+        name='X-API-Key',
+        in_=In.header,
     ),
     expected_header_key='x-api-key',
     expected_header_value_func=lambda c: c,
