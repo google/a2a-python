@@ -9,5 +9,7 @@ class A2ABaseModel(BaseModel):
     """
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        # SEE: https://docs.pydantic.dev/latest/api/config/#pydantic.config.ConfigDict.populate_by_name
+        validate_by_name=True,
+        validate_by_alias=True,
     )
