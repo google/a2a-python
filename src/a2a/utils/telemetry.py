@@ -165,7 +165,7 @@ def trace_function(  # noqa: PLR0915
 
             # asyncio.CancelledError extends from BaseException
             except asyncio.CancelledError as ce:
-                exception = ce
+                exception = None
                 logger.debug(f'CancelledError in span {actual_span_name}')
                 span.record_exception(ce)
                 raise
