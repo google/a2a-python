@@ -6,19 +6,21 @@ import pytest
 import pytest_asyncio
 
 from _pytest.mark.structures import ParameterSet
-# from sqlalchemy.ext.asyncio import (
-#     AsyncSession,
-#     async_sessionmaker,
-#     create_async_engine,
-# )
-# from sqlalchemy import select
+from sqlalchemy.ext.asyncio import (
+    async_sessionmaker,
+    create_async_engine,
+)
+from sqlalchemy import select
 
 # Skip entire test module if SQLAlchemy is not installed
 pytest.importorskip('sqlalchemy', reason='Database tests require SQLAlchemy')
+pytest.importorskip(
+    'cryptography',
+    reason='Database tests require Cryptography. Install extra encryption',
+)
 
 # Now safe to import SQLAlchemy-dependent modules
 from sqlalchemy.inspection import inspect
-from sqlalchemy.ext.asyncio import create_async_engine
 from a2a.server.models import (
     Base,
     PushNotificationConfigModel,
@@ -289,33 +291,184 @@ async def test_delete_info_not_found(
     await db_store_parameterized.delete_info('task-1', 'non-existent-config')
 
 
-# @pytest.mark.asyncio
-# async def test_data_is_encrypted_in_db(
-#     db_store_parameterized: DatabasePushNotificationConfigStore,
-# ):
-#     """Verify that the data stored in the database is actually encrypted."""
-#     task_id = 'encrypted-task'
-#     config = PushNotificationConfig(
-#         id='config-1', url='http://secret.url', token='secret-token'
-#     )
-#     plain_json = config.model_dump_json()
+@pytest.mark.asyncio
+async def test_data_is_encrypted_in_db(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+):
+    """Verify that the data stored in the database is actually encrypted."""
+    task_id = 'encrypted-task'
+    config = PushNotificationConfig(
+        id='config-1', url='http://secret.url', token='secret-token'
+    )
+    plain_json = config.model_dump_json()
 
-#     await db_store_parameterized.set_info(task_id, config)
+    await db_store_parameterized.set_info(task_id, config)
 
-#     # Directly query the database to inspect the raw data
-#     async_session = async_sessionmaker(
-#         db_store_parameterized.engine, expire_on_commit=False
-#     )
-#     async with async_session() as session:
-#         stmt = select(PushNotificationConfigModel).where(
-#             PushNotificationConfigModel.task_id == task_id
-#         )
-#         result = await session.execute(stmt)
-#         db_model = result.scalar_one()
+    # Directly query the database to inspect the raw data
+    async_session = async_sessionmaker(
+        db_store_parameterized.engine, expire_on_commit=False
+    )
+    async with async_session() as session:
+        stmt = select(PushNotificationConfigModel).where(
+            PushNotificationConfigModel.task_id == task_id
+        )
+        result = await session.execute(stmt)
+        db_model = result.scalar_one()
 
-#     assert db_model.config_data != plain_json.encode('utf-8')
+    assert db_model.config_data != plain_json.encode('utf-8')
 
-#     fernet = db_store_parameterized._fernet
+    fernet = db_store_parameterized._fernet
 
-#     decrypted_data = fernet.decrypt(db_model.config_data)  # type: ignore
-#     assert decrypted_data.decode('utf-8') == plain_json
+    decrypted_data = fernet.decrypt(db_model.config_data)  # type: ignore
+    assert decrypted_data.decode('utf-8') == plain_json
+
+
+@pytest.mark.asyncio
+async def test_decryption_error_with_wrong_key(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+):
+    """Test that using the wrong key to decrypt raises a ValueError."""
+    # 1. Store with one key
+
+    task_id = 'wrong-key-task'
+    config = PushNotificationConfig(id='config-1', url='http://secret.url')
+    await db_store_parameterized.set_info(task_id, config)
+
+    # 2. Try to read with a different key
+    # Directly query the database to inspect the raw data
+    wrong_key = Fernet.generate_key()
+    store2 = DatabasePushNotificationConfigStore(
+        db_store_parameterized.engine, encryption_key=wrong_key
+    )
+
+    retrieved_configs = await store2.get_info(task_id)
+    assert retrieved_configs == []
+
+    # _from_orm should raise a ValueError
+    async_session = async_sessionmaker(
+        db_store_parameterized.engine, expire_on_commit=False
+    )
+    async with async_session() as session:
+        db_model = await session.get(
+            PushNotificationConfigModel, (task_id, 'config-1')
+        )
+
+        with pytest.raises(ValueError) as exc_info:
+            store2._from_orm(db_model)  # type: ignore
+
+
+@pytest.mark.asyncio
+async def test_decryption_error_with_no_key(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+):
+    """Test that using the wrong key to decrypt raises a ValueError."""
+    # 1. Store with one key
+
+    task_id = 'wrong-key-task'
+    config = PushNotificationConfig(id='config-1', url='http://secret.url')
+    await db_store_parameterized.set_info(task_id, config)
+
+    # 2. Try to read with no key set
+    # Directly query the database to inspect the raw data
+    store2 = DatabasePushNotificationConfigStore(db_store_parameterized.engine)
+
+    retrieved_configs = await store2.get_info(task_id)
+    assert retrieved_configs == []
+
+    # _from_orm should raise a ValueError
+    async_session = async_sessionmaker(
+        db_store_parameterized.engine, expire_on_commit=False
+    )
+    async with async_session() as session:
+        db_model = await session.get(
+            PushNotificationConfigModel, (task_id, 'config-1')
+        )
+
+        with pytest.raises(ValueError) as exc_info:
+            store2._from_orm(db_model)  # type: ignore
+
+
+@pytest.mark.asyncio
+async def test_custom_table_name(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+):
+    """Test that the store works correctly with a custom table name."""
+    table_name = 'my_custom_push_configs'
+
+    task_id = 'custom-table-task'
+    config = PushNotificationConfig(id='config-1', url='http://custom.url')
+
+    # This will create the table on first use
+    await db_store_parameterized.set_info(task_id, config)
+    retrieved_configs = await db_store_parameterized.get_info(task_id)
+
+    assert len(retrieved_configs) == 1
+    assert retrieved_configs[0] == config
+
+    # Verify the custom table exists and has data
+    async with db_store_parameterized.engine.connect() as conn:
+        result = await conn.execute(
+            select(db_store_parameterized.config_model).where(
+                db_store_parameterized.config_model.task_id == task_id
+            )
+        )
+        assert result.scalar_one_or_none() is not None
+
+
+@pytest.mark.asyncio
+async def test_set_and_get_info_multiple_configs_no_key(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+):
+    """Test setting and retrieving multiple configurations for a single task."""
+
+    store = DatabasePushNotificationConfigStore(
+        engine=db_store_parameterized.engine,
+        create_table=False,
+        encryption_key=None,  # No encryption key
+    )
+    await store.initialize()
+
+    task_id = 'task-1'
+    config1 = PushNotificationConfig(id='config-1', url='http://example.com/1')
+    config2 = PushNotificationConfig(id='config-2', url='http://example.com/2')
+
+    await db_store_parameterized.set_info(task_id, config1)
+    await db_store_parameterized.set_info(task_id, config2)
+    retrieved_configs = await db_store_parameterized.get_info(task_id)
+
+    assert len(retrieved_configs) == 2
+    assert config1 in retrieved_configs
+    assert config2 in retrieved_configs
+
+
+@pytest.mark.asyncio
+async def test_data_is_not_encrypted_in_db_if_no_key_is_set(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+):
+    """Test data is not encrypted when no encryption key is set."""
+
+    store = DatabasePushNotificationConfigStore(
+        engine=db_store_parameterized.engine,
+        create_table=False,
+        encryption_key=None,  # No encryption key
+    )
+    await store.initialize()
+
+    task_id = 'task-1'
+    config = PushNotificationConfig(id='config-1', url='http://example.com/1')
+    plain_json = config.model_dump_json()
+
+    await store.set_info(task_id, config)
+
+    # Directly query the database to inspect the raw data
+    async_session = async_sessionmaker(
+        db_store_parameterized.engine, expire_on_commit=False
+    )
+    async with async_session() as session:
+        stmt = select(PushNotificationConfigModel).where(
+            PushNotificationConfigModel.task_id == task_id
+        )
+        result = await session.execute(stmt)
+        db_model = result.scalar_one()
+
+    assert db_model.config_data == plain_json.encode('utf-8')

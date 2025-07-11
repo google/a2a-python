@@ -3,6 +3,9 @@
 from a2a.server.tasks.base_push_notification_sender import (
     BasePushNotificationSender,
 )
+from a2a.server.tasks.database_push_notification_config_store import (
+    DatabasePushNotificationConfigStore,
+)
 from a2a.server.tasks.database_task_store import DatabaseTaskStore
 from a2a.server.tasks.inmemory_push_notification_config_store import (
     InMemoryPushNotificationConfigStore,
@@ -20,6 +23,7 @@ from a2a.server.tasks.task_updater import TaskUpdater
 
 __all__ = [
     'BasePushNotificationSender',
+    'DatabasePushNotificationConfigStore',
     'DatabaseTaskStore',
     'InMemoryPushNotificationConfigStore',
     'InMemoryTaskStore',
