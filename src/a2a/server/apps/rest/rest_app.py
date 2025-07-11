@@ -1,0 +1,227 @@
+import contextlib
+import json
+import logging
+import traceback
+import functools
+
+from abc import ABC, abstractmethod
+from collections.abc import AsyncGenerator, AsyncIterator, Awaitable
+from typing import Any, Tuple, Callable
+from fastapi import FastAPI
+from pydantic import BaseModel, ValidationError
+
+from sse_starlette.sse import EventSourceResponse
+from starlette.applications import Starlette
+from starlette.authentication import BaseUser
+from starlette.requests import Request
+from starlette.responses import JSONResponse, Response
+
+from a2a.auth.user import UnauthenticatedUser
+from a2a.auth.user import User as A2AUser
+from a2a.server.context import ServerCallContext
+from a2a.server.request_handlers.rest_handler import (
+    RESTHandler,
+)
+from a2a.server.request_handlers.request_handler import RequestHandler
+from a2a.types import (
+    A2AError,
+    AgentCard,
+    UnsupportedOperationError,
+    InternalError,
+)
+from a2a.utils.errors import MethodNotImplementedError
+from a2a.server.apps.jsonrpc import (
+    CallContextBuilder,
+    StarletteUserProxy,
+    DefaultCallContextBuilder
+)
+
+
+logger = logging.getLogger(__name__)
+
+
+class RESTApplication:
+    """Base class for A2A REST applications.
+
+    Defines REST requests processors and the routes to attach them too, as well as
+    manages response generation including Server-Sent Events (SSE).
+    """
+
+    def __init__(
+        self,
+        agent_card: AgentCard,
+        http_handler: RequestHandler,
+        context_builder: CallContextBuilder | None = None,
+    ):
+        """Initializes the RESTApplication.
+
+        Args:
+            agent_card: The AgentCard describing the agent's capabilities.
+            http_handler: The handler instance responsible for processing A2A
+              requests via http.
+            context_builder: The CallContextBuilder used to construct the
+              ServerCallContext passed to the http_handler. If None, no
+              ServerCallContext is passed.
+        """
+        self.agent_card = agent_card
+        self.handler = RESTHandler(
+            agent_card=agent_card, request_handler=http_handler
+        )
+        self._context_builder = context_builder or DefaultCallContextBuilder()
+
+    def _generate_error_response(self, error) -> JSONResponse:
+        """Creates a JSONResponse for a errors.
+
+        Logs the error based on its type.
+
+        Args:
+            error: The Error object.
+
+        Returns:
+            A `JSONResponse` object formatted as a JSON error response.
+        """
+        log_level = (
+            logging.ERROR
+            if isinstance(error, InternalError)
+            else logging.WARNING
+        )
+        logger.log(
+            log_level,
+            'Request Error: '
+            f"Code={error.code}, Message='{error.message}'"
+            f'{", Data=" + str(error.data) if error.data else ""}',
+        )
+        return JSONResponse(
+            '{"message": ' + error.message + '}',
+            status_code=404,
+        )
+
+    def _handle_error(self, error: Exception) -> JSONResponse:
+        traceback.print_exc()
+        if isinstance(error, MethodNotImplementedError):
+            return self._generate_error_response(UnsupportedOperationError())
+        elif isinstance(error, json.decoder.JSONDecodeError):
+            return self._generate_error_response(
+                JSONParseError(message=str(error))
+            )
+        elif isinstance(error, ValidationError):
+            return self._generate_error_response(
+                InvalidRequestError(data=json.loads(error.json())),
+            )
+        logger.error(f'Unhandled exception: {error}')
+        return self._generate_error_response(
+            InternalError(message=str(error))
+        )
+
+    async def _handle_request(
+        self,
+        method: Callable[[Request, ServerCallContext], Awaitable[str]],
+        request: Request
+    ) -> JSONResponse:
+        try:
+            call_context = self._context_builder.build(request)
+            response = await method(request, call_context)
+            return JSONResponse(content=response)
+        except Exception as e:
+            return self._handle_error(e)
+
+    async def _handle_streaming_request(
+        self,
+        method: Callable[[Request, ServerCallContext], AsyncIterator[str]],
+        request: Request
+    ) -> EventSourceResponse:
+        try:
+            call_context = self._context_builder.build(request)
+            async def event_generator(
+                stream: AsyncGenerator[str],
+            ) -> AsyncGenerator[dict[str, str]]:
+                async for item in stream:
+                    yield {'data': item}
+            return EventSourceResponse(event_generator(method(request, call_context)))
+        except Exception as e:
+            return self._handle_error(e)
+
+
+    async def _handle_get_agent_card(self, request: Request) -> JSONResponse:
+        """Handles GET requests for the agent card endpoint.
+
+        Args:
+            request: The incoming Starlette Request object.
+
+        Returns:
+            A JSONResponse containing the agent card data.
+        """
+        # The public agent card is a direct serialization of the agent_card
+        # provided at initialization.
+        return JSONResponse(
+            self.agent_card.model_dump(mode='json', exclude_none=True)
+        )
+
+    async def handle_authenticated_agent_card(self, request: Request) -> JSONResponse:
+        """Hook for per credential agent card response.
+
+        If a dynamic card is needed based on the credentials provided in the request
+        override this method and return the customized content.
+
+        Args:
+            request: The incoming Starlette Request  object.
+
+        Returns:
+            A JSONResponse containing the authenticated card.
+        """
+        if not self.agent_card.supportsAuthenticatedExtendedCard:
+            return JSONResponse(
+                '{"detail": "Authenticated card not supported"}', status_code=404
+            )
+        return JSONResponse(
+            self.agent_card.model_dump(mode='json', exclude_none=True)
+        )
+
+    def routes(self) -> dict[str, Tuple[Callable[[Request],Any], str]]:
+        routes = {
+            '/v1/message:send': (
+                functools.partial(
+                    self._handle_request,
+                    self.handler.on_message_send),
+                'POST'),
+            '/v1/message:stream': (
+                functools.partial(
+                    self._handle_streaming_request,
+                    self.handler.on_message_send_stream),
+                'POST'),
+            '/v1/tasks/{id}:subscribe': (
+                functools.partial(
+                    self._handle_streaming_request,
+                    self.handler.on_resubscribe_to_task),
+                'POST'),
+            '/v1/tasks/{id}': (
+                functools.partial(
+                    self._handle_request,
+                    self.handler.on_get_task),
+                'GET'),
+            '/v1/tasks/{id}/pushNotificationConfigs/{push_id}': (
+                functools.partial(
+                    self._handle_request,
+                    self.handler.get_push_notification),
+                'GET'),
+            '/v1/tasks/{id}/pushNotificationConfigs': (
+                functools.partial(
+                    self._handle_request,
+                    self.handler.set_push_notification),
+                'POST'),
+            '/v1/tasks/{id}/pushNotificationConfigs': (
+                functools.partial(
+                    self._handle_request,
+                    self.handler.list_push_notifications),
+                'GET'),
+            '/v1/tasks': (
+                functools.partial(
+                    self._handle_request,
+                    self.handler.list_tasks),
+                'GET'),
+        }
+        if self.agent_card.supportsAuthenticatedExtendedCard:
+            routes['/v1/card'] = (
+                self.handle_authenticated_agent_card,
+                'GET')
+        return routes
