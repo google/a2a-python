@@ -1,0 +1,321 @@
+import os
+
+from collections.abc import AsyncGenerator
+
+import pytest
+import pytest_asyncio
+
+from _pytest.mark.structures import ParameterSet
+# from sqlalchemy.ext.asyncio import (
+#     AsyncSession,
+#     async_sessionmaker,
+#     create_async_engine,
+# )
+# from sqlalchemy import select
+
+# Skip entire test module if SQLAlchemy is not installed
+pytest.importorskip('sqlalchemy', reason='Database tests require SQLAlchemy')
+
+# Now safe to import SQLAlchemy-dependent modules
+from sqlalchemy.inspection import inspect
+from sqlalchemy.ext.asyncio import create_async_engine
+from a2a.server.models import (
+    Base,
+    PushNotificationConfigModel,
+)  # Important: To get Base.metadata
+from a2a.server.tasks import DatabasePushNotificationConfigStore
+from a2a.types import (
+    Task,
+    TaskState,
+    TaskStatus,
+    PushNotificationConfig,
+)
+from cryptography.fernet import Fernet
+
+
+# DSNs for different databases
+SQLITE_TEST_DSN = (
+    'sqlite+aiosqlite:///file:testdb?mode=memory&cache=shared&uri=true'
+)
+POSTGRES_TEST_DSN = os.environ.get(
+    'POSTGRES_TEST_DSN'
+)  # e.g., "postgresql+asyncpg://user:pass@host:port/dbname"
+MYSQL_TEST_DSN = os.environ.get(
+    'MYSQL_TEST_DSN'
+)  # e.g., "mysql+aiomysql://user:pass@host:port/dbname"
+
+# Parameterization for the db_store fixture
+DB_CONFIGS: list[ParameterSet | tuple[str | None, str]] = [
+    pytest.param((SQLITE_TEST_DSN, 'sqlite'), id='sqlite')
+]
+
+if POSTGRES_TEST_DSN:
+    DB_CONFIGS.append(
+        pytest.param((POSTGRES_TEST_DSN, 'postgresql'), id='postgresql')
+    )
+else:
+    DB_CONFIGS.append(
+        pytest.param(
+            (None, 'postgresql'),
+            marks=pytest.mark.skip(reason='POSTGRES_TEST_DSN not set'),
+            id='postgresql_skipped',
+        )
+    )
+
+if MYSQL_TEST_DSN:
+    DB_CONFIGS.append(pytest.param((MYSQL_TEST_DSN, 'mysql'), id='mysql'))
+else:
+    DB_CONFIGS.append(
+        pytest.param(
+            (None, 'mysql'),
+            marks=pytest.mark.skip(reason='MYSQL_TEST_DSN not set'),
+            id='mysql_skipped',
+        )
+    )
+
+
+# Minimal Task object for testing - remains the same
+task_status_submitted = TaskStatus(
+    state=TaskState.submitted, timestamp='2023-01-01T00:00:00Z'
+)
+MINIMAL_TASK_OBJ = Task(
+    id='task-abc',
+    contextId='session-xyz',
+    status=task_status_submitted,
+    kind='task',
+    metadata={'test_key': 'test_value'},
+    artifacts=[],
+    history=[],
+)
+
+
+@pytest_asyncio.fixture(params=DB_CONFIGS)
+async def db_store_parameterized(
+    request,
+) -> AsyncGenerator[DatabasePushNotificationConfigStore, None]:
+    """
+    Fixture that provides a DatabaseTaskStore connected to different databases
+    based on parameterization (SQLite, PostgreSQL, MySQL).
+    """
+    db_url, dialect_name = request.param
+
+    if db_url is None:
+        pytest.skip(f'DSN for {dialect_name} not set in environment variables.')
+
+    engine = create_async_engine(db_url)
+    store = None  # Initialize store to None for the finally block
+
+    try:
+        # Create tables
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        # create_table=False as we've explicitly created tables above.
+        store = DatabasePushNotificationConfigStore(
+            engine=engine,
+            create_table=False,
+            encryption_key=Fernet.generate_key(),
+        )
+        # Initialize the store (connects, etc.). Safe to call even if tables exist.
+        await store.initialize()
+
+        yield store
+
+    finally:
+        if engine:  # If engine was created for setup/teardown
+            # Drop tables using the fixture's engine
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.drop_all)
+            await engine.dispose()  # Dispose the engine created in the fixture
+
+
+@pytest.mark.asyncio
+async def test_initialize_creates_table(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+) -> None:
+    """Test that tables are created (implicitly by fixture setup)."""
+    # Ensure store is initialized (already done by fixture, but good for clarity)
+    await db_store_parameterized._ensure_initialized()
+
+    # Use the store's engine for inspection
+    async with db_store_parameterized.engine.connect() as conn:
+
+        def has_table_sync(sync_conn):
+            inspector = inspect(sync_conn)
+            return inspector.has_table(
+                PushNotificationConfigModel.__tablename__
+            )
+
+        assert await conn.run_sync(has_table_sync)
+
+
+@pytest.mark.asyncio
+async def test_initialize_is_idempotent(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+) -> None:
+    """Test that tables are created (implicitly by fixture setup)."""
+    # Ensure store is initialized (already done by fixture, but good for clarity)
+    await db_store_parameterized.initialize()
+    # Call initialize again to check idempotency
+    await db_store_parameterized.initialize()
+
+
+@pytest.mark.asyncio
+async def test_set_and_get_info_single_config(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+):
+    """Test setting and retrieving a single configuration."""
+    task_id = 'task-1'
+    config = PushNotificationConfig(id='config-1', url='http://example.com')
+
+    await db_store_parameterized.set_info(task_id, config)
+    retrieved_configs = await db_store_parameterized.get_info(task_id)
+
+    assert len(retrieved_configs) == 1
+    assert retrieved_configs[0] == config
+
+
+@pytest.mark.asyncio
+async def test_set_and_get_info_multiple_configs(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+):
+    """Test setting and retrieving multiple configurations for a single task."""
+
+    task_id = 'task-1'
+    config1 = PushNotificationConfig(id='config-1', url='http://example.com/1')
+    config2 = PushNotificationConfig(id='config-2', url='http://example.com/2')
+
+    await db_store_parameterized.set_info(task_id, config1)
+    await db_store_parameterized.set_info(task_id, config2)
+    retrieved_configs = await db_store_parameterized.get_info(task_id)
+
+    assert len(retrieved_configs) == 2
+    assert config1 in retrieved_configs
+    assert config2 in retrieved_configs
+
+
+@pytest.mark.asyncio
+async def test_set_info_updates_existing_config(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+):
+    """Test that setting an existing config ID updates the record."""
+    task_id = 'task-1'
+    config_id = 'config-1'
+    initial_config = PushNotificationConfig(
+        id=config_id, url='http://initial.url'
+    )
+    updated_config = PushNotificationConfig(
+        id=config_id, url='http://updated.url'
+    )
+
+    await db_store_parameterized.set_info(task_id, initial_config)
+    await db_store_parameterized.set_info(task_id, updated_config)
+    retrieved_configs = await db_store_parameterized.get_info(task_id)
+
+    assert len(retrieved_configs) == 1
+    assert retrieved_configs[0].url == 'http://updated.url'
+
+
+@pytest.mark.asyncio
+async def test_set_info_defaults_config_id_to_task_id(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+):
+    """Test that config.id defaults to task_id if not provided."""
+    task_id = 'task-1'
+    config = PushNotificationConfig(url='http://example.com')  # id is None
+
+    await db_store_parameterized.set_info(task_id, config)
+    retrieved_configs = await db_store_parameterized.get_info(task_id)
+
+    assert len(retrieved_configs) == 1
+    assert retrieved_configs[0].id == task_id
+
+
+@pytest.mark.asyncio
+async def test_get_info_not_found(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+):
+    """Test getting info for a task with no configs returns an empty list."""
+    retrieved_configs = await db_store_parameterized.get_info(
+        'non-existent-task'
+    )
+    assert retrieved_configs == []
+
+
+@pytest.mark.asyncio
+async def test_delete_info_specific_config(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+):
+    """Test deleting a single, specific configuration."""
+    task_id = 'task-1'
+    config1 = PushNotificationConfig(id='config-1', url='http://a.com')
+    config2 = PushNotificationConfig(id='config-2', url='http://b.com')
+
+    await db_store_parameterized.set_info(task_id, config1)
+    await db_store_parameterized.set_info(task_id, config2)
+
+    await db_store_parameterized.delete_info(task_id, 'config-1')
+    retrieved_configs = await db_store_parameterized.get_info(task_id)
+
+    assert len(retrieved_configs) == 1
+    assert retrieved_configs[0] == config2
+
+
+@pytest.mark.asyncio
+async def test_delete_info_all_for_task(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+):
+    """Test deleting all configurations for a task when config_id is None."""
+
+    task_id = 'task-1'
+    config1 = PushNotificationConfig(id='config-1', url='http://a.com')
+    config2 = PushNotificationConfig(id='config-2', url='http://b.com')
+
+    await db_store_parameterized.set_info(task_id, config1)
+    await db_store_parameterized.set_info(task_id, config2)
+
+    await db_store_parameterized.delete_info(task_id, None)
+    retrieved_configs = await db_store_parameterized.get_info(task_id)
+
+    assert retrieved_configs == []
+
+
+@pytest.mark.asyncio
+async def test_delete_info_not_found(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+):
+    """Test that deleting a non-existent config does not raise an error."""
+    # Should not raise
+    await db_store_parameterized.delete_info('task-1', 'non-existent-config')
+
+
+# @pytest.mark.asyncio
+# async def test_data_is_encrypted_in_db(
+#     db_store_parameterized: DatabasePushNotificationConfigStore,
+# ):
+#     """Verify that the data stored in the database is actually encrypted."""
+#     task_id = 'encrypted-task'
+#     config = PushNotificationConfig(
+#         id='config-1', url='http://secret.url', token='secret-token'
+#     )
+#     plain_json = config.model_dump_json()
+
+#     await db_store_parameterized.set_info(task_id, config)
+
+#     # Directly query the database to inspect the raw data
+#     async_session = async_sessionmaker(
+#         db_store_parameterized.engine, expire_on_commit=False
+#     )
+#     async with async_session() as session:
+#         stmt = select(PushNotificationConfigModel).where(
+#             PushNotificationConfigModel.task_id == task_id
+#         )
+#         result = await session.execute(stmt)
+#         db_model = result.scalar_one()
+
+#     assert db_model.config_data != plain_json.encode('utf-8')
+
+#     fernet = db_store_parameterized._fernet
+
+#     decrypted_data = fernet.decrypt(db_model.config_data)  # type: ignore
+#     assert decrypted_data.decode('utf-8') == plain_json
