@@ -26,8 +26,10 @@ from a2a.server.request_handlers.request_handler import RequestHandler
 from a2a.types import (
     A2AError,
     AgentCard,
+    JSONParseError,
     UnsupportedOperationError,
     InternalError,
+    InvalidRequestError,
 )
 from a2a.utils.errors import MethodNotImplementedError
 from a2a.server.apps.jsonrpc import (
@@ -139,7 +141,11 @@ class RESTApplication:
                     yield {'data': item}
             return EventSourceResponse(event_generator(method(request, call_context)))
         except Exception as e:
-            return self._handle_error(e)
+            # Since the stream has started, we can't return a JSONResponse.
+            # Instead, we runt the error handling logic (provides logging)
+            # and reraise the error and let server framework manage
+            self._handle_error(e)
+            raise e
 
 
     async def _handle_get_agent_card(self, request: Request) -> JSONResponse:
@@ -177,48 +183,48 @@ class RESTApplication:
             self.agent_card.model_dump(mode='json', exclude_none=True)
         )
 
-    def routes(self) -> dict[str, Tuple[Callable[[Request],Any], str]]:
+    def routes(self) -> dict[Tuple[str, str], Callable[[Request],Any]]:
         routes = {
-            '/v1/message:send': (
+            ('/v1/message:send', 'POST'): (
                 functools.partial(
                     self._handle_request,
                     self.handler.on_message_send),
-                'POST'),
-            '/v1/message:stream': (
+            ),
+            ('/v1/message:stream', 'POST'): (
                 functools.partial(
                     self._handle_streaming_request,
                     self.handler.on_message_send_stream),
-                'POST'),
-            '/v1/tasks/{id}:subscribe': (
+            ),
+            ('/v1/tasks/{id}:subscribe', 'POST'): (
                 functools.partial(
                     self._handle_streaming_request,
                     self.handler.on_resubscribe_to_task),
-                'POST'),
-            '/v1/tasks/{id}': (
+            ),
+            ('/v1/tasks/{id}', 'GET'): (
                 functools.partial(
                     self._handle_request,
                     self.handler.on_get_task),
-                'GET'),
-            '/v1/tasks/{id}/pushNotificationConfigs/{push_id}': (
+            ),
+            ('/v1/tasks/{id}/pushNotificationConfigs/{push_id}', 'GET'): (
                 functools.partial(
                     self._handle_request,
                     self.handler.get_push_notification),
-                'GET'),
-            '/v1/tasks/{id}/pushNotificationConfigs': (
+            ),
+            ('/v1/tasks/{id}/pushNotificationConfigs', 'POST'): (
                 functools.partial(
                     self._handle_request,
                     self.handler.set_push_notification),
-                'POST'),
-            '/v1/tasks/{id}/pushNotificationConfigs': (
+            ),
+            ('/v1/tasks/{id}/pushNotificationConfigs', 'GET'): (
                 functools.partial(
                     self._handle_request,
                     self.handler.list_push_notifications),
-                'GET'),
-            '/v1/tasks': (
+            ),
+            ('/v1/tasks', 'GET'): (
                 functools.partial(
                     self._handle_request,
                     self.handler.list_tasks),
-                'GET'),
+            ),
         }
         if self.agent_card.supportsAuthenticatedExtendedCard:
             routes['/v1/card'] = (
