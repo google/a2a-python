@@ -33,9 +33,7 @@ from a2a.types import (
     InvalidParamsError,
     ListTaskPushNotificationConfigParams,
     Message,
-    MessageSendConfiguration,
     MessageSendParams,
-    PushNotificationConfig,
     Task,
     TaskIdParams,
     TaskNotFoundError,
@@ -217,13 +215,11 @@ class DefaultRequestHandler(RequestHandler):
         # dictating the task ID at this layer is useful for tracking running
         # agents.
 
-        if self.should_add_push_info(params):
-            assert self._push_config_store is not None
-            assert isinstance(params.configuration, MessageSendConfiguration)
-            assert isinstance(
-                params.configuration.pushNotificationConfig,
-                PushNotificationConfig,
-            )
+        if (
+            self._push_config_store
+            and params.configuration
+            and params.configuration.pushNotificationConfig
+        ):
             await self._push_config_store.set_info(
                 task_id, params.configuration.pushNotificationConfig
             )
@@ -498,12 +494,4 @@ class DefaultRequestHandler(RequestHandler):
 
         await self._push_config_store.delete_info(
             params.id, params.pushNotificationConfigId
-        )
-
-    def should_add_push_info(self, params: MessageSendParams) -> bool:
-        """Determines if push notification info should be set for a task."""
-        return bool(
-            self._push_config_store
-            and params.configuration
-            and params.configuration.pushNotificationConfig
         )
