@@ -394,25 +394,47 @@ async def test_custom_table_name(
 ):
     """Test that the store works correctly with a custom table name."""
     table_name = 'my_custom_push_configs'
-
-    task_id = 'custom-table-task'
-    config = PushNotificationConfig(id='config-1', url='http://custom.url')
-
-    # This will create the table on first use
-    await db_store_parameterized.set_info(task_id, config)
-    retrieved_configs = await db_store_parameterized.get_info(task_id)
-
-    assert len(retrieved_configs) == 1
-    assert retrieved_configs[0] == config
-
-    # Verify the custom table exists and has data
-    async with db_store_parameterized.engine.connect() as conn:
-        result = await conn.execute(
-            select(db_store_parameterized.config_model).where(
-                db_store_parameterized.config_model.task_id == task_id
-            )
+    engine = db_store_parameterized.engine
+    custom_store = None
+    try:
+        # Use a new store with a custom table name
+        custom_store = DatabasePushNotificationConfigStore(
+            engine=engine,
+            create_table=True,
+            table_name=table_name,
+            encryption_key=Fernet.generate_key(),
         )
-        assert result.scalar_one_or_none() is not None
+
+        task_id = 'custom-table-task'
+        config = PushNotificationConfig(id='config-1', url='http://custom.url')
+
+        # This will create the table on first use
+        await custom_store.set_info(task_id, config)
+        retrieved_configs = await custom_store.get_info(task_id)
+
+        assert len(retrieved_configs) == 1
+        assert retrieved_configs[0] == config
+
+        # Verify the custom table exists and has data
+        async with custom_store.engine.connect() as conn:
+
+            def has_table_sync(sync_conn):
+                inspector = inspect(sync_conn)
+                return inspector.has_table(table_name)
+
+            assert await conn.run_sync(has_table_sync)
+
+            result = await conn.execute(
+                select(custom_store.config_model).where(
+                    custom_store.config_model.task_id == task_id
+                )
+            )
+            assert result.scalar_one_or_none() is not None
+    finally:
+        if custom_store:
+            # Clean up the dynamically created table from the metadata
+            # to prevent errors in subsequent parameterized test runs.
+            Base.metadata.remove(custom_store.config_model.__table__)  # type: ignore
 
 
 @pytest.mark.asyncio
@@ -432,9 +454,9 @@ async def test_set_and_get_info_multiple_configs_no_key(
     config1 = PushNotificationConfig(id='config-1', url='http://example.com/1')
     config2 = PushNotificationConfig(id='config-2', url='http://example.com/2')
 
-    await db_store_parameterized.set_info(task_id, config1)
-    await db_store_parameterized.set_info(task_id, config2)
-    retrieved_configs = await db_store_parameterized.get_info(task_id)
+    await store.set_info(task_id, config1)
+    await store.set_info(task_id, config2)
+    retrieved_configs = await store.get_info(task_id)
 
     assert len(retrieved_configs) == 2
     assert config1 in retrieved_configs
@@ -472,3 +494,69 @@ async def test_data_is_not_encrypted_in_db_if_no_key_is_set(
         db_model = result.scalar_one()
 
     assert db_model.config_data == plain_json.encode('utf-8')
+
+
+@pytest.mark.asyncio
+async def test_decryption_fallback_for_unencrypted_data(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+):
+    """Test reading unencrypted data with an encryption-enabled store."""
+    # 1. Store unencrypted data using a new store instance without a key
+    unencrypted_store = DatabasePushNotificationConfigStore(
+        engine=db_store_parameterized.engine,
+        create_table=False,  # Table already exists from fixture
+        encryption_key=None,
+    )
+    await unencrypted_store.initialize()
+
+    task_id = 'mixed-encryption-task'
+    config = PushNotificationConfig(id='config-1', url='http://plain.url')
+    await unencrypted_store.set_info(task_id, config)
+
+    # 2. Try to read with the encryption-enabled store from the fixture
+    retrieved_configs = await db_store_parameterized.get_info(task_id)
+
+    # Should fall back to parsing as plain JSON and not fail
+    assert len(retrieved_configs) == 1
+    assert retrieved_configs[0] == config
+
+
+@pytest.mark.asyncio
+async def test_parsing_error_after_successful_decryption(
+    db_store_parameterized: DatabasePushNotificationConfigStore,
+):
+    """Test that a parsing error after successful decryption is handled."""
+
+    task_id = 'corrupted-data-task'
+    config_id = 'config-1'
+
+    # 1. Encrypt data that is NOT valid JSON
+    fernet = Fernet(Fernet.generate_key())
+    corrupted_payload = b'this is not valid json'
+    encrypted_data = fernet.encrypt(corrupted_payload)
+
+    # 2. Manually insert this corrupted data into the DB
+    async_session = async_sessionmaker(
+        db_store_parameterized.engine, expire_on_commit=False
+    )
+    async with async_session() as session:
+        db_model = PushNotificationConfigModel(
+            task_id=task_id,
+            config_id=config_id,
+            config_data=encrypted_data,
+        )
+        session.add(db_model)
+        await session.commit()
+
+    # 3. get_info should log an error and return an empty list
+    retrieved_configs = await db_store_parameterized.get_info(task_id)
+    assert retrieved_configs == []
+
+    # 4. _from_orm should raise a ValueError
+    async with async_session() as session:
+        db_model_retrieved = await session.get(
+            PushNotificationConfigModel, (task_id, config_id)
+        )
+
+        with pytest.raises(ValueError) as exc_info:
+            db_store_parameterized._from_orm(db_model_retrieved)  # type: ignore

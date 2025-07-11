@@ -3,9 +3,12 @@ import logging
 
 from typing import TYPE_CHECKING
 
+from pydantic import ValidationError
+
 
 try:
     from sqlalchemy import (
+        Table,
         delete,
         select,
     )
@@ -14,6 +17,7 @@ try:
         AsyncSession,
         async_sessionmaker,
     )
+    from sqlalchemy.orm import class_mapper
 except ImportError as e:
     raise ImportError(
         'DatabasePushNotificationConfigStore requires SQLAlchemy and a database driver. '
@@ -115,7 +119,13 @@ class DatabasePushNotificationConfigStore(PushNotificationConfigStore):
         )
         if self.create_table:
             async with self.engine.begin() as conn:
-                await conn.run_sync(Base.metadata.create_all)
+                mapper = class_mapper(self.config_model)
+                tables_to_create = [
+                    table for table in mapper.tables if isinstance(table, Table)
+                ]
+                await conn.run_sync(
+                    Base.metadata.create_all, tables=tables_to_create
+                )
         self._initialized = True
         logger.debug(
             'Database schema for push notification configs initialized.'
@@ -151,7 +161,7 @@ class DatabasePushNotificationConfigStore(PushNotificationConfigStore):
     ) -> PushNotificationConfig:
         """Maps a SQLAlchemy model instance to a Pydantic PushNotificationConfig.
 
-        Handles decryption if a key is configured.
+        Handles decryption if a key is configured, with a fallback to plain JSON.
         """
         payload = model_instance.config_data
 
@@ -163,26 +173,51 @@ class DatabasePushNotificationConfigStore(PushNotificationConfigStore):
                 return PushNotificationConfig.model_validate_json(
                     decrypted_payload
                 )
-            except InvalidToken:
-                # This could be unencrypted data if encryption was enabled after data was stored.
-                # We'll fall through and try to parse it as plain JSON.
-                logger.debug(
-                    'Could not decrypt config for task %s, config %s. '
-                    'Attempting to parse as unencrypted JSON.',
+            except (json.JSONDecodeError, ValidationError) as e:
+                logger.error(
+                    'Failed to parse decrypted push notification config for task %s, config %s. '
+                    'Data is corrupted or not valid JSON after decryption.',
                     model_instance.task_id,
                     model_instance.config_id,
                 )
+                raise ValueError(
+                    'Failed to parse decrypted push notification config data'
+                ) from e
+            except InvalidToken:
+                # Decryption failed. This could be because the data is not encrypted.
+                # We'll log a warning and try to parse it as plain JSON as a fallback.
+                logger.warning(
+                    'Failed to decrypt push notification config for task %s, config %s. '
+                    'Attempting to parse as unencrypted JSON. '
+                    'This may indicate an incorrect encryption key or unencrypted data in the database.',
+                    model_instance.task_id,
+                    model_instance.config_id,
+                )
+                # Fall through to the unencrypted parsing logic below.
 
-        # If no fernet or if decryption failed, try to parse as plain JSON.
+        # Try to parse as plain JSON.
         try:
             return PushNotificationConfig.model_validate_json(payload)
-        except json.JSONDecodeError as e:
+        except (json.JSONDecodeError, ValidationError) as e:
             if self._fernet:
-                raise ValueError(
-                    'Failed to decrypt data; incorrect key or corrupted data.'
-                ) from e
+                logger.error(
+                    'Failed to parse push notification config for task %s, config %s. '
+                    'Decryption failed and the data is not valid JSON. '
+                    'This likely indicates the data is corrupted or encrypted with a different key.',
+                    model_instance.task_id,
+                    model_instance.config_id,
+                )
+            else:
+                # if no key is configured and the payload is not valid JSON.
+                logger.error(
+                    'Failed to parse push notification config for task %s, config %s. '
+                    'Data is not valid JSON and no encryption key is configured.',
+                    model_instance.task_id,
+                    model_instance.config_id,
+                )
             raise ValueError(
-                'Failed to parse data; it may be encrypted but no key is configured.'
+                'Failed to parse push notification config data. '
+                'Data is not valid JSON, or it is encrypted with the wrong key.'
             ) from e
 
     async def set_info(
