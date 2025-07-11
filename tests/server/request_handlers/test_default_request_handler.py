@@ -402,6 +402,90 @@ async def test_on_message_send_with_push_notification():
 
 
 @pytest.mark.asyncio
+async def test_on_message_send_with_push_notification_no_existing_Task():
+    """Test on_message_send for new task sets push notification info if provided."""
+    mock_task_store = AsyncMock(spec=TaskStore)
+    mock_push_notification_store = AsyncMock(spec=PushNotificationConfigStore)
+    mock_agent_executor = AsyncMock(spec=AgentExecutor)
+    mock_request_context_builder = AsyncMock(spec=RequestContextBuilder)
+
+    task_id = 'push_task_1'
+    context_id = 'push_ctx_1'
+
+    mock_task_store.get.return_value = (
+        None  # Simulate new task scenario for TaskManager
+    )
+
+    # Mock _request_context_builder.build to return a context with the generated/confirmed IDs
+    mock_request_context = MagicMock(spec=RequestContext)
+    mock_request_context.task_id = task_id
+    mock_request_context.context_id = context_id
+    mock_request_context_builder.build.return_value = mock_request_context
+
+    request_handler = DefaultRequestHandler(
+        agent_executor=mock_agent_executor,
+        task_store=mock_task_store,
+        push_config_store=mock_push_notification_store,
+        request_context_builder=mock_request_context_builder,
+    )
+
+    push_config = PushNotificationConfig(url='http://callback.com/push')
+    message_config = MessageSendConfiguration(
+        pushNotificationConfig=push_config,
+        acceptedOutputModes=['text/plain'],  # Added required field
+    )
+    params = MessageSendParams(
+        message=Message(
+            role=Role.user,
+            messageId='msg_push',
+            parts=[],
+            taskId=task_id,
+            contextId=context_id,
+        ),
+        configuration=message_config,
+    )
+
+    # Mock ResultAggregator and its consume_and_break_on_interrupt
+    mock_result_aggregator_instance = AsyncMock(spec=ResultAggregator)
+    final_task_result = create_sample_task(
+        task_id=task_id, context_id=context_id, status_state=TaskState.completed
+    )
+    mock_result_aggregator_instance.consume_and_break_on_interrupt.return_value = (
+        final_task_result,
+        False,
+    )
+
+    # Mock the current_result property to return the final task result
+    async def get_current_result():
+        return final_task_result
+
+    # Configure the 'current_result' property on the type of the mock instance
+    type(mock_result_aggregator_instance).current_result = PropertyMock(
+        return_value=get_current_result()
+    )
+
+    with (
+        patch(
+            'a2a.server.request_handlers.default_request_handler.ResultAggregator',
+            return_value=mock_result_aggregator_instance,
+        ),
+        patch(
+            'a2a.server.request_handlers.default_request_handler.TaskManager.get_task',
+            return_value=None,
+        ),
+    ):
+        await request_handler.on_message_send(
+            params, create_server_call_context()
+        )
+
+    mock_push_notification_store.set_info.assert_awaited_once_with(
+        task_id, push_config
+    )
+    # Other assertions for full flow if needed (e.g., agent execution)
+    mock_agent_executor.execute.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_on_message_send_no_result_from_aggregator():
     """Test on_message_send when aggregator returns (None, False)."""
     mock_task_store = AsyncMock(spec=TaskStore)
