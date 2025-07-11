@@ -70,5 +70,6 @@ sse
 tagwords
 taskupdate
 testuuid
+Tful
 typeerror
 vulnz
