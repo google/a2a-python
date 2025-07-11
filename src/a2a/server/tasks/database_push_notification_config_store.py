@@ -284,5 +284,5 @@ class DatabasePushNotificationConfigStore(PushNotificationConfigStore):
                 )
             else:
                 logger.warning(
-                    f'Attempted to delete non-existent push notification config for task {task_id} with config_id: {config_id}'
+                    f'Attempted to delete push notification config for task {task_id} with config_id: {config_id} that does not exist.'
                 )
