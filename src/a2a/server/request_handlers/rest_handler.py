@@ -88,9 +88,9 @@ class RESTHandler:
             )
             return MessageToJson(proto_utils.ToProto.task_or_message(task_or_message))
         except ServerError as e:
-            return A2AError(
+            raise A2AError(
                 error=e.error if e.error else InternalError()
-            )
+            ) from e
 
     @validate(
         lambda self: self.agent_card.capabilities.streaming,
@@ -214,12 +214,12 @@ class RESTHandler:
             A2AError.
         """
         try:
-            task_id = request.path_params['task_id']
+            task_id = request.path_params['id']
             push_id = request.path_params['push_id']
             if push_id:
                 params = GetTaskPushNotificationConfigParams(id=task_id, push_id=push_id)
             else:
-                params = TaskIdParams['task_id']
+                params = TaskIdParams['id']
             config = await self.request_handler.on_get_task_push_notification_config(
                 params, context
             )
@@ -259,9 +259,14 @@ class RESTHandler:
         try:
             task_id = request.path_params['id']
             body = await request.body()
+            params = a2a_pb2.TaskPushNotificationConfig()
+            Parse(body, params)
             params = TaskPushNotificationConfig.validate_model(body)
+            a2a_request = proto_utils.FromProto.task_push_notification_config(
+                params,
+            ),
             config = await self.request_handler.on_set_task_push_notification_config(
-                params, context
+                a2a_request, context
             )
             return MessageToJson(
                 proto_utils.ToProto.task_push_notification_config(config)
@@ -292,7 +297,7 @@ class RESTHandler:
             task_id = request.path_params['id']
             historyLength = None
             if 'historyLength' in request.query_params:
-              history_length = request.query_params['historyLength']
+              historyLength = request.query_params['historyLength']
             params = TaskQueryParams(id=task_id, historyLength=historyLength)
             task = await self.request_handler.on_get_task(params, context)
             if task:
@@ -300,7 +305,7 @@ class RESTHandler:
             raise ServerError(error=TaskNotFoundError())
         except ServerError as e:
             raise A2AError(
-                id=request.id, error=e.error if e.error else InternalError()
+                error=e.error if e.error else InternalError()
             ) from e
 
     async def list_push_notifications(
