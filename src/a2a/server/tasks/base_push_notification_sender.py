@@ -58,7 +58,7 @@ class BasePushNotificationSender(PushNotificationSender):
             response = await self._client.post(
                 url,
                 json=task.model_dump(mode='json', exclude_none=True),
-                headers=headers
+                headers=headers,
             )
             response.raise_for_status()
             logger.info(
