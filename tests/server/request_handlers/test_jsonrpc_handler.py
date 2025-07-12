@@ -585,6 +585,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
                         'kind': 'task',
                         'status': {'state': 'submitted'},
                     },
+                    headers=None
                 ),
                 call(
                     'http://example.com',
@@ -605,6 +606,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
                         'kind': 'task',
                         'status': {'state': 'submitted'},
                     },
+                    headers=None
                 ),
                 call(
                     'http://example.com',
@@ -625,6 +627,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
                         'kind': 'task',
                         'status': {'state': 'completed'},
                     },
+                    headers=None
                 ),
             ]
             mock_httpx_client.post.assert_has_calls(calls)
