@@ -41,6 +41,7 @@ postgresql = ["sqlalchemy[asyncio,postgresql-asyncpg]>=2.0.0"]
 mysql = ["sqlalchemy[asyncio,aiomysql]>=2.0.0"]
 sqlite = ["sqlalchemy[asyncio,aiosqlite]>=2.0.0"]
 sql = ["sqlalchemy[asyncio,postgresql-asyncpg,aiomysql,aiosqlite]>=2.0.0"]
+redis = ["redis>=6.2.0"]
 
 [project.urls]
 homepage = "https://a2aproject.github.io/A2A/"
@@ -91,6 +92,7 @@ dev = [
   "types-protobuf",
   "types-requests",
   "pre-commit",
+  "fakeredis>=2.30.1",
 ]
 
 [[tool.uv.index]]
