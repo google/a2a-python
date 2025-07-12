@@ -196,4 +196,5 @@ class TaskUpdater:
             messageId=str(uuid.uuid4()),
             metadata=metadata,
             parts=parts,
+            isDelta=False
         )
