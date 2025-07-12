@@ -21,13 +21,13 @@ class RequestContext:
     """
 
     def __init__(  # noqa: PLR0913
-        self,
-        request: MessageSendParams | None = None,
-        task_id: str | None = None,
-        context_id: str | None = None,
-        task: Task | None = None,
-        related_tasks: list[Task] | None = None,
-        call_context: ServerCallContext | None = None,
+            self,
+            request: MessageSendParams | None = None,
+            task_id: str | None = None,
+            context_id: str | None = None,
+            task: Task | None = None,
+            related_tasks: list[Task] | None = None,
+            call_context: ServerCallContext | None = None,
     ):
         """Initializes the RequestContext.
 
@@ -133,6 +133,13 @@ class RequestContext:
     def call_context(self) -> ServerCallContext | None:
         """The server call context associated with this request."""
         return self._call_context
+
+    @property
+    def metadata(self) -> dict:
+        """Metadata associated with the request, if available."""
+        if not self._params:
+            return {}
+        return self._params.metadata or {}
 
     def _check_or_generate_task_id(self) -> None:
         """Ensures a task ID is present, generating one if necessary."""
