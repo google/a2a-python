@@ -17,9 +17,20 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: a2a_test
         ports:
           - 5432:5432
+        volumes:
+          - ${{ github.workspace }}/tests/docker/postgres:/docker-entrypoint-initdb.d
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        volumes:
+          - ${{ github.workspace }}/tests/docker/mysql:/docker-entrypoint-initdb.d
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u root -proot" --health-interval=10s --health-timeout=5s --health-retries=5
 
     strategy:
       matrix:
@@ -31,11 +42,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Set postgres for tests
-        run: |
-          sudo apt-get update && sudo apt-get install -y postgresql-client
-          PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d a2a_test -f ${{ github.workspace }}/tests/docker/postgres/init.sql
-          echo "POSTGRES_TEST_DSN=postgresql+asyncpg://postgres:postgres@localhost:5432/a2a_test" >> $GITHUB_ENV
+      - name: Set up databases for tests
+        run: |          
+          echo "POSTGRES_TEST_DSN=postgresql+asyncpg://a2a:a2a_password@localhost:5432/a2a_test" >> $GITHUB_ENV
+          echo "MYSQL_TEST_DSN=mysql+aiomysql://a2a:a2a_password@localhost:3306/a2a_test" >> $GITHUB_ENV
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
