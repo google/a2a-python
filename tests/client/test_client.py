@@ -1285,5 +1285,7 @@ class TestA2AClient:
 
         request = SendMessageRequest(id=123, params=params)
 
-        with pytest.raises(A2AClientTimeoutError):
+        with pytest.raises(A2AClientTimeoutError) as exc_info:
             await client.send_message(request=request)
+
+        assert 'Request timed out' in str(exc_info.value)
