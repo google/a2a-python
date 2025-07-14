@@ -3,8 +3,6 @@ import uuid
 
 from unittest.mock import patch
 
-from pydantic import ValidationError
-
 from a2a.types import Message, Part, Role, TextPart
 from a2a.utils.task import completed_task, new_task
 
