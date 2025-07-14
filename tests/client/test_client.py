@@ -14,6 +14,7 @@ from a2a.client import (
     A2AClient,
     A2AClientHTTPError,
     A2AClientJSONError,
+    A2AClientTimeoutError,
     create_text_message_object,
 )
 from a2a.types import (
@@ -1266,3 +1267,23 @@ class TestA2AClient:
                 mode='json', exclude_none=True
             ) == error_details.model_dump(exclude_none=True)
             assert response.root.id == 'err_cancel_req'
+
+    @pytest.mark.asyncio
+    async def test_send_message_client_timeout(
+        self, mock_httpx_client: AsyncMock, mock_agent_card: MagicMock
+    ):
+        mock_httpx_client.post.side_effect = httpx.ReadTimeout(
+            'Request timed out'
+        )
+        client = A2AClient(
+            httpx_client=mock_httpx_client, agent_card=mock_agent_card
+        )
+
+        params = MessageSendParams(
+            message=create_text_message_object(content='Hello')
+        )
+
+        request = SendMessageRequest(id=123, params=params)
+
+        with pytest.raises(A2AClientTimeoutError):
+            await client.send_message(request=request)
