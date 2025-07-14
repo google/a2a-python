@@ -211,6 +211,17 @@ class TestRequestContext:
         context = RequestContext(request=mock_params)
         assert context.message == mock_params.message
 
+    def test_metadata_property_without_content(self):
+        """Test metadata property returns empty dict when no content are provided."""
+        context = RequestContext()
+        assert context.metadata == {}
+
+    def test_metadata_property_with_content(self, mock_params):
+        """Test metadata property returns the metadata from params."""
+        mock_params.metadata = {'key': 'value'}
+        context = RequestContext(request=mock_params)
+        assert context.metadata == {'key': 'value'}
+
     def test_init_with_existing_ids_in_message(self, mock_message, mock_params):
         """Test initialization with existing IDs in the message."""
         mock_message.taskId = 'existing-task-id'

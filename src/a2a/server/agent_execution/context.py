@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 
 from a2a.server.context import ServerCallContext
 from a2a.types import (
@@ -135,7 +136,7 @@ class RequestContext:
         return self._call_context
 
     @property
-    def metadata(self) -> dict:
+    def metadata(self) -> dict[str, Any]:
         """Metadata associated with the request, if available."""
         if not self._params:
             return {}
