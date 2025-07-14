@@ -19,17 +19,29 @@ from a2a.server.tasks.task_store import TaskStore
 from a2a.server.tasks.task_updater import TaskUpdater
 
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 try:
-    from a2a.server.tasks.database_task_store import DatabaseTaskStore
+    from a2a.server.tasks.database_task_store import (
+        DatabaseTaskStore,  # type: ignore
+    )
 except ImportError as e:
+    _original_error = e
     # If the database task store is not available, we can still use in-memory stores.
-    log.debug(
+    logger.debug(
         'DatabaseTaskStore not loaded. This is expected if database dependencies are not installed. Error: %s',
         e,
     )
-    DatabaseTaskStore = None
+
+    class DatabaseTaskStore:  # type: ignore
+        """Placeholder for DatabaseTaskStore when dependencies are not installed."""
+
+        def __init__(self, *args, **kwargs):
+            raise ImportError(
+                'To use DatabaseTaskStore, its dependencies must be installed. '
+                'You can install them with \'pip install "a2a-sdk[sql]"\''
+            ) from _original_error
+
 
 __all__ = [
     'BasePushNotificationSender',
