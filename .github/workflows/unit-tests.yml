@@ -15,20 +15,22 @@ jobs:
       postgres:
         image: postgres:15-alpine
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: a2a
+          POSTGRES_PASSWORD: a2a_password
+          POSTGRES_DB: a2a_test
         ports:
           - 5432:5432
-        volumes:
-          - ${{ github.workspace }}/tests/docker/postgres:/docker-entrypoint-initdb.d
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
       mysql:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: a2a_test
+          MYSQL_USER: a2a
+          MYSQL_PASSWORD: a2a_password
         ports:
           - 3306:3306
-        volumes:
-          - ${{ github.workspace }}/tests/docker/mysql:/docker-entrypoint-initdb.d
         options: >-
           --health-cmd="mysqladmin ping -h localhost -u root -proot" --health-interval=10s --health-timeout=5s --health-retries=5
 
@@ -42,7 +44,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Set up databases for tests
+      - name: Set up test environment variables
         run: |          
           echo "POSTGRES_TEST_DSN=postgresql+asyncpg://a2a:a2a_password@localhost:5432/a2a_test" >> $GITHUB_ENV
           echo "MYSQL_TEST_DSN=mysql+aiomysql://a2a:a2a_password@localhost:3306/a2a_test" >> $GITHUB_ENV
