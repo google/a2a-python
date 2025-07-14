@@ -23,13 +23,13 @@ class RequestContext:
     """
 
     def __init__(  # noqa: PLR0913
-            self,
-            request: MessageSendParams | None = None,
-            task_id: str | None = None,
-            context_id: str | None = None,
-            task: Task | None = None,
-            related_tasks: list[Task] | None = None,
-            call_context: ServerCallContext | None = None,
+        self,
+        request: MessageSendParams | None = None,
+        task_id: str | None = None,
+        context_id: str | None = None,
+        task: Task | None = None,
+        related_tasks: list[Task] | None = None,
+        call_context: ServerCallContext | None = None,
     ):
         """Initializes the RequestContext.
 
