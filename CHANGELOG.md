@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.2.12](https://github.com/a2aproject/a2a-python/compare/v0.2.11...v0.2.12) (2025-07-14)
+
+
+### Features
+
+* add `metadata` property to `RequestContext` ([#302](https://github.com/a2aproject/a2a-python/issues/302)) ([e781ced](https://github.com/a2aproject/a2a-python/commit/e781ced3b082ef085f9aeef02ceebb9b35c68280))
+* add A2ABaseModel ([#292](https://github.com/a2aproject/a2a-python/issues/292)) ([24f2eb0](https://github.com/a2aproject/a2a-python/commit/24f2eb0947112539cbd4e493c98d0d9dadc87f05))
+* add support for notification tokens in PushNotificationSender ([#266](https://github.com/a2aproject/a2a-python/issues/266)) ([75aa4ed](https://github.com/a2aproject/a2a-python/commit/75aa4ed866a6b4005e59eb000e965fb593e0888f))
+* Update A2A types from specification 🤖 ([#289](https://github.com/a2aproject/a2a-python/issues/289)) ([ecb321a](https://github.com/a2aproject/a2a-python/commit/ecb321a354d691ca90b52cc39e0a397a576fd7d7))
+
+
+### Bug Fixes
+
+* add proper a2a request body documentation to Swagger UI ([#276](https://github.com/a2aproject/a2a-python/issues/276)) ([4343be9](https://github.com/a2aproject/a2a-python/commit/4343be99ad0df5eb6908867b71d55b1f7d0fafc6)), closes [#274](https://github.com/a2aproject/a2a-python/issues/274)
+* Handle asyncio.cancellederror and raise to propagate back ([#293](https://github.com/a2aproject/a2a-python/issues/293)) ([9d6cb68](https://github.com/a2aproject/a2a-python/commit/9d6cb68a1619960b9c9fd8e7aa08ffb27047343f))
+* Improve error handling in task creation ([#294](https://github.com/a2aproject/a2a-python/issues/294)) ([6412c75](https://github.com/a2aproject/a2a-python/commit/6412c75413e26489bd3d33f59e41b626a71807d3))
+* Resolve dependency issue with sql stores ([#303](https://github.com/a2aproject/a2a-python/issues/303)) ([2126828](https://github.com/a2aproject/a2a-python/commit/2126828b5cb6291f47ca15d56c0e870950f17536))
+* Send push notifications for message/send ([#298](https://github.com/a2aproject/a2a-python/issues/298)) ([0274112](https://github.com/a2aproject/a2a-python/commit/0274112bb5b077c17b344da3a65277f2ad67d38f))
+* **server:** Improve event consumer error handling ([#282](https://github.com/a2aproject/a2a-python/issues/282)) ([a5786a1](https://github.com/a2aproject/a2a-python/commit/a5786a112779a21819d28e4dfee40fa11f1bb49a))
+
 ## [0.2.11](https://github.com/a2aproject/a2a-python/compare/v0.2.10...v0.2.11) (2025-07-07)
 
 

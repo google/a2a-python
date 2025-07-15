@@ -10,12 +10,14 @@ from a2a.server.request_handlers.response_helpers import (
     build_error_response,
     prepare_response_object,
 )
+from a2a.server.request_handlers.rest_handler import RESTHandler
 
 
 __all__ = [
     'DefaultRequestHandler',
     'GrpcHandler',
     'JSONRPCHandler',
+    'RESTHandler',
     'RequestHandler',
     'build_error_response',
     'prepare_response_object',

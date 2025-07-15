@@ -10,6 +10,7 @@ from a2a.client.errors import (
     A2AClientError,
     A2AClientHTTPError,
     A2AClientJSONError,
+    A2AClientTimeoutError,
 )
 from a2a.client.grpc_client import A2AGrpcClient
 from a2a.client.helpers import create_text_message_object
@@ -22,6 +23,7 @@ __all__ = [
     'A2AClientError',
     'A2AClientHTTPError',
     'A2AClientJSONError',
+    'A2AClientTimeoutError',
     'A2AGrpcClient',
     'AuthInterceptor',
     'ClientCallContext',

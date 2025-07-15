@@ -60,12 +60,18 @@ class TaskUpdater:
         """
         async with self._lock:
             if self._terminal_state_reached:
-                raise RuntimeError(f"Task {self.task_id} is already in a terminal state.")
+                raise RuntimeError(
+                    f'Task {self.task_id} is already in a terminal state.'
+                )
             if state in self._terminal_states:
                 self._terminal_state_reached = True
                 final = True
 
-            current_timestamp = timestamp if timestamp else datetime.now(timezone.utc).isoformat()
+            current_timestamp = (
+                timestamp
+                if timestamp
+                else datetime.now(timezone.utc).isoformat()
+            )
             await self.event_queue.enqueue_event(
                 TaskStatusUpdateEvent(
                     taskId=self.task_id,
@@ -112,7 +118,7 @@ class TaskUpdater:
                     metadata=metadata,
                 ),
                 append=append,
-                lastChunk=last_chunk
+                lastChunk=last_chunk,
             )
         )
 

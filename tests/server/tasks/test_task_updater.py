@@ -508,7 +508,9 @@ async def test_cancel_with_message(task_updater, event_queue, sample_message):
 
 
 @pytest.mark.asyncio
-async def test_update_status_raises_error_if_terminal_state_reached(task_updater, event_queue):
+async def test_update_status_raises_error_if_terminal_state_reached(
+    task_updater, event_queue
+):
     await task_updater.complete()
     event_queue.reset_mock()
     with pytest.raises(RuntimeError):
@@ -520,8 +522,8 @@ async def test_update_status_raises_error_if_terminal_state_reached(task_updater
 async def test_concurrent_updates_race_condition(event_queue):
     task_updater = TaskUpdater(
         event_queue=event_queue,
-        task_id="test-task-id",
-        context_id="test-context-id",
+        task_id='test-task-id',
+        context_id='test-context-id',
     )
     tasks = [
         task_updater.complete(),

@@ -1,5 +1,7 @@
 import uuid
 
+from typing import Any
+
 from a2a.server.context import ServerCallContext
 from a2a.types import (
     InvalidParamsError,
@@ -133,6 +135,13 @@ class RequestContext:
     def call_context(self) -> ServerCallContext | None:
         """The server call context associated with this request."""
         return self._call_context
+
+    @property
+    def metadata(self) -> dict[str, Any]:
+        """Metadata associated with the request, if available."""
+        if not self._params:
+            return {}
+        return self._params.metadata or {}
 
     def _check_or_generate_task_id(self) -> None:
         """Ensures a task ID is present, generating one if necessary."""

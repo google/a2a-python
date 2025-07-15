@@ -20,6 +20,7 @@ JSONRPCt
 Llm
 POSTGRES
 RUF
+Tful
 aconnect
 adk
 agentic
@@ -38,6 +39,7 @@ drivername
 dunders
 euo
 excinfo
+fernet
 fetchrow
 fetchval
 genai
