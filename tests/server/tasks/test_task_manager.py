@@ -53,7 +53,7 @@ def test_task_manager_invalid_task_id(
     with pytest.raises(ValueError, match=r"Task ID must be a non-empty string"):
         TaskManager(
             task_id=invalid_task_id,
-            context_id="test_context",
+            context_id='test_context',
             task_store=mock_task_store,
             initial_message=None,
         )
