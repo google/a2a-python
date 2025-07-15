@@ -71,7 +71,7 @@ from a2a.types import (
     TaskStatusUpdateEvent,
     TextPart,
     UnsupportedOperationError,
-    GetTaskPushNotificationConfigParams
+    GetTaskPushNotificationConfigParams,
 )
 
 
@@ -1501,11 +1501,10 @@ def test_subclass_enums() -> None:
 def test_get_task_push_config_params() -> None:
     """Tests successful validation of GetTaskPushNotificationConfigParams."""
     # Minimal valid data
-    params = {
-        "id":"task-1234"
-    }
+    params = {'id': 'task-1234'}
     TaskIdParams.model_validate(params)
     GetTaskPushNotificationConfigParams.model_validate(params)
+
 
 def test_use_get_task_push_notification_params_for_request() -> None:
     # GetTaskPushNotificationConfigRequest
@@ -1513,16 +1512,15 @@ def test_use_get_task_push_notification_params_for_request() -> None:
         'id': 1,
         'jsonrpc': '2.0',
         'method': 'tasks/pushNotificationConfig/get',
-        'params': {
-            "id":"task-1234",
-            "pushNotificationConfigId":"c1"
-        }
+        'params': {'id': 'task-1234', 'pushNotificationConfigId': 'c1'},
     }
     a2a_req_get_push_req = A2ARequest.model_validate(get_push_notif_req_data)
     assert isinstance(
         a2a_req_get_push_req.root, GetTaskPushNotificationConfigRequest
     )
-    assert isinstance(a2a_req_get_push_req.root.params, GetTaskPushNotificationConfigParams)
+    assert isinstance(
+        a2a_req_get_push_req.root.params, GetTaskPushNotificationConfigParams
+    )
     assert (
         a2a_req_get_push_req.root.method == 'tasks/pushNotificationConfig/get'
     )

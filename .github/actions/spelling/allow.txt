@@ -39,6 +39,7 @@ drivername
 dunders
 euo
 excinfo
+fernet
 fetchrow
 fetchval
 genai

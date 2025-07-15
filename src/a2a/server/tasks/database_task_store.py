@@ -2,12 +2,13 @@ import logging
 
 
 try:
-    from sqlalchemy import delete, select
+    from sqlalchemy import Table, delete, select
     from sqlalchemy.ext.asyncio import (
         AsyncEngine,
         AsyncSession,
         async_sessionmaker,
     )
+    from sqlalchemy.orm import class_mapper
 except ImportError as e:
     raise ImportError(
         'DatabaseTaskStore requires SQLAlchemy and a database driver. '
@@ -75,8 +76,13 @@ class DatabaseTaskStore(TaskStore):
         logger.debug('Initializing database schema...')
         if self.create_table:
             async with self.engine.begin() as conn:
-                # This will create the 'tasks' table based on TaskModel's definition
-                await conn.run_sync(Base.metadata.create_all)
+                mapper = class_mapper(self.task_model)
+                tables_to_create = [
+                    table for table in mapper.tables if isinstance(table, Table)
+                ]
+                await conn.run_sync(
+                    Base.metadata.create_all, tables=tables_to_create
+                )
         self._initialized = True
         logger.debug('Database schema initialized.')
 
