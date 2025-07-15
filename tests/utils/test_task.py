@@ -3,7 +3,8 @@ import uuid
 
 from unittest.mock import patch
 
-from a2a.types import Message, Part, Role, TextPart
+import pytest
+from a2a.types import Message, Part, Role, TextPart, Artifact
 from a2a.utils.task import completed_task, new_task
 
 
@@ -57,7 +58,7 @@ class TestTask(unittest.TestCase):
     def test_completed_task_status(self):
         task_id = str(uuid.uuid4())
         context_id = str(uuid.uuid4())
-        artifacts = []  # Artifacts should be of type Artifact
+        artifacts = [Artifact(artifactId="artifact_1", parts=[Part(root=TextPart(text="some content"))])]
         task = completed_task(
             task_id=task_id,
             context_id=context_id,
@@ -69,7 +70,7 @@ class TestTask(unittest.TestCase):
     def test_completed_task_assigns_ids_and_artifacts(self):
         task_id = str(uuid.uuid4())
         context_id = str(uuid.uuid4())
-        artifacts = []  # Artifacts should be of type Artifact
+        artifacts = [Artifact(artifactId="artifact_1", parts=[Part(root=TextPart(text="some content"))])]
         task = completed_task(
             task_id=task_id,
             context_id=context_id,
@@ -83,7 +84,7 @@ class TestTask(unittest.TestCase):
     def test_completed_task_empty_history_if_not_provided(self):
         task_id = str(uuid.uuid4())
         context_id = str(uuid.uuid4())
-        artifacts = []  # Artifacts should be of type Artifact
+        artifacts = [Artifact(artifactId="artifact_1", parts=[Part(root=TextPart(text="some content"))])]
         task = completed_task(
             task_id=task_id, context_id=context_id, artifacts=artifacts
         )
@@ -92,7 +93,7 @@ class TestTask(unittest.TestCase):
     def test_completed_task_uses_provided_history(self):
         task_id = str(uuid.uuid4())
         context_id = str(uuid.uuid4())
-        artifacts = []  # Artifacts should be of type Artifact
+        artifacts = [Artifact(artifactId="artifact_1", parts=[Part(root=TextPart(text="some content"))])]
         history = [
             Message(
                 role=Role.user,
@@ -131,6 +132,24 @@ class TestTask(unittest.TestCase):
                 messageId=str(uuid.uuid4()),
             )
             new_task(msg)
+
+    def test_completed_task_empty_artifacts(self):
+        with pytest.raises(ValueError, match="artifacts must be a non-empty list of Artifact objects"):
+            completed_task(
+                task_id="task-123",
+                context_id="ctx-456",
+                artifacts=[],
+                history=[]
+            )
+
+    def test_completed_task_invalid_artifact_type(self):
+        with pytest.raises(ValueError, match="artifacts must be a non-empty list of Artifact objects"):
+            completed_task(
+                task_id="task-123",
+                context_id="ctx-456",
+                artifacts=["not an artifact"],
+                history=[]
+            )
 
 
 if __name__ == '__main__':
