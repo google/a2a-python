@@ -20,6 +20,7 @@ JSONRPCt
 Llm
 POSTGRES
 RUF
+Tful
 aconnect
 adk
 agentic
@@ -70,6 +71,5 @@ sse
 tagwords
 taskupdate
 testuuid
-Tful
 typeerror
 vulnz
