@@ -6,11 +6,12 @@ import pytest
 import pytest_asyncio
 
 from _pytest.mark.structures import ParameterSet
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy import select
+
 
 # Skip entire test module if SQLAlchemy is not installed
 pytest.importorskip('sqlalchemy', reason='Database tests require SQLAlchemy')
@@ -20,19 +21,20 @@ pytest.importorskip(
 )
 
 # Now safe to import SQLAlchemy-dependent modules
+from cryptography.fernet import Fernet
 from sqlalchemy.inspection import inspect
+
 from a2a.server.models import (
     Base,
     PushNotificationConfigModel,
 )  # Important: To get Base.metadata
 from a2a.server.tasks import DatabasePushNotificationConfigStore
 from a2a.types import (
+    PushNotificationConfig,
     Task,
     TaskState,
     TaskStatus,
-    PushNotificationConfig,
 )
-from cryptography.fernet import Fernet
 
 
 # DSNs for different databases

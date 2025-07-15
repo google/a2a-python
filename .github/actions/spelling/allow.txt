@@ -38,6 +38,7 @@ drivername
 dunders
 euo
 excinfo
+fernet
 fetchrow
 fetchval
 genai
@@ -72,4 +73,3 @@ taskupdate
 testuuid
 typeerror
 vulnz
-fernet
