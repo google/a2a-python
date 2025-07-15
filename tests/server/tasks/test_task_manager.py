@@ -45,6 +45,23 @@ def task_manager(mock_task_store: AsyncMock) -> TaskManager:
     )
 
 
+def test_task_manager_invalid_task_id(mock_task_store: AsyncMock):
+    with pytest.raises(ValueError):
+        TaskManager(
+            task_id="",
+            context_id="test_context",
+            task_store=mock_task_store,
+            initial_message=None,
+        )
+    with pytest.raises(ValueError):
+        TaskManager(
+            task_id=123,
+            context_id="test_context",
+            task_store=mock_task_store,
+            initial_message=None,
+        )
+
+
 @pytest.mark.asyncio
 async def test_get_task_existing(
     task_manager: TaskManager, mock_task_store: AsyncMock
