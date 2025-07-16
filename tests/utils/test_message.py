@@ -247,7 +247,9 @@ class TestGetDataParts:
 class TestGetFileParts:
     def test_get_file_parts_single_file_part(self):
         # Setup
-        file_with_uri = FileWithUri(uri='file://path/to/file', mimeType='text/plain')
+        file_with_uri = FileWithUri(
+            uri='file://path/to/file', mimeType='text/plain'
+        )
         parts = [Part(root=FilePart(file=file_with_uri))]
 
         # Exercise
@@ -258,9 +260,12 @@ class TestGetFileParts:
 
     def test_get_file_parts_multiple_file_parts(self):
         # Setup
-        file_with_uri1 = FileWithUri(uri='file://path/to/file1', mimeType='text/plain')
+        file_with_uri1 = FileWithUri(
+            uri='file://path/to/file1', mimeType='text/plain'
+        )
         file_with_bytes = FileWithBytes(
-            bytes='ZmlsZSBjb250ZW50', mimeType='application/octet-stream'  # 'file content'
+            bytes='ZmlsZSBjb250ZW50',
+            mimeType='application/octet-stream',  # 'file content'
         )
         parts = [
             Part(root=FilePart(file=file_with_uri1)),
@@ -275,7 +280,9 @@ class TestGetFileParts:
 
     def test_get_file_parts_mixed_parts(self):
         # Setup
-        file_with_uri = FileWithUri(uri='file://path/to/file', mimeType='text/plain')
+        file_with_uri = FileWithUri(
+            uri='file://path/to/file', mimeType='text/plain'
+        )
         parts = [
             Part(root=TextPart(text='some text')),
             Part(root=FilePart(file=file_with_uri)),
