@@ -234,7 +234,7 @@ def test_agent_skill_valid():
 
     skill_full = AgentSkill(**FULL_AGENT_SKILL)
     assert skill_full.examples == ['Find me a pasta recipe']
-    assert skill_full.inputModes == ['text/plain']
+    assert skill_full.input_modes == ['text/plain']
 
 
 def test_agent_skill_invalid():

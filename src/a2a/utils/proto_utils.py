@@ -415,8 +415,8 @@ class ToProto:
             description=skill.description,
             tags=skill.tags,
             examples=skill.examples,
-            input_modes=skill.inputModes,
-            output_modes=skill.outputModes,
+            input_modes=skill.input_modes,
+            output_modes=skill.output_modes,
         )
 
     @classmethod
@@ -801,8 +801,8 @@ class FromProto:
             description=skill.description,
             tags=list(skill.tags),
             examples=list(skill.examples),
-            inputModes=list(skill.input_modes),
-            outputModes=list(skill.output_modes),
+            input_modes=list(skill.input_modes),
+            output_modes=list(skill.output_modes),
         )
 
     @classmethod
