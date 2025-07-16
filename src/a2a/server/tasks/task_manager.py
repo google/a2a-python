@@ -41,6 +41,9 @@ class TaskManager:
             initial_message: The `Message` that initiated the task, if any.
                              Used when creating a new task object.
         """
+        if task_id is not None and not (isinstance(task_id, str) and task_id):
+            raise ValueError('Task ID must be a non-empty string')
+
         self.task_id = task_id
         self.context_id = context_id
         self.task_store = task_store
