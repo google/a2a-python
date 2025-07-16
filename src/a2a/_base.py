@@ -12,4 +12,5 @@ class A2ABaseModel(BaseModel):
         # SEE: https://docs.pydantic.dev/latest/api/config/#pydantic.config.ConfigDict.populate_by_name
         validate_by_name=True,
         validate_by_alias=True,
+        serialize_by_alias=True,
     )
