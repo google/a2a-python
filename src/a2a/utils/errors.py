@@ -4,7 +4,7 @@ from a2a.types import (
     ContentTypeNotSupportedError,
     InternalError,
     InvalidAgentResponseError,
-    InvalidParamsError,
+    InvalidParamsError as InvalidParamsErrorType,
     InvalidRequestError,
     JSONParseError,
     JSONRPCError,
@@ -33,6 +33,14 @@ class MethodNotImplementedError(A2AServerError):
         """
         self.message = message
         super().__init__(f'Not Implemented operation Error: {message}')
+
+
+class InvalidParamsError(InvalidParamsErrorType):
+    """
+    JSON-RPC error indicating invalid method parameter(s).
+    """
+
+    message: str = 'Invalid parameters'
 
 
 class ServerError(Exception):

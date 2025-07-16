@@ -137,7 +137,23 @@ class TestFromProto:
         request = a2a_pb2.GetTaskRequest(name='invalid-name-format')
         with pytest.raises(ServerError) as exc_info:
             proto_utils.FromProto.task_query_params(request)
+
         assert isinstance(exc_info.value.error, types.InvalidParamsError)
+        assert (
+            exc_info.value.error.message
+            == 'invalid-name-format: invalid-name-format'
+        )
+
+    def test_task_id_params_invalid_name(self):
+        request = a2a_pb2.CancelTaskRequest(name='invalid-name-format')
+        with pytest.raises(ServerError) as exc_info:
+            proto_utils.FromProto.task_id_params(request)
+
+        assert isinstance(exc_info.value.error, types.InvalidParamsError)
+        assert (
+            exc_info.value.error.message
+            == 'invalid-name-format: invalid-name-format'
+        )
 
 
 class TestProtoUtils:
