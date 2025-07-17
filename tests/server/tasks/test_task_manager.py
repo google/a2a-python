@@ -127,7 +127,7 @@ async def test_save_task_event_artifact_update(
     initial_task = Task(**MINIMAL_TASK)
     mock_task_store.get.return_value = initial_task
     new_artifact = Artifact(
-        artifactId='artifact-id',
+        artifact_id='artifact-id',
         name='artifact1',
         parts=[Part(TextPart(text='content'))],
     )

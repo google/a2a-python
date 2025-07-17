@@ -201,14 +201,14 @@ def test_security_scheme_invalid():
 
 def test_agent_capabilities():
     caps = AgentCapabilities(
-        streaming=None, state_transition_history=None, pushNotifications=None
+        streaming=None, state_transition_history=None, push_notifications=None
     )  # All optional
     assert caps.push_notifications is None
     assert caps.state_transition_history is None
     assert caps.streaming is None
 
     caps_full = AgentCapabilities(
-        pushNotifications=True, state_transition_history=False, streaming=True
+        push_notifications=True, state_transition_history=False, streaming=True
     )
     assert caps_full.push_notifications is True
     assert caps_full.state_transition_history is False
@@ -535,7 +535,7 @@ def test_send_subscribe_request() -> None:
 
 
 def test_get_task_request() -> None:
-    params = TaskQueryParams(id='task-1', historyLength=2)
+    params = TaskQueryParams(id='task-1', history_length=2)
     req_data: dict[str, Any] = {
         'jsonrpc': '2.0',
         'method': 'tasks/get',
@@ -707,7 +707,7 @@ def test_send_message_streaming_artifact_update_response() -> None:
     text_part = TextPart(**TEXT_PART_DATA)
     data_part = DataPart(**DATA_PART_DATA)
     artifact = Artifact(
-        artifactId='artifact-123',
+        artifact_id='artifact-123',
         name='result_data',
         parts=[Part(root=text_part), Part(root=data_part)],
     )

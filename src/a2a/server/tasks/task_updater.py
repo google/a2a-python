@@ -112,7 +112,7 @@ class TaskUpdater:
                 task_id=self.task_id,
                 context_id=self.context_id,
                 artifact=Artifact(
-                    artifactId=artifact_id,
+                    artifact_id=artifact_id,
                     name=name,
                     parts=parts,
                     metadata=metadata,

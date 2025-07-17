@@ -517,7 +517,7 @@ class FromProto:
     @classmethod
     def artifact(cls, artifact: a2a_pb2.Artifact) -> types.Artifact:
         return types.Artifact(
-            artifactId=artifact.artifact_id,
+            artifact_id=artifact.artifact_id,
             description=artifact.description,
             metadata=FromProto.metadata(artifact.metadata),
             name=artifact.name,
@@ -577,12 +577,12 @@ class FromProto:
     ) -> types.MessageSendConfiguration:
         return types.MessageSendConfiguration(
             accepted_output_modes=list(config.accepted_output_modes),
-            pushNotificationConfig=FromProto.push_notification_config(
+            push_notification_config=FromProto.push_notification_config(
                 config.push_notification
             )
             if config.HasField('push_notification')
             else None,
-            historyLength=config.history_length,
+            history_length=config.history_length,
             blocking=config.blocking,
         )
 
@@ -638,7 +638,7 @@ class FromProto:
                 )
             )
         return types.TaskPushNotificationConfig(
-            pushNotificationConfig=cls.push_notification_config(
+            push_notification_config=cls.push_notification_config(
                 request.config.push_notification_config,
             ),
             task_id=m.group(1),
@@ -651,18 +651,18 @@ class FromProto:
     ) -> types.AgentCard:
         return types.AgentCard(
             capabilities=cls.capabilities(card.capabilities),
-            defaultInputModes=list(card.default_input_modes),
-            defaultOutputModes=list(card.default_output_modes),
+            default_input_modes=list(card.default_input_modes),
+            default_output_modes=list(card.default_output_modes),
             description=card.description,
-            documentationUrl=card.documentation_url,
+            documentation_url=card.documentation_url,
             name=card.name,
             provider=cls.provider(card.provider),
             security=cls.security(list(card.security)),
-            securitySchemes=cls.security_schemes(dict(card.security_schemes)),
+            security_schemes=cls.security_schemes(dict(card.security_schemes)),
             skills=[cls.skill(x) for x in card.skills] if card.skills else [],
             url=card.url,
             version=card.version,
-            supportsAuthenticatedExtendedCard=card.supports_authenticated_extended_card,
+            supports_authenticated_extended_card=card.supports_authenticated_extended_card,
         )
 
     @classmethod
@@ -678,7 +678,7 @@ class FromProto:
                 )
             )
         return types.TaskQueryParams(
-            historyLength=request.history_length
+            history_length=request.history_length
             if request.history_length
             else None,
             id=m.group(1),
@@ -691,7 +691,7 @@ class FromProto:
     ) -> types.AgentCapabilities:
         return types.AgentCapabilities(
             streaming=capabilities.streaming,
-            pushNotifications=capabilities.push_notifications,
+            push_notifications=capabilities.push_notifications,
         )
 
     @classmethod
@@ -741,7 +741,7 @@ class FromProto:
                 root=types.HTTPAuthSecurityScheme(
                     description=scheme.http_auth_security_scheme.description,
                     scheme=scheme.http_auth_security_scheme.scheme,
-                    bearerFormat=scheme.http_auth_security_scheme.bearer_format,
+                    bearer_format=scheme.http_auth_security_scheme.bearer_format,
                 )
             )
         if scheme.HasField('oauth2_security_scheme'):
@@ -754,7 +754,7 @@ class FromProto:
         return types.SecurityScheme(
             root=types.OpenIdConnectSecurityScheme(
                 description=scheme.open_id_connect_security_scheme.description,
-                openIdConnectUrl=scheme.open_id_connect_security_scheme.open_id_connect_url,
+                open_id_connect_url=scheme.open_id_connect_security_scheme.open_id_connect_url,
             )
         )
 
@@ -762,34 +762,34 @@ class FromProto:
     def oauth2_flows(cls, flows: a2a_pb2.OAuthFlows) -> types.OAuthFlows:
         if flows.HasField('authorization_code'):
             return types.OAuthFlows(
-                authorizationCode=types.AuthorizationCodeOAuthFlow(
-                    authorizationUrl=flows.authorization_code.authorization_url,
-                    refreshUrl=flows.authorization_code.refresh_url,
+                authorization_code=types.AuthorizationCodeOAuthFlow(
+                    authorization_url=flows.authorization_code.authorization_url,
+                    refresh_url=flows.authorization_code.refresh_url,
                     scopes=dict(flows.authorization_code.scopes.items()),
-                    tokenUrl=flows.authorization_code.token_url,
+                    token_url=flows.authorization_code.token_url,
                 ),
             )
         if flows.HasField('client_credentials'):
             return types.OAuthFlows(
-                clientCredentials=types.ClientCredentialsOAuthFlow(
-                    refreshUrl=flows.client_credentials.refresh_url,
+                client_credentials=types.ClientCredentialsOAuthFlow(
+                    refresh_url=flows.client_credentials.refresh_url,
                     scopes=dict(flows.client_credentials.scopes.items()),
-                    tokenUrl=flows.client_credentials.token_url,
+                    token_url=flows.client_credentials.token_url,
                 ),
             )
         if flows.HasField('implicit'):
             return types.OAuthFlows(
                 implicit=types.ImplicitOAuthFlow(
-                    authorizationUrl=flows.implicit.authorization_url,
-                    refreshUrl=flows.implicit.refresh_url,
+                    authorization_url=flows.implicit.authorization_url,
+                    refresh_url=flows.implicit.refresh_url,
                     scopes=dict(flows.implicit.scopes.items()),
                 ),
             )
         return types.OAuthFlows(
             password=types.PasswordOAuthFlow(
-                refreshUrl=flows.password.refresh_url,
+                refresh_url=flows.password.refresh_url,
                 scopes=dict(flows.password.scopes.items()),
-                tokenUrl=flows.password.token_url,
+                token_url=flows.password.token_url,
             ),
         )
 

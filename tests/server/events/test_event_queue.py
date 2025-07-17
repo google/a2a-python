@@ -116,7 +116,9 @@ async def test_task_done(event_queue: EventQueue) -> None:
     event = TaskArtifactUpdateEvent(
         task_id='task_123',
         context_id='session-xyz',
-        artifact=Artifact(artifactId='11', parts=[Part(TextPart(text='text'))]),
+        artifact=Artifact(
+            artifact_id='11', parts=[Part(TextPart(text='text'))]
+        ),
     )
     await event_queue.enqueue_event(event)
     _ = await event_queue.dequeue_event()

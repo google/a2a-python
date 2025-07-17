@@ -131,7 +131,7 @@ async def test_consume_all_multiple_events(
             task_id='task_123',
             context_id='session-xyz',
             artifact=Artifact(
-                artifactId='11', parts=[Part(TextPart(text='text'))]
+                artifact_id='11', parts=[Part(TextPart(text='text'))]
             ),
         ),
         TaskStatusUpdateEvent(
@@ -173,7 +173,7 @@ async def test_consume_until_message(
             task_id='task_123',
             context_id='session-xyz',
             artifact=Artifact(
-                artifactId='11', parts=[Part(TextPart(text='text'))]
+                artifact_id='11', parts=[Part(TextPart(text='text'))]
             ),
         ),
         Message(**MESSAGE_PAYLOAD),

@@ -38,10 +38,10 @@ def agent_card_with_api_key():
         url='http://example.com/apikey-agent',
         version='1.0.0',
         capabilities=AgentCapabilities(),
-        defaultInputModes=['text/plain'],
-        defaultOutputModes=['text/plain'],
+        default_input_modes=['text/plain'],
+        default_output_modes=['text/plain'],
         skills=[],
-        securitySchemes={'api_key_auth': SecurityScheme(root=api_key_scheme)},
+        security_schemes={'api_key_auth': SecurityScheme(root=api_key_scheme)},
         security=[{'api_key_auth': []}],
     )
     return agent_card

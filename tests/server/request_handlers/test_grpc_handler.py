@@ -32,10 +32,10 @@ def sample_agent_card() -> types.AgentCard:
         url='http://localhost',
         version='1.0.0',
         capabilities=types.AgentCapabilities(
-            streaming=True, pushNotifications=True
+            streaming=True, push_notifications=True
         ),
-        defaultInputModes=['text/plain'],
-        defaultOutputModes=['text/plain'],
+        default_input_modes=['text/plain'],
+        default_output_modes=['text/plain'],
         skills=[],
     )
 

@@ -115,7 +115,7 @@ def build_text_artifact(text: str, artifact_id: str) -> Artifact:
     """
     text_part = TextPart(text=text)
     part = Part(root=text_part)
-    return Artifact(parts=[part], artifactId=artifact_id)
+    return Artifact(parts=[part], artifact_id=artifact_id)
 
 
 def validate(

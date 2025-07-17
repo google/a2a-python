@@ -43,9 +43,9 @@ def sample_agent_card() -> AgentCard:
         description='Agent for testing gRPC client',
         url='grpc://localhost:50051',
         version='1.0',
-        capabilities=AgentCapabilities(streaming=True, pushNotifications=True),
-        defaultInputModes=['text/plain'],
-        defaultOutputModes=['text/plain'],
+        capabilities=AgentCapabilities(streaming=True, push_notifications=True),
+        default_input_modes=['text/plain'],
+        default_output_modes=['text/plain'],
         skills=[],
     )
 

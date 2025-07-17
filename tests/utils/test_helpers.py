@@ -114,7 +114,7 @@ def test_append_artifact_to_task():
 
     # Prepare appending artifact and event
     artifact_1 = Artifact(
-        artifactId='artifact-123', parts=[Part(root=TextPart(text='Hello'))]
+        artifact_id='artifact-123', parts=[Part(root=TextPart(text='Hello'))]
     )
     append_event_1 = TaskArtifactUpdateEvent(
         artifact=artifact_1, append=False, task_id='123', context_id='123'
@@ -130,7 +130,7 @@ def test_append_artifact_to_task():
 
     # Test replacing the artifact
     artifact_2 = Artifact(
-        artifactId='artifact-123',
+        artifact_id='artifact-123',
         name='updated name',
         parts=[Part(root=TextPart(text='Updated'))],
     )
@@ -146,7 +146,7 @@ def test_append_artifact_to_task():
 
     # Test appending parts to an existing artifact
     artifact_with_parts = Artifact(
-        artifactId='artifact-123', parts=[Part(root=TextPart(text='Part 2'))]
+        artifact_id='artifact-123', parts=[Part(root=TextPart(text='Part 2'))]
     )
     append_event_3 = TaskArtifactUpdateEvent(
         artifact=artifact_with_parts,
@@ -161,7 +161,7 @@ def test_append_artifact_to_task():
 
     # Test adding another new artifact
     another_artifact_with_parts = Artifact(
-        artifactId='new_artifact',
+        artifact_id='new_artifact',
         parts=[Part(root=TextPart(text='new artifact Part 1'))],
     )
     append_event_4 = TaskArtifactUpdateEvent(
@@ -179,7 +179,7 @@ def test_append_artifact_to_task():
 
     # Test appending part to a task that does not have a matching artifact
     non_existing_artifact_with_parts = Artifact(
-        artifactId='artifact-456', parts=[Part(root=TextPart(text='Part 1'))]
+        artifact_id='artifact-456', parts=[Part(root=TextPart(text='Part 1'))]
     )
     append_event_5 = TaskArtifactUpdateEvent(
         artifact=non_existing_artifact_with_parts,

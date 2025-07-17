@@ -59,7 +59,7 @@ MINIMAL_AGENT_SKILL: dict[str, Any] = {
 MINIMAL_AGENT_AUTH: dict[str, Any] = {'schemes': ['Bearer']}
 
 AGENT_CAPS = AgentCapabilities(
-    pushNotifications=True, state_transition_history=False, streaming=True
+    push_notifications=True, state_transition_history=False, streaming=True
 )
 
 MINIMAL_AGENT_CARD: dict[str, Any] = {
@@ -496,7 +496,7 @@ def test_get_push_notification_config(
     # Setup mock response
     task_push_config = TaskPushNotificationConfig(
         task_id='task1',
-        pushNotificationConfig=PushNotificationConfig(
+        push_notification_config=PushNotificationConfig(
             url='https://example.com', token='secret-token'
         ),
     )
@@ -599,7 +599,7 @@ async def test_message_send_stream(
             text_part = TextPart(**TEXT_PART_DATA)
             data_part = DataPart(**DATA_PART_DATA)
             artifact = Artifact(
-                artifactId=f'artifact-{i}',
+                artifact_id=f'artifact-{i}',
                 name='result_data',
                 parts=[Part(root=text_part), Part(root=data_part)],
             )
@@ -689,7 +689,7 @@ async def test_task_resubscription(
             text_part = TextPart(**TEXT_PART_DATA)
             data_part = DataPart(**DATA_PART_DATA)
             artifact = Artifact(
-                artifactId=f'artifact-{i}',
+                artifact_id=f'artifact-{i}',
                 name='result_data',
                 parts=[Part(root=text_part), Part(root=data_part)],
             )
@@ -749,7 +749,7 @@ async def test_task_resubscription(
                 b'"artifactId":"artifact-0"' in content
             )  # Check for the actual JSON payload
             assert (
-                b'"artifactId":"artifact-1"' in content
+                b'"artifact_id":"artifact-1"' in content
             )  # Check for the actual JSON payload
             assert (
                 b'"artifactId":"artifact-2"' in content

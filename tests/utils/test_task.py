@@ -61,7 +61,7 @@ class TestTask(unittest.TestCase):
         context_id = str(uuid.uuid4())
         artifacts = [
             Artifact(
-                artifactId='artifact_1',
+                artifact_id='artifact_1',
                 parts=[Part(root=TextPart(text='some content'))],
             )
         ]
@@ -78,7 +78,7 @@ class TestTask(unittest.TestCase):
         context_id = str(uuid.uuid4())
         artifacts = [
             Artifact(
-                artifactId='artifact_1',
+                artifact_id='artifact_1',
                 parts=[Part(root=TextPart(text='some content'))],
             )
         ]
@@ -97,7 +97,7 @@ class TestTask(unittest.TestCase):
         context_id = str(uuid.uuid4())
         artifacts = [
             Artifact(
-                artifactId='artifact_1',
+                artifact_id='artifact_1',
                 parts=[Part(root=TextPart(text='some content'))],
             )
         ]
@@ -111,7 +111,7 @@ class TestTask(unittest.TestCase):
         context_id = str(uuid.uuid4())
         artifacts = [
             Artifact(
-                artifactId='artifact_1',
+                artifact_id='artifact_1',
                 parts=[Part(root=TextPart(text='some content'))],
             )
         ]

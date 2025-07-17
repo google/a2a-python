@@ -343,7 +343,7 @@ async def test_on_message_send_with_push_notification():
 
     push_config = PushNotificationConfig(url='http://callback.com/push')
     message_config = MessageSendConfiguration(
-        pushNotificationConfig=push_config,
+        push_notification_config=push_config,
         accepted_output_modes=['text/plain'],  # Added required field
     )
     params = MessageSendParams(
@@ -431,7 +431,7 @@ async def test_on_message_send_with_push_notification_no_existing_Task():
 
     push_config = PushNotificationConfig(url='http://callback.com/push')
     message_config = MessageSendConfiguration(
-        pushNotificationConfig=push_config,
+        push_notification_config=push_config,
         accepted_output_modes=['text/plain'],  # Added required field
     )
     params = MessageSendParams(
@@ -685,7 +685,7 @@ async def test_on_message_send_stream_with_push_notification():
 
     push_config = PushNotificationConfig(url='http://callback.stream.com/push')
     message_config = MessageSendConfiguration(
-        pushNotificationConfig=push_config,
+        push_notification_config=push_config,
         accepted_output_modes=['text/plain'],  # Added required field
     )
     params = MessageSendParams(
@@ -1032,7 +1032,9 @@ async def test_set_task_push_notification_config_no_notifier():
     )
     params = TaskPushNotificationConfig(
         task_id='task1',
-        pushNotificationConfig=PushNotificationConfig(url='http://example.com'),
+        push_notification_config=PushNotificationConfig(
+            url='http://example.com'
+        ),
     )
     from a2a.utils.errors import ServerError  # Local import
 
@@ -1059,7 +1061,9 @@ async def test_set_task_push_notification_config_task_not_found():
     )
     params = TaskPushNotificationConfig(
         task_id='non_existent_task',
-        pushNotificationConfig=PushNotificationConfig(url='http://example.com'),
+        push_notification_config=PushNotificationConfig(
+            url='http://example.com'
+        ),
     )
     from a2a.utils.errors import ServerError  # Local import
 
@@ -1162,7 +1166,7 @@ async def test_get_task_push_notification_config_info_with_config():
 
     set_config_params = TaskPushNotificationConfig(
         task_id='task_1',
-        pushNotificationConfig=PushNotificationConfig(
+        push_notification_config=PushNotificationConfig(
             id='config_id', url='http://1.example.com'
         ),
     )
@@ -1171,7 +1175,7 @@ async def test_get_task_push_notification_config_info_with_config():
     )
 
     params = GetTaskPushNotificationConfigParams(
-        id='task_1', pushNotificationConfigId='config_id'
+        id='task_1', push_notification_config_id='config_id'
     )
 
     result: TaskPushNotificationConfig = (
@@ -1487,7 +1491,7 @@ async def test_delete_task_push_notification_config_no_store():
         push_config_store=None,  # Explicitly None
     )
     params = DeleteTaskPushNotificationConfigParams(
-        id='task1', pushNotificationConfigId='config1'
+        id='task1', push_notification_config_id='config1'
     )
     from a2a.utils.errors import ServerError  # Local import
 
@@ -1511,7 +1515,7 @@ async def test_delete_task_push_notification_config_task_not_found():
         push_config_store=mock_push_store,
     )
     params = DeleteTaskPushNotificationConfigParams(
-        id='non_existent_task', pushNotificationConfigId='config1'
+        id='non_existent_task', push_notification_config_id='config1'
     )
     from a2a.utils.errors import ServerError  # Local import
 
@@ -1545,7 +1549,7 @@ async def test_delete_no_task_push_notification_config_info():
         push_config_store=push_store,
     )
     params = DeleteTaskPushNotificationConfigParams(
-        id='task1', pushNotificationConfigId='config_non_existant'
+        id='task1', push_notification_config_id='config_non_existant'
     )
 
     result = await request_handler.on_delete_task_push_notification_config(
@@ -1554,7 +1558,7 @@ async def test_delete_no_task_push_notification_config_info():
     assert result == None
 
     params = DeleteTaskPushNotificationConfigParams(
-        id='task2', pushNotificationConfigId='config_non_existant'
+        id='task2', push_notification_config_id='config_non_existant'
     )
 
     result = await request_handler.on_delete_task_push_notification_config(
@@ -1589,7 +1593,7 @@ async def test_delete_task_push_notification_config_info_with_config():
         push_config_store=push_store,
     )
     params = DeleteTaskPushNotificationConfigParams(
-        id='task_1', pushNotificationConfigId='config_1'
+        id='task_1', push_notification_config_id='config_1'
     )
 
     result1 = await request_handler.on_delete_task_push_notification_config(
@@ -1629,7 +1633,7 @@ async def test_delete_task_push_notification_config_info_with_config_and_no_id()
         push_config_store=push_store,
     )
     params = DeleteTaskPushNotificationConfigParams(
-        id='task_1', pushNotificationConfigId='task_1'
+        id='task_1', push_notification_config_id='task_1'
     )
 
     result = await request_handler.on_delete_task_push_notification_config(
