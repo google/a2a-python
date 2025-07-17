@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_snake
 
 
 class A2ABaseModel(BaseModel):
@@ -13,4 +14,5 @@ class A2ABaseModel(BaseModel):
         validate_by_name=True,
         validate_by_alias=True,
         serialize_by_alias=True,
+        alias_generator=to_snake,
     )
