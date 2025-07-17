@@ -435,13 +435,7 @@ async def test_on_message_send_with_push_notification_no_existing_Task():
         acceptedOutputModes=['text/plain'],  # Added required field
     )
     params = MessageSendParams(
-        message=Message(
-            role=Role.user,
-            messageId='msg_push',
-            parts=[],
-            taskId=task_id,
-            contextId=context_id,
-        ),
+        message=Message(role=Role.user, messageId='msg_push', parts=[]),
         configuration=message_config,
     )
 
