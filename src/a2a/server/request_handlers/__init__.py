@@ -22,8 +22,7 @@ try:
 except ImportError as e:
     _original_error = e
     logger.debug(
-        'GrpcHandler not loaded. This is expected if database dependencies are not installed. Error: %s',
-        e,
+        'GrpcHandler not loaded. This is expected if gRPC dependencies are not installed. Error: %s',
     )
 
     class GrpcHandler:  # type: ignore
