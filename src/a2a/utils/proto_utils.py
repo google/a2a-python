@@ -28,8 +28,8 @@ class ToProto:
         return a2a_pb2.Message(
             message_id=message.messageId,
             content=[ToProto.part(p) for p in message.parts],
-            context_id=message.contextId,
-            task_id=message.taskId,
+            context_id=message.contextId or '',
+            task_id=message.taskId or '',
             role=cls.role(message.role),
             metadata=ToProto.metadata(message.metadata),
         )
@@ -438,8 +438,8 @@ class FromProto:
         return types.Message(
             messageId=message.message_id,
             parts=[FromProto.part(p) for p in message.content],
-            contextId=message.context_id,
-            taskId=message.task_id,
+            contextId=message.context_id or None,
+            taskId=message.task_id or None,
             role=FromProto.role(message.role),
             metadata=FromProto.metadata(message.metadata),
         )
