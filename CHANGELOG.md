@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.2.13](https://github.com/a2aproject/a2a-python/compare/v0.2.12...v0.2.13) (2025-07-17)
+
+
+### Features
+
+* Add `get_data_parts()` and `get_file_parts()` helper methods ([#312](https://github.com/a2aproject/a2a-python/issues/312)) ([5b98c32](https://github.com/a2aproject/a2a-python/commit/5b98c3240db4ff6007e242742f76822fc6ea380c))
+* Support for Database based Push Config Store ([#299](https://github.com/a2aproject/a2a-python/issues/299)) ([e5d99ee](https://github.com/a2aproject/a2a-python/commit/e5d99ee9e478cda5e93355cba2e93f1d28039806))
+* Update A2A types from specification 🤖 ([#319](https://github.com/a2aproject/a2a-python/issues/319)) ([18506a4](https://github.com/a2aproject/a2a-python/commit/18506a4fe32c1956725d8f205ec7848f7b86c77d))
+
+
+### Bug Fixes
+
+* Add Input Validation for Task IDs in TaskManager ([#310](https://github.com/a2aproject/a2a-python/issues/310)) ([a38d438](https://github.com/a2aproject/a2a-python/commit/a38d43881d8476e6fbcb9766b59e3378dbe64306))
+* Add validation for empty artifact lists in `completed_task` ([#308](https://github.com/a2aproject/a2a-python/issues/308)) ([c4a324d](https://github.com/a2aproject/a2a-python/commit/c4a324dcb693f19fbbf90cee483f6a912698a921))
+* Handle readtimeout errors. ([#305](https://github.com/a2aproject/a2a-python/issues/305)) ([b94b8f5](https://github.com/a2aproject/a2a-python/commit/b94b8f52bf58315f3ef138b6a1ffaf894f35bcef)), closes [#249](https://github.com/a2aproject/a2a-python/issues/249)
+
+
+### Documentation
+
+* Update Documentation Site Link ([#315](https://github.com/a2aproject/a2a-python/issues/315)) ([edf392c](https://github.com/a2aproject/a2a-python/commit/edf392cfe531d0448659e2f08ab08f0ba05475b3))
+
 ## [0.2.12](https://github.com/a2aproject/a2a-python/compare/v0.2.11...v0.2.12) (2025-07-14)
 
 
