@@ -1346,6 +1346,10 @@ class Message(A2ABaseModel):
     """
     Identifier of task the message is related to
     """
+    isDelta: bool | None = None
+    """
+    Indicates if this is a delta message
+    """
 
 
 class MessageSendParams(A2ABaseModel):
