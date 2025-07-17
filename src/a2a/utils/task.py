@@ -55,6 +55,11 @@ def completed_task(
     Returns:
         A `Task` object with status set to 'completed'.
     """
+    if not artifacts or not all(isinstance(a, Artifact) for a in artifacts):
+        raise ValueError(
+            'artifacts must be a non-empty list of Artifact objects'
+        )
+
     if history is None:
         history = []
     return Task(

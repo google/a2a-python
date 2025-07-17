@@ -161,7 +161,9 @@ class TestInMemoryPushNotifier(unittest.IsolatedAsyncioTestCase):
     async def test_send_notification_with_token_success(self):
         task_id = 'task_send_success'
         task_data = create_sample_task(task_id=task_id)
-        config = create_sample_push_config(url='http://notify.me/here', token='unique_token')
+        config = create_sample_push_config(
+            url='http://notify.me/here', token='unique_token'
+        )
         await self.config_store.set_info(task_id, config)
 
         # Mock the post call to simulate success
@@ -180,7 +182,7 @@ class TestInMemoryPushNotifier(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(
             called_kwargs['headers'],
-            {"X-A2A-Notification-Token": "unique_token"},
+            {'X-A2A-Notification-Token': 'unique_token'},
         )
         self.assertNotIn(
             'auth', called_kwargs
