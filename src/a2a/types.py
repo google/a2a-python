@@ -133,9 +133,7 @@ class AgentSkill(A2ABaseModel):
     """
     Supported media types for output.
     """
-    tags: list[str] = Field(
-        ..., examples=[['cooking', 'customer support', 'billing']]
-    )
+    tags: list[str] = Field(..., examples=[['cooking', 'customer support', 'billing']])
     """
     Set of tagwords describing classes of capabilities for this specific skill.
     """
@@ -1147,7 +1145,7 @@ class MessageSendConfiguration(A2ABaseModel):
     Configuration for the send message request.
     """
 
-    acceptedOutputModes: list[str]
+    acceptedOutputModes: list[str] | None = None
     """
     Accepted output modalities by the client.
     """
@@ -1273,9 +1271,7 @@ class Artifact(A2ABaseModel):
 
 
 class DeleteTaskPushNotificationConfigResponse(
-    RootModel[
-        JSONRPCErrorResponse | DeleteTaskPushNotificationConfigSuccessResponse
-    ]
+    RootModel[JSONRPCErrorResponse | DeleteTaskPushNotificationConfigSuccessResponse]
 ):
     root: JSONRPCErrorResponse | DeleteTaskPushNotificationConfigSuccessResponse
     """
@@ -1284,9 +1280,7 @@ class DeleteTaskPushNotificationConfigResponse(
 
 
 class GetTaskPushNotificationConfigResponse(
-    RootModel[
-        JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse
-    ]
+    RootModel[JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse]
 ):
     root: JSONRPCErrorResponse | GetTaskPushNotificationConfigSuccessResponse
     """
@@ -1295,9 +1289,7 @@ class GetTaskPushNotificationConfigResponse(
 
 
 class ListTaskPushNotificationConfigResponse(
-    RootModel[
-        JSONRPCErrorResponse | ListTaskPushNotificationConfigSuccessResponse
-    ]
+    RootModel[JSONRPCErrorResponse | ListTaskPushNotificationConfigSuccessResponse]
 ):
     root: JSONRPCErrorResponse | ListTaskPushNotificationConfigSuccessResponse
     """
@@ -1452,9 +1444,7 @@ class SendStreamingMessageRequest(A2ABaseModel):
 
 
 class SetTaskPushNotificationConfigResponse(
-    RootModel[
-        JSONRPCErrorResponse | SetTaskPushNotificationConfigSuccessResponse
-    ]
+    RootModel[JSONRPCErrorResponse | SetTaskPushNotificationConfigSuccessResponse]
 ):
     root: JSONRPCErrorResponse | SetTaskPushNotificationConfigSuccessResponse
     """
@@ -1507,9 +1497,7 @@ class TaskStatus(A2ABaseModel):
     Additional status updates for client
     """
     state: TaskState
-    timestamp: str | None = Field(
-        default=None, examples=['2023-10-27T10:00:00Z']
-    )
+    timestamp: str | None = Field(default=None, examples=['2023-10-27T10:00:00Z'])
     """
     ISO 8601 datetime string when the status was recorded.
     """
@@ -1769,9 +1757,7 @@ class SendStreamingMessageSuccessResponse(A2ABaseModel):
     """
 
 
-class CancelTaskResponse(
-    RootModel[JSONRPCErrorResponse | CancelTaskSuccessResponse]
-):
+class CancelTaskResponse(RootModel[JSONRPCErrorResponse | CancelTaskSuccessResponse]):
     root: JSONRPCErrorResponse | CancelTaskSuccessResponse
     """
     JSON-RPC response for the 'tasks/cancel' method.
@@ -1814,9 +1800,7 @@ class JSONRPCResponse(
     """
 
 
-class SendMessageResponse(
-    RootModel[JSONRPCErrorResponse | SendMessageSuccessResponse]
-):
+class SendMessageResponse(RootModel[JSONRPCErrorResponse | SendMessageSuccessResponse]):
     root: JSONRPCErrorResponse | SendMessageSuccessResponse
     """
     JSON-RPC response model for the 'message/send' method.

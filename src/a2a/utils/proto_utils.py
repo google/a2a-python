@@ -187,7 +187,7 @@ class ToProto:
         if not config:
             return a2a_pb2.SendMessageConfiguration()
         return a2a_pb2.SendMessageConfiguration(
-            accepted_output_modes=list(config.acceptedOutputModes),
+            accepted_output_modes=config.acceptedOutputModes,
             push_notification=ToProto.push_notification_config(
                 config.pushNotificationConfig
             )
