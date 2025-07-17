@@ -41,12 +41,13 @@ postgresql = ["sqlalchemy[asyncio,postgresql-asyncpg]>=2.0.0"]
 mysql = ["sqlalchemy[asyncio,aiomysql]>=2.0.0"]
 sqlite = ["sqlalchemy[asyncio,aiosqlite]>=2.0.0"]
 sql = ["sqlalchemy[asyncio,postgresql-asyncpg,aiomysql,aiosqlite]>=2.0.0"]
+encryption = ["cryptography>=43.0.0"]
 
 [project.urls]
-homepage = "https://a2aproject.github.io/A2A/"
+homepage = "https://a2a-protocol.org/"
 repository = "https://github.com/a2aproject/a2a-python"
 changelog = "https://github.com/a2aproject/a2a-python/blob/main/CHANGELOG.md"
-documentation = "https://a2aproject.github.io/A2A/sdk/python/"
+documentation = "https://a2a-protocol.org/latest/sdk/python/"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/a2a"]

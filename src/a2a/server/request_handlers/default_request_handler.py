@@ -33,9 +33,7 @@ from a2a.types import (
     InvalidParamsError,
     ListTaskPushNotificationConfigParams,
     Message,
-    MessageSendConfiguration,
     MessageSendParams,
-    PushNotificationConfig,
     Task,
     TaskIdParams,
     TaskNotFoundError,
@@ -202,24 +200,11 @@ class DefaultRequestHandler(RequestHandler):
                 )
 
             task = task_manager.update_with_message(params.message, task)
-            if self.should_add_push_info(params):
-                assert self._push_config_store is not None
-                assert isinstance(
-                    params.configuration, MessageSendConfiguration
-                )
-                assert isinstance(
-                    params.configuration.pushNotificationConfig,
-                    PushNotificationConfig,
-                )
-                await self._push_config_store.set_info(
-                    task.id, params.configuration.pushNotificationConfig
-                )
         elif params.message.taskId:
             raise ServerError(
                 error=TaskNotFoundError(
                     message=f'Task {params.message.taskId} was specified but does not exist'
                 )
-            )
 
         # Build request context
         request_context = await self._request_context_builder.build(
@@ -234,6 +219,16 @@ class DefaultRequestHandler(RequestHandler):
         # Always assign a task ID. We may not actually upgrade to a task, but
         # dictating the task ID at this layer is useful for tracking running
         # agents.
+
+        if (
+            self._push_config_store
+            and params.configuration
+            and params.configuration.pushNotificationConfig
+        ):
+            await self._push_config_store.set_info(
+                task_id, params.configuration.pushNotificationConfig
+            )
+
         queue = await self._queue_manager.create_or_tap(task_id)
         result_aggregator = ResultAggregator(task_manager)
         # TODO: to manage the non-blocking flows.
@@ -338,16 +333,6 @@ class DefaultRequestHandler(RequestHandler):
             async for event in result_aggregator.consume_and_emit(consumer):
                 if isinstance(event, Task):
                     self._validate_task_id_match(task_id, event.id)
-
-                if (
-                    self._push_config_store
-                    and params.configuration
-                    and params.configuration.pushNotificationConfig
-                ):
-                    await self._push_config_store.set_info(
-                        task_id,
-                        params.configuration.pushNotificationConfig,
-                    )
 
                 await self._send_push_notification_if_needed(
                     task_id, result_aggregator
@@ -514,12 +499,4 @@ class DefaultRequestHandler(RequestHandler):
 
         await self._push_config_store.delete_info(
             params.id, params.pushNotificationConfigId
-        )
-
-    def should_add_push_info(self, params: MessageSendParams) -> bool:
-        """Determines if push notification info should be set for a task."""
-        return bool(
-            self._push_config_store
-            and params.configuration
-            and params.configuration.pushNotificationConfig
         )

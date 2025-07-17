@@ -15,7 +15,16 @@ def new_task(request: Message) -> Task:
 
     Returns:
         A new `Task` object initialized with 'submitted' status and the input message in history.
+
+    Raises:
+        TypeError: If the message role is None.
+        ValueError: If the message parts are empty.
     """
+    if not request.role:
+        raise TypeError('Message role cannot be None')
+    if not request.parts:
+        raise ValueError('Message parts cannot be empty')
+
     return Task(
         status=TaskStatus(state=TaskState.submitted),
         id=(request.taskId if request.taskId else str(uuid.uuid4())),
@@ -46,6 +55,11 @@ def completed_task(
     Returns:
         A `Task` object with status set to 'completed'.
     """
+    if not artifacts or not all(isinstance(a, Artifact) for a in artifacts):
+        raise ValueError(
+            'artifacts must be a non-empty list of Artifact objects'
+        )
+
     if history is None:
         history = []
     return Task(

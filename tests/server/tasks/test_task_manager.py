@@ -45,6 +45,20 @@ def task_manager(mock_task_store: AsyncMock) -> TaskManager:
     )
 
 
+@pytest.mark.parametrize('invalid_task_id', ['', 123])
+def test_task_manager_invalid_task_id(
+    mock_task_store: AsyncMock, invalid_task_id: Any
+):
+    """Test that TaskManager raises ValueError for an invalid task_id."""
+    with pytest.raises(ValueError, match='Task ID must be a non-empty string'):
+        TaskManager(
+            task_id=invalid_task_id,
+            context_id='test_context',
+            task_store=mock_task_store,
+            initial_message=None,
+        )
+
+
 @pytest.mark.asyncio
 async def test_get_task_existing(
     task_manager: TaskManager, mock_task_store: AsyncMock

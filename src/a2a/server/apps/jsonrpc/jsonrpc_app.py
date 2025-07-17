@@ -12,8 +12,10 @@ from pydantic import ValidationError
 from sse_starlette.sse import EventSourceResponse
 from starlette.applications import Starlette
 from starlette.authentication import BaseUser
+from starlette.exceptions import HTTPException
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
+from starlette.status import HTTP_413_REQUEST_ENTITY_TOO_LARGE
 
 from a2a.auth.user import UnauthenticatedUser
 from a2a.auth.user import User as A2AUser
@@ -177,7 +179,7 @@ class JSONRPCApplication(ABC):
             status_code=200,
         )
 
-    async def _handle_requests(self, request: Request) -> Response:
+    async def _handle_requests(self, request: Request) -> Response:  # noqa: PLR0911
         """Handles incoming POST requests to the main A2A endpoint.
 
         Parses the request body as JSON, validates it against A2A request types,
@@ -233,6 +235,15 @@ class JSONRPCApplication(ABC):
                 request_id,
                 A2AError(root=InvalidRequestError(data=json.loads(e.json()))),
             )
+        except HTTPException as e:
+            if e.status_code == HTTP_413_REQUEST_ENTITY_TOO_LARGE:
+                return self._generate_error_response(
+                    request_id,
+                    A2AError(
+                        root=InvalidRequestError(message='Payload too large')
+                    ),
+                )
+            raise e
         except Exception as e:
             logger.error(f'Unhandled exception: {e}')
             traceback.print_exc()
