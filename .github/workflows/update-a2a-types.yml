@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: '3.10'
       - name: Install uv
         uses: astral-sh/setup-uv@v6
       - name: Configure uv shell
@@ -47,8 +47,8 @@ jobs:
           token: ${{ secrets.A2A_BOT_PAT }}
           committer: a2a-bot <a2a-bot@google.com>
           author: a2a-bot <a2a-bot@google.com>
-          commit-message: "feat(spec): Update A2A types from specification 🤖"
-          title: "feat(spec): Update A2A types from specification 🤖"
+          commit-message: 'feat(spec): Update A2A types from specification 🤖'
+          title: 'feat(spec): Update A2A types from specification 🤖'
           body: |
             This PR updates `src/a2a/types.py` based on the latest `specification/json/a2a.json` from [a2aproject/A2A](https://github.com/a2aproject/A2A/commit/${{ github.event.client_payload.sha }}).
           branch: auto-update-a2a-types-${{ github.event.client_payload.sha }}
