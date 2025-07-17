@@ -26,10 +26,10 @@ class ToProto:
         if message is None:
             return None
         return a2a_pb2.Message(
-            message_id=message.messageId,
+            message_id=message.message_id,
             content=[ToProto.part(p) for p in message.parts],
-            context_id=message.contextId,
-            task_id=message.taskId,
+            context_id=message.context_id,
+            task_id=message.task_id,
             role=cls.role(message.role),
             metadata=ToProto.metadata(message.metadata),
         )
@@ -81,7 +81,7 @@ class ToProto:
     def task(cls, task: types.Task) -> a2a_pb2.Task:
         return a2a_pb2.Task(
             id=task.id,
-            context_id=task.contextId,
+            context_id=task.context_id,
             status=ToProto.task_status(task.status),
             artifacts=(
                 [ToProto.artifact(a) for a in task.artifacts]
@@ -123,7 +123,7 @@ class ToProto:
     @classmethod
     def artifact(cls, artifact: types.Artifact) -> a2a_pb2.Artifact:
         return a2a_pb2.Artifact(
-            artifact_id=artifact.artifactId,
+            artifact_id=artifact.artifact_id,
             description=artifact.description,
             metadata=ToProto.metadata(artifact.metadata),
             name=artifact.name,
@@ -160,12 +160,12 @@ class ToProto:
         cls, event: types.TaskArtifactUpdateEvent
     ) -> a2a_pb2.TaskArtifactUpdateEvent:
         return a2a_pb2.TaskArtifactUpdateEvent(
-            task_id=event.taskId,
-            context_id=event.contextId,
+            task_id=event.task_id,
+            context_id=event.context_id,
             artifact=ToProto.artifact(event.artifact),
             metadata=ToProto.metadata(event.metadata),
             append=event.append or False,
-            last_chunk=event.lastChunk or False,
+            last_chunk=event.last_chunk or False,
         )
 
     @classmethod
@@ -173,8 +173,8 @@ class ToProto:
         cls, event: types.TaskStatusUpdateEvent
     ) -> a2a_pb2.TaskStatusUpdateEvent:
         return a2a_pb2.TaskStatusUpdateEvent(
-            task_id=event.taskId,
-            context_id=event.contextId,
+            task_id=event.task_id,
+            context_id=event.context_id,
             status=ToProto.task_status(event.status),
             metadata=ToProto.metadata(event.metadata),
             final=event.final,
@@ -187,13 +187,13 @@ class ToProto:
         if not config:
             return a2a_pb2.SendMessageConfiguration()
         return a2a_pb2.SendMessageConfiguration(
-            accepted_output_modes=config.acceptedOutputModes,
+            accepted_output_modes=config.accepted_output_modes,
             push_notification=ToProto.push_notification_config(
-                config.pushNotificationConfig
+                config.push_notification_config
             )
-            if config.pushNotificationConfig
+            if config.push_notification_config
             else None,
-            history_length=config.historyLength,
+            history_length=config.history_length,
             blocking=config.blocking or False,
         )
 
@@ -259,9 +259,9 @@ class ToProto:
         cls, config: types.TaskPushNotificationConfig
     ) -> a2a_pb2.TaskPushNotificationConfig:
         return a2a_pb2.TaskPushNotificationConfig(
-            name=f'tasks/{config.taskId}/pushNotificationConfigs/{config.taskId}',
+            name=f'tasks/{config.task_id}/pushNotificationConfigs/{config.task_id}',
             push_notification_config=cls.push_notification_config(
-                config.pushNotificationConfig,
+                config.push_notification_config,
             ),
         )
 
@@ -272,19 +272,19 @@ class ToProto:
     ) -> a2a_pb2.AgentCard:
         return a2a_pb2.AgentCard(
             capabilities=cls.capabilities(card.capabilities),
-            default_input_modes=list(card.defaultInputModes),
-            default_output_modes=list(card.defaultOutputModes),
+            default_input_modes=list(card.default_input_modes),
+            default_output_modes=list(card.default_output_modes),
             description=card.description,
-            documentation_url=card.documentationUrl,
+            documentation_url=card.documentation_url,
             name=card.name,
             provider=cls.provider(card.provider),
             security=cls.security(card.security),
-            security_schemes=cls.security_schemes(card.securitySchemes),
+            security_schemes=cls.security_schemes(card.security_schemes),
             skills=[cls.skill(x) for x in card.skills] if card.skills else [],
             url=card.url,
             version=card.version,
             supports_authenticated_extended_card=bool(
-                card.supportsAuthenticatedExtendedCard
+                card.supports_authenticated_extended_card
             ),
         )
 
@@ -294,7 +294,7 @@ class ToProto:
     ) -> a2a_pb2.AgentCapabilities:
         return a2a_pb2.AgentCapabilities(
             streaming=bool(capabilities.streaming),
-            push_notifications=bool(capabilities.pushNotifications),
+            push_notifications=bool(capabilities.push_notifications),
         )
 
     @classmethod
@@ -353,7 +353,7 @@ class ToProto:
                 http_auth_security_scheme=a2a_pb2.HTTPAuthSecurityScheme(
                     description=scheme.root.description,
                     scheme=scheme.root.scheme,
-                    bearer_format=scheme.root.bearerFormat,
+                    bearer_format=scheme.root.bearer_format,
                 )
             )
         if isinstance(scheme.root, types.OAuth2SecurityScheme):
@@ -366,43 +366,43 @@ class ToProto:
         return a2a_pb2.SecurityScheme(
             open_id_connect_security_scheme=a2a_pb2.OpenIdConnectSecurityScheme(
                 description=scheme.root.description,
-                open_id_connect_url=scheme.root.openIdConnectUrl,
+                open_id_connect_url=scheme.root.open_id_connect_url,
             )
         )
 
     @classmethod
     def oauth2_flows(cls, flows: types.OAuthFlows) -> a2a_pb2.OAuthFlows:
-        if flows.authorizationCode:
+        if flows.authorization_code:
             return a2a_pb2.OAuthFlows(
                 authorization_code=a2a_pb2.AuthorizationCodeOAuthFlow(
-                    authorization_url=flows.authorizationCode.authorizationUrl,
-                    refresh_url=flows.authorizationCode.refreshUrl,
-                    scopes=dict(flows.authorizationCode.scopes.items()),
-                    token_url=flows.authorizationCode.tokenUrl,
+                    authorization_url=flows.authorization_code.authorization_url,
+                    refresh_url=flows.authorization_code.refresh_url,
+                    scopes=dict(flows.authorization_code.scopes.items()),
+                    token_url=flows.authorization_code.token_url,
                 ),
             )
-        if flows.clientCredentials:
+        if flows.client_credentials:
             return a2a_pb2.OAuthFlows(
                 client_credentials=a2a_pb2.ClientCredentialsOAuthFlow(
-                    refresh_url=flows.clientCredentials.refreshUrl,
-                    scopes=dict(flows.clientCredentials.scopes.items()),
-                    token_url=flows.clientCredentials.tokenUrl,
+                    refresh_url=flows.client_credentials.refresh_url,
+                    scopes=dict(flows.client_credentials.scopes.items()),
+                    token_url=flows.client_credentials.token_url,
                 ),
             )
         if flows.implicit:
             return a2a_pb2.OAuthFlows(
                 implicit=a2a_pb2.ImplicitOAuthFlow(
-                    authorization_url=flows.implicit.authorizationUrl,
-                    refresh_url=flows.implicit.refreshUrl,
+                    authorization_url=flows.implicit.authorization_url,
+                    refresh_url=flows.implicit.refresh_url,
                     scopes=dict(flows.implicit.scopes.items()),
                 ),
             )
         if flows.password:
             return a2a_pb2.OAuthFlows(
                 password=a2a_pb2.PasswordOAuthFlow(
-                    refresh_url=flows.password.refreshUrl,
+                    refresh_url=flows.password.refresh_url,
                     scopes=dict(flows.password.scopes.items()),
-                    token_url=flows.password.tokenUrl,
+                    token_url=flows.password.token_url,
                 ),
             )
         raise ValueError('Unknown oauth flow definition')
@@ -436,10 +436,10 @@ class FromProto:
     @classmethod
     def message(cls, message: a2a_pb2.Message) -> types.Message:
         return types.Message(
-            messageId=message.message_id,
+            message_id=message.message_id,
             parts=[FromProto.part(p) for p in message.content],
-            contextId=message.context_id,
-            taskId=message.task_id,
+            context_id=message.context_id,
+            task_id=message.task_id,
             role=FromProto.role(message.role),
             metadata=FromProto.metadata(message.metadata),
         )
@@ -483,7 +483,7 @@ class FromProto:
     def task(cls, task: a2a_pb2.Task) -> types.Task:
         return types.Task(
             id=task.id,
-            contextId=task.context_id,
+            context_id=task.context_id,
             status=FromProto.task_status(task.status),
             artifacts=[FromProto.artifact(a) for a in task.artifacts],
             history=[FromProto.message(h) for h in task.history],
@@ -529,12 +529,12 @@ class FromProto:
         cls, event: a2a_pb2.TaskArtifactUpdateEvent
     ) -> types.TaskArtifactUpdateEvent:
         return types.TaskArtifactUpdateEvent(
-            taskId=event.task_id,
-            contextId=event.context_id,
+            task_id=event.task_id,
+            context_id=event.context_id,
             artifact=FromProto.artifact(event.artifact),
             metadata=FromProto.metadata(event.metadata),
             append=event.append,
-            lastChunk=event.last_chunk,
+            last_chunk=event.last_chunk,
         )
 
     @classmethod
@@ -542,8 +542,8 @@ class FromProto:
         cls, event: a2a_pb2.TaskStatusUpdateEvent
     ) -> types.TaskStatusUpdateEvent:
         return types.TaskStatusUpdateEvent(
-            taskId=event.task_id,
-            contextId=event.context_id,
+            task_id=event.task_id,
+            context_id=event.context_id,
             status=FromProto.task_status(event.status),
             metadata=FromProto.metadata(event.metadata),
             final=event.final,
@@ -576,7 +576,7 @@ class FromProto:
         cls, config: a2a_pb2.SendMessageConfiguration
     ) -> types.MessageSendConfiguration:
         return types.MessageSendConfiguration(
-            acceptedOutputModes=list(config.accepted_output_modes),
+            accepted_output_modes=list(config.accepted_output_modes),
             pushNotificationConfig=FromProto.push_notification_config(
                 config.push_notification
             )
@@ -641,7 +641,7 @@ class FromProto:
             pushNotificationConfig=cls.push_notification_config(
                 request.config.push_notification_config,
             ),
-            taskId=m.group(1),
+            task_id=m.group(1),
         )
 
     @classmethod

@@ -224,7 +224,7 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
         return a2a_pb2.TaskPushNotificationConfig()
 
     @validate(
-        lambda self: self.agent_card.capabilities.pushNotifications,
+        lambda self: self.agent_card.capabilities.push_notifications,
         'Push notifications are not supported by the agent',
     )
     async def CreateTaskPushNotificationConfig(

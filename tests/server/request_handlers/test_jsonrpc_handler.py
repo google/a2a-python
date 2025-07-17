@@ -273,8 +273,8 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
                 params=MessageSendParams(
                     message=Message(
                         **MESSAGE_PAYLOAD,
-                        taskId=mock_task.id,
-                        contextId=mock_task.contextId,
+                        task_id=mock_task.id,
+                        context_id=mock_task.context_id,
                     )
                 ),
             )
@@ -341,15 +341,15 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         events: list[Any] = [
             Task(**MINIMAL_TASK),
             TaskArtifactUpdateEvent(
-                taskId='task_123',
-                contextId='session-xyz',
+                task_id='task_123',
+                context_id='session-xyz',
                 artifact=Artifact(
                     artifactId='11', parts=[Part(TextPart(text='text'))]
                 ),
             ),
             TaskStatusUpdateEvent(
-                taskId='task_123',
-                contextId='session-xyz',
+                task_id='task_123',
+                context_id='session-xyz',
                 status=TaskStatus(state=TaskState.completed),
                 final=True,
             ),
@@ -398,15 +398,15 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         events: list[Any] = [
             mock_task,
             TaskArtifactUpdateEvent(
-                taskId='task_123',
-                contextId='session-xyz',
+                task_id='task_123',
+                context_id='session-xyz',
                 artifact=Artifact(
                     artifactId='11', parts=[Part(TextPart(text='text'))]
                 ),
             ),
             TaskStatusUpdateEvent(
-                taskId='task_123',
-                contextId='session-xyz',
+                task_id='task_123',
+                context_id='session-xyz',
                 status=TaskStatus(state=TaskState.working),
                 final=True,
             ),
@@ -427,8 +427,8 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
                 params=MessageSendParams(
                     message=Message(
                         **MESSAGE_PAYLOAD,
-                        taskId=mock_task.id,
-                        contextId=mock_task.contextId,
+                        task_id=mock_task.id,
+                        context_id=mock_task.context_id,
                     )
                 ),
             )
@@ -458,7 +458,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         mock_task = Task(**MINIMAL_TASK)
         mock_task_store.get.return_value = mock_task
         task_push_config = TaskPushNotificationConfig(
-            taskId=mock_task.id,
+            task_id=mock_task.id,
             pushNotificationConfig=PushNotificationConfig(
                 url='http://example.com'
             ),
@@ -474,7 +474,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         )
         assert response.root.result == task_push_config  # type: ignore
         mock_push_notification_store.set_info.assert_called_once_with(
-            mock_task.id, task_push_config.pushNotificationConfig
+            mock_task.id, task_push_config.push_notification_config
         )
 
     async def test_get_push_notification_success(self) -> None:
@@ -493,7 +493,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         mock_task = Task(**MINIMAL_TASK)
         mock_task_store.get.return_value = mock_task
         task_push_config = TaskPushNotificationConfig(
-            taskId=mock_task.id,
+            task_id=mock_task.id,
             pushNotificationConfig=PushNotificationConfig(
                 url='http://example.com'
             ),
@@ -550,15 +550,15 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         events: list[Any] = [
             Task(**MINIMAL_TASK),
             TaskArtifactUpdateEvent(
-                taskId='task_123',
-                contextId='session-xyz',
+                task_id='task_123',
+                context_id='session-xyz',
                 artifact=Artifact(
                     artifactId='11', parts=[Part(TextPart(text='text'))]
                 ),
             ),
             TaskStatusUpdateEvent(
-                taskId='task_123',
-                contextId='session-xyz',
+                task_id='task_123',
+                context_id='session-xyz',
                 status=TaskStatus(state=TaskState.completed),
                 final=True,
             ),
@@ -580,7 +580,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
                 params=MessageSendParams(message=Message(**MESSAGE_PAYLOAD)),
             )
             request.params.configuration = MessageSendConfiguration(
-                acceptedOutputModes=['text'],
+                accepted_output_modes=['text'],
                 pushNotificationConfig=PushNotificationConfig(
                     url='http://example.com'
                 ),
@@ -661,15 +661,15 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         mock_task = Task(**MINIMAL_TASK, history=[])
         events: list[Any] = [
             TaskArtifactUpdateEvent(
-                taskId='task_123',
-                contextId='session-xyz',
+                task_id='task_123',
+                context_id='session-xyz',
                 artifact=Artifact(
                     artifactId='11', parts=[Part(TextPart(text='text'))]
                 ),
             ),
             TaskStatusUpdateEvent(
-                taskId='task_123',
-                contextId='session-xyz',
+                task_id='task_123',
+                context_id='session-xyz',
                 status=TaskStatus(state=TaskState.completed),
                 final=True,
             ),
@@ -762,7 +762,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
 
         # Act & Assert
         task_push_config = TaskPushNotificationConfig(
-            taskId='task_123',
+            task_id='task_123',
             pushNotificationConfig=PushNotificationConfig(
                 url='http://example.com'
             ),
@@ -826,7 +826,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
 
         # Act
         task_push_config = TaskPushNotificationConfig(
-            taskId=mock_task.id,
+            task_id=mock_task.id,
             pushNotificationConfig=PushNotificationConfig(
                 url='http://example.com'
             ),
@@ -965,8 +965,8 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
                 params=MessageSendParams(
                     message=Message(
                         **MESSAGE_PAYLOAD,
-                        taskId=mock_task.id,
-                        contextId=mock_task.contextId,
+                        task_id=mock_task.id,
+                        context_id=mock_task.context_id,
                     )
                 ),
             )
@@ -1050,7 +1050,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         # Create request handler without a push notifier
         request_handler = AsyncMock(spec=DefaultRequestHandler)
         task_push_config = TaskPushNotificationConfig(
-            taskId=mock_task.id,
+            task_id=mock_task.id,
             pushNotificationConfig=PushNotificationConfig(
                 id='config1', url='http://example.com'
             ),
@@ -1086,7 +1086,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         # Create request handler without a push notifier
         request_handler = AsyncMock(spec=DefaultRequestHandler)
         task_push_config = TaskPushNotificationConfig(
-            taskId=mock_task.id,
+            task_id=mock_task.id,
             pushNotificationConfig=PushNotificationConfig(
                 url='http://example.com'
             ),
@@ -1119,7 +1119,7 @@ class TestJSONRPCtHandler(unittest.async_case.IsolatedAsyncioTestCase):
         # Create request handler without a push notifier
         request_handler = AsyncMock(spec=DefaultRequestHandler)
         task_push_config = TaskPushNotificationConfig(
-            taskId=mock_task.id,
+            task_id=mock_task.id,
             pushNotificationConfig=PushNotificationConfig(
                 url='http://example.com'
             ),

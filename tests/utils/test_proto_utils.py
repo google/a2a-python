@@ -14,9 +14,9 @@ from a2a.utils.errors import ServerError
 @pytest.fixture
 def sample_message() -> types.Message:
     return types.Message(
-        messageId='msg-1',
-        contextId='ctx-1',
-        taskId='task-1',
+        message_id='msg-1',
+        context_id='ctx-1',
+        task_id='task-1',
         role=types.Role.user,
         parts=[
             types.Part(root=types.TextPart(text='Hello')),
@@ -35,7 +35,7 @@ def sample_message() -> types.Message:
 def sample_task(sample_message: types.Message) -> types.Task:
     return types.Task(
         id='task-1',
-        contextId='ctx-1',
+        context_id='ctx-1',
         status=types.TaskStatus(
             state=types.TaskState.working, message=sample_message
         ),

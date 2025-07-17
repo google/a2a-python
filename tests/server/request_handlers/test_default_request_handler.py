@@ -82,7 +82,7 @@ def create_sample_task(
 ) -> Task:
     return Task(
         id=task_id,
-        contextId=context_id,
+        context_id=context_id,
         status=TaskStatus(state=status_state),
     )
 
@@ -276,7 +276,7 @@ async def test_on_cancel_task_invalid_result_type():
     # Mock ResultAggregator to return a Message
     mock_result_aggregator_instance = AsyncMock(spec=ResultAggregator)
     mock_result_aggregator_instance.consume_all.return_value = Message(
-        messageId='unexpected_msg', role=Role.agent, parts=[]
+        message_id='unexpected_msg', role=Role.agent, parts=[]
     )
 
     request_handler = DefaultRequestHandler(
@@ -344,15 +344,15 @@ async def test_on_message_send_with_push_notification():
     push_config = PushNotificationConfig(url='http://callback.com/push')
     message_config = MessageSendConfiguration(
         pushNotificationConfig=push_config,
-        acceptedOutputModes=['text/plain'],  # Added required field
+        accepted_output_modes=['text/plain'],  # Added required field
     )
     params = MessageSendParams(
         message=Message(
             role=Role.user,
-            messageId='msg_push',
+            message_id='msg_push',
             parts=[],
-            taskId=task_id,
-            contextId=context_id,
+            task_id=task_id,
+            context_id=context_id,
         ),
         configuration=message_config,
     )
@@ -432,10 +432,10 @@ async def test_on_message_send_with_push_notification_no_existing_Task():
     push_config = PushNotificationConfig(url='http://callback.com/push')
     message_config = MessageSendConfiguration(
         pushNotificationConfig=push_config,
-        acceptedOutputModes=['text/plain'],  # Added required field
+        accepted_output_modes=['text/plain'],  # Added required field
     )
     params = MessageSendParams(
-        message=Message(role=Role.user, messageId='msg_push', parts=[]),
+        message=Message(role=Role.user, message_id='msg_push', parts=[]),
         configuration=message_config,
     )
 
@@ -498,7 +498,7 @@ async def test_on_message_send_no_result_from_aggregator():
         request_context_builder=mock_request_context_builder,
     )
     params = MessageSendParams(
-        message=Message(role=Role.user, messageId='msg_no_res', parts=[])
+        message=Message(role=Role.user, message_id='msg_no_res', parts=[])
     )
 
     mock_result_aggregator_instance = AsyncMock(spec=ResultAggregator)
@@ -548,7 +548,7 @@ async def test_on_message_send_task_id_mismatch():
         request_context_builder=mock_request_context_builder,
     )
     params = MessageSendParams(
-        message=Message(role=Role.user, messageId='msg_id_mismatch', parts=[])
+        message=Message(role=Role.user, message_id='msg_id_mismatch', parts=[])
     )
 
     mock_result_aggregator_instance = AsyncMock(spec=ResultAggregator)
@@ -598,7 +598,7 @@ async def test_on_message_send_interrupted_flow():
         request_context_builder=mock_request_context_builder,
     )
     params = MessageSendParams(
-        message=Message(role=Role.user, messageId='msg_interrupt', parts=[])
+        message=Message(role=Role.user, message_id='msg_interrupt', parts=[])
     )
 
     mock_result_aggregator_instance = AsyncMock(spec=ResultAggregator)
@@ -686,15 +686,15 @@ async def test_on_message_send_stream_with_push_notification():
     push_config = PushNotificationConfig(url='http://callback.stream.com/push')
     message_config = MessageSendConfiguration(
         pushNotificationConfig=push_config,
-        acceptedOutputModes=['text/plain'],  # Added required field
+        accepted_output_modes=['text/plain'],  # Added required field
     )
     params = MessageSendParams(
         message=Message(
             role=Role.user,
-            messageId='msg_stream_push',
+            message_id='msg_stream_push',
             parts=[],
-            taskId=task_id,
-            contextId=context_id,
+            task_id=task_id,
+            context_id=context_id,
         ),
         configuration=message_config,
     )
@@ -947,7 +947,7 @@ async def test_on_message_send_stream_task_id_mismatch():
     )
     params = MessageSendParams(
         message=Message(
-            role=Role.user, messageId='msg_stream_mismatch', parts=[]
+            role=Role.user, message_id='msg_stream_mismatch', parts=[]
         )
     )
 
@@ -1031,7 +1031,7 @@ async def test_set_task_push_notification_config_no_notifier():
         push_config_store=None,  # Explicitly None
     )
     params = TaskPushNotificationConfig(
-        taskId='task1',
+        task_id='task1',
         pushNotificationConfig=PushNotificationConfig(url='http://example.com'),
     )
     from a2a.utils.errors import ServerError  # Local import
@@ -1058,7 +1058,7 @@ async def test_set_task_push_notification_config_task_not_found():
         push_sender=mock_push_sender,
     )
     params = TaskPushNotificationConfig(
-        taskId='non_existent_task',
+        task_id='non_existent_task',
         pushNotificationConfig=PushNotificationConfig(url='http://example.com'),
     )
     from a2a.utils.errors import ServerError  # Local import
@@ -1161,7 +1161,7 @@ async def test_get_task_push_notification_config_info_with_config():
     )
 
     set_config_params = TaskPushNotificationConfig(
-        taskId='task_1',
+        task_id='task_1',
         pushNotificationConfig=PushNotificationConfig(
             id='config_id', url='http://1.example.com'
         ),
@@ -1181,12 +1181,12 @@ async def test_get_task_push_notification_config_info_with_config():
     )
 
     assert result is not None
-    assert result.taskId == 'task_1'
+    assert result.task_id == 'task_1'
     assert (
-        result.pushNotificationConfig.url
-        == set_config_params.pushNotificationConfig.url
+        result.push_notification_config.url
+        == set_config_params.push_notification_config.url
     )
-    assert result.pushNotificationConfig.id == 'config_id'
+    assert result.push_notification_config.id == 'config_id'
 
 
 @pytest.mark.asyncio
@@ -1203,7 +1203,7 @@ async def test_get_task_push_notification_config_info_with_config_no_id():
     )
 
     set_config_params = TaskPushNotificationConfig(
-        taskId='task_1',
+        task_id='task_1',
         pushNotificationConfig=PushNotificationConfig(
             url='http://1.example.com'
         ),
@@ -1221,12 +1221,12 @@ async def test_get_task_push_notification_config_info_with_config_no_id():
     )
 
     assert result is not None
-    assert result.taskId == 'task_1'
+    assert result.task_id == 'task_1'
     assert (
-        result.pushNotificationConfig.url
-        == set_config_params.pushNotificationConfig.url
+        result.push_notification_config.url
+        == set_config_params.push_notification_config.url
     )
-    assert result.pushNotificationConfig.id == 'task_1'
+    assert result.push_notification_config.id == 'task_1'
 
 
 @pytest.mark.asyncio
@@ -1293,7 +1293,7 @@ async def test_on_message_send_stream():
     message_params = MessageSendParams(
         message=Message(
             role=Role.user,
-            messageId='msg-123',
+            message_id='msg-123',
             parts=[Part(root=TextPart(text='How are you?'))],
         ),
     )
@@ -1421,10 +1421,10 @@ async def test_list_task_push_notification_config_info_with_config():
     )
 
     assert len(result) == 2
-    assert result[0].taskId == 'task_1'
-    assert result[0].pushNotificationConfig == push_config1
-    assert result[1].taskId == 'task_1'
-    assert result[1].pushNotificationConfig == push_config2
+    assert result[0].task_id == 'task_1'
+    assert result[0].push_notification_config == push_config1
+    assert result[1].task_id == 'task_1'
+    assert result[1].push_notification_config == push_config2
 
 
 @pytest.mark.asyncio
@@ -1442,7 +1442,7 @@ async def test_list_task_push_notification_config_info_with_config_and_no_id():
 
     # multiple calls without config id should replace the existing
     set_config_params1 = TaskPushNotificationConfig(
-        taskId='task_1',
+        task_id='task_1',
         pushNotificationConfig=PushNotificationConfig(
             url='http://1.example.com'
         ),
@@ -1452,7 +1452,7 @@ async def test_list_task_push_notification_config_info_with_config_and_no_id():
     )
 
     set_config_params2 = TaskPushNotificationConfig(
-        taskId='task_1',
+        task_id='task_1',
         pushNotificationConfig=PushNotificationConfig(
             url='http://2.example.com'
         ),
@@ -1470,12 +1470,12 @@ async def test_list_task_push_notification_config_info_with_config_and_no_id():
     )
 
     assert len(result) == 1
-    assert result[0].taskId == 'task_1'
+    assert result[0].task_id == 'task_1'
     assert (
-        result[0].pushNotificationConfig.url
-        == set_config_params2.pushNotificationConfig.url
+        result[0].push_notification_config.url
+        == set_config_params2.push_notification_config.url
     )
-    assert result[0].pushNotificationConfig.id == 'task_1'
+    assert result[0].push_notification_config.id == 'task_1'
 
 
 @pytest.mark.asyncio
@@ -1604,8 +1604,8 @@ async def test_delete_task_push_notification_config_info_with_config():
     )
 
     assert len(result2) == 1
-    assert result2[0].taskId == 'task_1'
-    assert result2[0].pushNotificationConfig == push_config2
+    assert result2[0].task_id == 'task_1'
+    assert result2[0].push_notification_config == push_config2
 
 
 @pytest.mark.asyncio
@@ -1675,9 +1675,9 @@ async def test_on_message_send_task_in_terminal_state(terminal_state):
     params = MessageSendParams(
         message=Message(
             role=Role.user,
-            messageId='msg_terminal',
+            message_id='msg_terminal',
             parts=[],
-            taskId=task_id,
+            task_id=task_id,
         )
     )
 
@@ -1719,9 +1719,9 @@ async def test_on_message_send_stream_task_in_terminal_state(terminal_state):
     params = MessageSendParams(
         message=Message(
             role=Role.user,
-            messageId='msg_terminal_stream',
+            message_id='msg_terminal_stream',
             parts=[],
-            taskId=task_id,
+            task_id=task_id,
         )
     )
 

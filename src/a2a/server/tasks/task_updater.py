@@ -74,8 +74,8 @@ class TaskUpdater:
             )
             await self.event_queue.enqueue_event(
                 TaskStatusUpdateEvent(
-                    taskId=self.task_id,
-                    contextId=self.context_id,
+                    task_id=self.task_id,
+                    context_id=self.context_id,
                     final=final,
                     status=TaskStatus(
                         state=state,
@@ -109,8 +109,8 @@ class TaskUpdater:
 
         await self.event_queue.enqueue_event(
             TaskArtifactUpdateEvent(
-                taskId=self.task_id,
-                contextId=self.context_id,
+                task_id=self.task_id,
+                context_id=self.context_id,
                 artifact=Artifact(
                     artifactId=artifact_id,
                     name=name,
@@ -118,7 +118,7 @@ class TaskUpdater:
                     metadata=metadata,
                 ),
                 append=append,
-                lastChunk=last_chunk,
+                last_chunk=last_chunk,
             )
         )
 
@@ -197,9 +197,9 @@ class TaskUpdater:
         """
         return Message(
             role=Role.agent,
-            taskId=self.task_id,
-            contextId=self.context_id,
-            messageId=str(uuid.uuid4()),
+            task_id=self.task_id,
+            context_id=self.context_id,
+            message_id=str(uuid.uuid4()),
             metadata=metadata,
             parts=parts,
         )
