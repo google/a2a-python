@@ -14,7 +14,7 @@ dependencies = [
   "google-api-core>=1.26.0",
   "opentelemetry-api>=1.33.0",
   "opentelemetry-sdk>=1.33.0",
-  "pydantic>=2.11.7",
+  "pydantic>=2.11.3",
   "sse-starlette",
   "starlette",
   "grpcio>=1.60",
@@ -44,10 +44,10 @@ sql = ["sqlalchemy[asyncio,postgresql-asyncpg,aiomysql,aiosqlite]>=2.0.0"]
 encryption = ["cryptography>=43.0.0"]
 
 [project.urls]
-homepage = "https://a2a-protocol.org/"
+homepage = "https://a2aproject.github.io/A2A/"
 repository = "https://github.com/a2aproject/a2a-python"
 changelog = "https://github.com/a2aproject/a2a-python/blob/main/CHANGELOG.md"
-documentation = "https://a2a-protocol.org/latest/sdk/python/"
+documentation = "https://a2aproject.github.io/A2A/sdk/python/"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/a2a"]
