@@ -405,7 +405,7 @@ class DefaultRequestHandler(RequestHandler):
 
         return TaskPushNotificationConfig(
             task_id=params.id,
-            pushNotificationConfig=push_notification_config[0],
+            push_notification_config=push_notification_config[0],
         )
 
     async def on_resubscribe_to_task(
@@ -471,7 +471,7 @@ class DefaultRequestHandler(RequestHandler):
             for config in push_notification_config_list:
                 task_push_notification_config.append(
                     TaskPushNotificationConfig(
-                        task_id=params.id, pushNotificationConfig=config
+                        task_id=params.id, push_notification_config=config
                     )
                 )
 
