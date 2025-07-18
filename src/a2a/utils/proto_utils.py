@@ -14,8 +14,10 @@ from a2a.utils.errors import ServerError
 
 
 # Regexp patterns for matching
-_TASK_NAME_MATCH = r'tasks/(\w+)'
-_TASK_PUSH_CONFIG_NAME_MATCH = r'tasks/(\w+)/pushNotificationConfigs/(\w+)'
+_TASK_NAME_MATCH = r'tasks/([a-zA-Z0-9_.-]+)'
+_TASK_PUSH_CONFIG_NAME_MATCH = (
+    r'tasks/([a-zA-Z0-9_.-]+)/pushNotificationConfigs/([a-zA-Z0-9_.-]+)'
+)
 
 
 class ToProto:
