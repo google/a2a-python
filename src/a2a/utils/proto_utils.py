@@ -28,8 +28,6 @@ class ToProto:
         return a2a_pb2.Message(
             message_id=message.message_id,
             content=[ToProto.part(p) for p in message.parts],
-            context_id=message.context_id,
-            task_id=message.task_id,
             context_id=message.context_id or '',
             task_id=message.task_id or '',
             role=cls.role(message.role),
