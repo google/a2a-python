@@ -34,6 +34,7 @@ uv run datamodel-codegen \
   --use-standard-collections \
   --use-subclass-enum \
   --base-class a2a._base.A2ABaseModel \
+  --field-constraints \
   --snake-case-field \
   --no-alias
 
