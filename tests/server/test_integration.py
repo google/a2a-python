@@ -147,7 +147,7 @@ def client(app: A2AStarletteApplication, **kwargs):
 
 def test_agent_card_endpoint(client: TestClient, agent_card: AgentCard):
     """Test the agent card endpoint returns expected data."""
-    response = client.get('/.well-known/agent.json')
+    response = client.get('/.well-known/agent-card.json')
     assert response.status_code == 200
     data = response.json()
     assert data['name'] == agent_card.name
@@ -315,7 +315,7 @@ def test_starlette_build_with_extra_routes(
     assert response.json() == {'message': 'Hello'}
 
     # Ensure default routes still work
-    response = client.get('/.well-known/agent.json')
+    response = client.get('/.well-known/agent-card.json')
     assert response.status_code == 200
     data = response.json()
     assert data['name'] == agent_card.name
@@ -339,7 +339,7 @@ def test_fastapi_build_with_extra_routes(
     assert response.json() == {'message': 'Hello'}
 
     # Ensure default routes still work
-    response = client.get('/.well-known/agent.json')
+    response = client.get('/.well-known/agent-card.json')
     assert response.status_code == 200
     data = response.json()
     assert data['name'] == agent_card.name
