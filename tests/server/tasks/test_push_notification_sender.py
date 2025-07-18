@@ -19,7 +19,7 @@ from a2a.types import (
 def create_sample_task(task_id='task123', status_state=TaskState.completed):
     return Task(
         id=task_id,
-        contextId='ctx456',
+        context_id='ctx456',
         status=TaskStatus(state=status_state),
     )
 

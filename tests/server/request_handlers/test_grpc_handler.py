@@ -32,10 +32,10 @@ def sample_agent_card() -> types.AgentCard:
         url='http://localhost',
         version='1.0.0',
         capabilities=types.AgentCapabilities(
-            streaming=True, pushNotifications=True
+            streaming=True, push_notifications=True
         ),
-        defaultInputModes=['text/plain'],
-        defaultOutputModes=['text/plain'],
+        default_input_modes=['text/plain'],
+        default_output_modes=['text/plain'],
         skills=[],
     )
 
@@ -64,7 +64,7 @@ async def test_send_message_success(
     )
     response_model = types.Task(
         id='task-1',
-        contextId='ctx-1',
+        context_id='ctx-1',
         status=types.TaskStatus(state=types.TaskState.completed),
     )
     mock_request_handler.on_message_send.return_value = response_model
@@ -105,7 +105,7 @@ async def test_get_task_success(
     request_proto = a2a_pb2.GetTaskRequest(name='tasks/task-1')
     response_model = types.Task(
         id='task-1',
-        contextId='ctx-1',
+        context_id='ctx-1',
         status=types.TaskStatus(state=types.TaskState.working),
     )
     mock_request_handler.on_get_task.return_value = response_model
@@ -164,7 +164,7 @@ async def test_send_streaming_message(
     async def mock_stream():
         yield types.Task(
             id='task-1',
-            contextId='ctx-1',
+            context_id='ctx-1',
             status=types.TaskStatus(state=types.TaskState.working),
         )
 

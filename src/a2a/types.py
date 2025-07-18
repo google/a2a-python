@@ -34,7 +34,7 @@ class APIKeySecurityScheme(A2ABaseModel):
     """
     An optional description for the security scheme.
     """
-    in_: In = Field(..., alias='in')
+    in_: In
     """
     The location of the API key.
     """
@@ -124,7 +124,7 @@ class AgentSkill(A2ABaseModel):
     """
     A unique identifier for the agent's skill.
     """
-    inputModes: list[str] | None = None
+    input_modes: list[str] | None = None
     """
     The set of supported input MIME types for this skill, overriding the agent's defaults.
     """
@@ -132,7 +132,7 @@ class AgentSkill(A2ABaseModel):
     """
     A human-readable name for the skill.
     """
-    outputModes: list[str] | None = None
+    output_modes: list[str] | None = None
     """
     The set of supported output MIME types for this skill, overriding the agent's defaults.
     """
@@ -149,12 +149,12 @@ class AuthorizationCodeOAuthFlow(A2ABaseModel):
     Defines configuration details for the OAuth 2.0 Authorization Code flow.
     """
 
-    authorizationUrl: str
+    authorization_url: str
     """
     The authorization URL to be used for this flow.
     This MUST be a URL and use TLS.
     """
-    refreshUrl: str | None = None
+    refresh_url: str | None = None
     """
     The URL to be used for obtaining refresh tokens.
     This MUST be a URL and use TLS.
@@ -164,7 +164,7 @@ class AuthorizationCodeOAuthFlow(A2ABaseModel):
     The available scopes for the OAuth2 security scheme. A map between the scope
     name and a short description for it.
     """
-    tokenUrl: str
+    token_url: str
     """
     The token URL to be used for this flow.
     This MUST be a URL and use TLS.
@@ -176,7 +176,7 @@ class ClientCredentialsOAuthFlow(A2ABaseModel):
     Defines configuration details for the OAuth 2.0 Client Credentials flow.
     """
 
-    refreshUrl: str | None = None
+    refresh_url: str | None = None
     """
     The URL to be used for obtaining refresh tokens. This MUST be a URL.
     """
@@ -185,7 +185,7 @@ class ClientCredentialsOAuthFlow(A2ABaseModel):
     The available scopes for the OAuth2 security scheme. A map between the scope
     name and a short description for it.
     """
-    tokenUrl: str
+    token_url: str
     """
     The token URL to be used for this flow. This MUST be a URL.
     """
@@ -244,7 +244,7 @@ class DeleteTaskPushNotificationConfigParams(A2ABaseModel):
     """
     Optional metadata associated with the request.
     """
-    pushNotificationConfigId: str
+    push_notification_config_id: str
     """
     The ID of the push notification configuration to delete.
     """
@@ -299,7 +299,7 @@ class FileBase(A2ABaseModel):
     Defines base properties for a file.
     """
 
-    mimeType: str | None = None
+    mime_type: str | None = None
     """
     The MIME type of the file (e.g., "application/pdf").
     """
@@ -318,7 +318,7 @@ class FileWithBytes(A2ABaseModel):
     """
     The base64-encoded content of the file.
     """
-    mimeType: str | None = None
+    mime_type: str | None = None
     """
     The MIME type of the file (e.g., "application/pdf").
     """
@@ -333,7 +333,7 @@ class FileWithUri(A2ABaseModel):
     Represents a file with its content located at a specific URI.
     """
 
-    mimeType: str | None = None
+    mime_type: str | None = None
     """
     The MIME type of the file (e.g., "application/pdf").
     """
@@ -360,7 +360,7 @@ class GetTaskPushNotificationConfigParams(A2ABaseModel):
     """
     Optional metadata associated with the request.
     """
-    pushNotificationConfigId: str | None = None
+    push_notification_config_id: str | None = None
     """
     The ID of the push notification configuration to retrieve.
     """
@@ -371,7 +371,7 @@ class HTTPAuthSecurityScheme(A2ABaseModel):
     Defines a security scheme using HTTP authentication.
     """
 
-    bearerFormat: str | None = None
+    bearer_format: str | None = None
     """
     A hint to the client to identify how the bearer token is formatted (e.g., "JWT").
     This is primarily for documentation purposes.
@@ -397,11 +397,11 @@ class ImplicitOAuthFlow(A2ABaseModel):
     Defines configuration details for the OAuth 2.0 Implicit flow.
     """
 
-    authorizationUrl: str
+    authorization_url: str
     """
     The authorization URL to be used for this flow. This MUST be a URL.
     """
-    refreshUrl: str | None = None
+    refresh_url: str | None = None
     """
     The URL to be used for obtaining refresh tokens. This MUST be a URL.
     """
@@ -670,7 +670,7 @@ class OpenIdConnectSecurityScheme(A2ABaseModel):
     """
     An optional description for the security scheme.
     """
-    openIdConnectUrl: str
+    open_id_connect_url: str
     """
     The OpenID Connect Discovery URL for the OIDC provider's metadata.
     """
@@ -696,7 +696,7 @@ class PasswordOAuthFlow(A2ABaseModel):
     Defines configuration details for the OAuth 2.0 Resource Owner Password flow.
     """
 
-    refreshUrl: str | None = None
+    refresh_url: str | None = None
     """
     The URL to be used for obtaining refresh tokens. This MUST be a URL.
     """
@@ -705,7 +705,7 @@ class PasswordOAuthFlow(A2ABaseModel):
     The available scopes for the OAuth2 security scheme. A map between the scope
     name and a short description for it.
     """
-    tokenUrl: str
+    token_url: str
     """
     The token URL to be used for this flow. This MUST be a URL.
     """
@@ -841,11 +841,11 @@ class TaskPushNotificationConfig(A2ABaseModel):
     A container associating a push notification configuration with a specific task.
     """
 
-    pushNotificationConfig: PushNotificationConfig
+    push_notification_config: PushNotificationConfig
     """
     The push notification configuration for this task.
     """
-    taskId: str
+    task_id: str
     """
     The ID of the task.
     """
@@ -856,7 +856,7 @@ class TaskQueryParams(A2ABaseModel):
     Defines parameters for querying a task, with an option to limit history length.
     """
 
-    historyLength: int | None = None
+    history_length: int | None = None
     """
     The number of most recent messages from the task's history to retrieve.
     """
@@ -990,11 +990,11 @@ class AgentCapabilities(A2ABaseModel):
     """
     A list of protocol extensions supported by the agent.
     """
-    pushNotifications: bool | None = None
+    push_notifications: bool | None = None
     """
     Indicates if the agent supports sending push notifications for asynchronous task updates.
     """
-    stateTransitionHistory: bool | None = None
+    state_transition_history: bool | None = None
     """
     Indicates if the agent provides a history of state transitions for a task.
     """
@@ -1170,7 +1170,7 @@ class MessageSendConfiguration(A2ABaseModel):
     Defines configuration options for a `message/send` or `message/stream` request.
     """
 
-    acceptedOutputModes: list[str] | None = None
+    accepted_output_modes: list[str] | None = None
     """
     A list of output MIME types the client is prepared to accept in the response.
     """
@@ -1178,11 +1178,11 @@ class MessageSendConfiguration(A2ABaseModel):
     """
     If true, the client will wait for the task to complete. The server may reject this if the task is long-running.
     """
-    historyLength: int | None = None
+    history_length: int | None = None
     """
     The number of most recent messages from the task's history to retrieve in the response.
     """
-    pushNotificationConfig: PushNotificationConfig | None = None
+    push_notification_config: PushNotificationConfig | None = None
     """
     Configuration for the agent to send push notifications for updates after the initial response.
     """
@@ -1193,11 +1193,11 @@ class OAuthFlows(A2ABaseModel):
     Defines the configuration for the supported OAuth 2.0 flows.
     """
 
-    authorizationCode: AuthorizationCodeOAuthFlow | None = None
+    authorization_code: AuthorizationCodeOAuthFlow | None = None
     """
     Configuration for the OAuth Authorization Code flow. Previously called accessCode in OpenAPI 2.0.
     """
-    clientCredentials: ClientCredentialsOAuthFlow | None = None
+    client_credentials: ClientCredentialsOAuthFlow | None = None
     """
     Configuration for the OAuth Client Credentials flow. Previously called application in OpenAPI 2.0.
     """
@@ -1268,7 +1268,7 @@ class Artifact(A2ABaseModel):
     Represents a file, data structure, or other resource generated by an agent during a task.
     """
 
-    artifactId: str
+    artifact_id: str
     """
     A unique identifier for the artifact within the scope of the task.
     """
@@ -1332,7 +1332,7 @@ class Message(A2ABaseModel):
     Represents a single message in the conversation between a user and an agent.
     """
 
-    contextId: str | None = None
+    context_id: str | None = None
     """
     The context identifier for this message, used to group related interactions.
     """
@@ -1344,7 +1344,7 @@ class Message(A2ABaseModel):
     """
     The type of this object, used as a discriminator. Always 'message' for a Message.
     """
-    messageId: str
+    message_id: str
     """
     A unique identifier for the message, typically a UUID, generated by the sender.
     """
@@ -1357,7 +1357,7 @@ class Message(A2ABaseModel):
     An array of content parts that form the message body. A message can be
     composed of multiple parts of different types (e.g., text and files).
     """
-    referenceTaskIds: list[str] | None = None
+    reference_task_ids: list[str] | None = None
     """
     A list of other task IDs that this message references for additional context.
     """
@@ -1365,7 +1365,7 @@ class Message(A2ABaseModel):
     """
     Identifies the sender of the message. `user` for the client, `agent` for the service.
     """
-    taskId: str | None = None
+    task_id: str | None = None
     """
     The identifier of the task this message is part of. Can be omitted for the first message of a new task.
     """
@@ -1501,7 +1501,7 @@ class TaskArtifactUpdateEvent(A2ABaseModel):
     """
     The artifact that was generated or updated.
     """
-    contextId: str
+    context_id: str
     """
     The context ID associated with the task.
     """
@@ -1509,7 +1509,7 @@ class TaskArtifactUpdateEvent(A2ABaseModel):
     """
     The type of this event, used as a discriminator. Always 'artifact-update'.
     """
-    lastChunk: bool | None = None
+    last_chunk: bool | None = None
     """
     If true, this is the final chunk of the artifact.
     """
@@ -1517,7 +1517,7 @@ class TaskArtifactUpdateEvent(A2ABaseModel):
     """
     Optional metadata for extensions.
     """
-    taskId: str
+    task_id: str
     """
     The ID of the task this artifact belongs to.
     """
@@ -1550,7 +1550,7 @@ class TaskStatusUpdateEvent(A2ABaseModel):
     This is typically used in streaming or subscription models.
     """
 
-    contextId: str
+    context_id: str
     """
     The context ID associated with the task.
     """
@@ -1570,7 +1570,7 @@ class TaskStatusUpdateEvent(A2ABaseModel):
     """
     The new status of the task.
     """
-    taskId: str
+    task_id: str
     """
     The ID of the task that was updated.
     """
@@ -1612,7 +1612,7 @@ class AgentCard(A2ABaseModel):
     communication methods, and security requirements.
     """
 
-    additionalInterfaces: list[AgentInterface] | None = None
+    additional_interfaces: list[AgentInterface] | None = None
     """
     A list of additional supported interfaces (transport and URL combinations).
     A client can use any of these to communicate with the agent.
@@ -1621,12 +1621,12 @@ class AgentCard(A2ABaseModel):
     """
     A declaration of optional capabilities supported by the agent.
     """
-    defaultInputModes: list[str]
+    default_input_modes: list[str]
     """
     Default set of supported input MIME types for all skills, which can be
     overridden on a per-skill basis.
     """
-    defaultOutputModes: list[str]
+    default_output_modes: list[str]
     """
     Default set of supported output MIME types for all skills, which can be
     overridden on a per-skill basis.
@@ -1638,11 +1638,11 @@ class AgentCard(A2ABaseModel):
     A human-readable description of the agent, assisting users and other agents
     in understanding its purpose.
     """
-    documentationUrl: str | None = None
+    documentation_url: str | None = None
     """
     An optional URL to the agent's documentation.
     """
-    iconUrl: str | None = None
+    icon_url: str | None = None
     """
     An optional URL to an icon for the agent.
     """
@@ -1650,11 +1650,11 @@ class AgentCard(A2ABaseModel):
     """
     A human-readable name for the agent.
     """
-    preferredTransport: str | None = None
+    preferred_transport: str | None = None
     """
     The transport protocol for the preferred endpoint. Defaults to 'JSONRPC' if not specified.
     """
-    protocolVersion: str | None = '0.2.6'
+    protocol_version: str | None = '0.2.6'
     """
     The version of the A2A protocol this agent supports.
     """
@@ -1667,7 +1667,7 @@ class AgentCard(A2ABaseModel):
     A list of security requirement objects that apply to all agent interactions. Each object
     lists security schemes that can be used. Follows the OpenAPI 3.0 Security Requirement Object.
     """
-    securitySchemes: dict[str, SecurityScheme] | None = None
+    security_schemes: dict[str, SecurityScheme] | None = None
     """
     A declaration of the security schemes available to authorize requests. The key is the
     scheme name. Follows the OpenAPI 3.0 Security Scheme Object.
@@ -1676,7 +1676,7 @@ class AgentCard(A2ABaseModel):
     """
     The set of skills, or distinct capabilities, that the agent can perform.
     """
-    supportsAuthenticatedExtendedCard: bool | None = None
+    supports_authenticated_extended_card: bool | None = None
     """
     If true, the agent can provide an extended agent card with additional details
     to authenticated users. Defaults to false.
@@ -1700,7 +1700,7 @@ class Task(A2ABaseModel):
     """
     A collection of artifacts generated by the agent during the execution of the task.
     """
-    contextId: str
+    context_id: str
     """
     A server-generated identifier for maintaining context across multiple related tasks or interactions.
     """
