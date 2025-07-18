@@ -5,8 +5,16 @@ import logging
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable
 
-import grpc
-import grpc.aio
+
+try:
+    import grpc
+    import grpc.aio
+except ImportError as e:
+    raise ImportError(
+        'GrpcHandler requires grpcio and grpcio-tools to be installed. '
+        'Install with: '
+        "'pip install a2a-sdk[grpc]'"
+    ) from e
 
 import a2a.grpc.a2a_pb2_grpc as a2a_grpc
 

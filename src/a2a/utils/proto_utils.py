@@ -30,6 +30,8 @@ class ToProto:
             content=[ToProto.part(p) for p in message.parts],
             context_id=message.context_id,
             task_id=message.task_id,
+            context_id=message.context_id or '',
+            task_id=message.task_id or '',
             role=cls.role(message.role),
             metadata=ToProto.metadata(message.metadata),
         )
@@ -438,8 +440,8 @@ class FromProto:
         return types.Message(
             message_id=message.message_id,
             parts=[FromProto.part(p) for p in message.content],
-            context_id=message.context_id,
-            task_id=message.task_id,
+            context_id=message.context_id or None,
+            task_id=message.task_id or None,
             role=FromProto.role(message.role),
             metadata=FromProto.metadata(message.metadata),
         )
