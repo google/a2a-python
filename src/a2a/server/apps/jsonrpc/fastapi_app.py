@@ -35,7 +35,7 @@ class A2AFastAPI(FastAPI):
     @override
     def openapi(self) -> dict[str, Any]:
         openapi_schema = super().openapi()
-        if not self.a2a_components_added:
+        if not self._a2a_components_added:
             a2a_request_schema = A2ARequest.model_json_schema(
                 ref_template='#/components/schemas/{model}'
             )
@@ -45,7 +45,7 @@ class A2AFastAPI(FastAPI):
             ).setdefault('schemas', {})
             component_schemas.update(defs)
             component_schemas['A2ARequest'] = a2a_request_schema
-            self.a2a_components_added = True
+            self._a2a_components_added = True
         return openapi_schema
 
 
