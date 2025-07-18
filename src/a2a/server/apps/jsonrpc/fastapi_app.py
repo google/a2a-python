@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 class A2AFastAPI(FastAPI):
     """A FastAPI application that adds A2A-specific OpenAPI components."""
 
-    a2a_components_added: bool = False
+    _a2a_components_added: bool = False
 
     @override
     def openapi(self) -> dict[str, Any]:
