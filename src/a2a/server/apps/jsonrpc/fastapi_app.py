@@ -1,15 +1,8 @@
 import logging
-import sys
 
 from typing import Any
 
 from fastapi import FastAPI
-
-
-if sys.version_info < (3, 12):  # pragma: no cover
-    from typing_extensions import override
-else:  # pragma: no cover
-    from typing import override
 
 from a2a.server.apps.jsonrpc.jsonrpc_app import (
     CallContextBuilder,
@@ -32,8 +25,8 @@ class A2AFastAPI(FastAPI):
 
     _a2a_components_added: bool = False
 
-    @override
     def openapi(self) -> dict[str, Any]:
+        """Generates the OpenAPI schema for the application."""
         openapi_schema = super().openapi()
         if not self._a2a_components_added:
             a2a_request_schema = A2ARequest.model_json_schema(
