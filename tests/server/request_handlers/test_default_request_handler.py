@@ -1779,3 +1779,85 @@ async def test_on_resubscribe_to_task_in_terminal_state(terminal_state):
         in exc_info.value.error.message
     )
     mock_task_store.get.assert_awaited_once_with(task_id)
+
+
+@pytest.mark.asyncio
+async def test_on_message_send_task_id_provided_but_task_not_found():
+    """Test on_message_send when taskId is provided but task doesn't exist."""
+    task_id = 'nonexistent_task'
+    mock_task_store = AsyncMock(spec=TaskStore)
+
+    request_handler = DefaultRequestHandler(
+        agent_executor=DummyAgentExecutor(), task_store=mock_task_store
+    )
+
+    params = MessageSendParams(
+        message=Message(
+            role=Role.user,
+            messageId='msg_nonexistent',
+            parts=[Part(root=TextPart(text='Hello'))],
+            taskId=task_id,
+            contextId='ctx1',
+        )
+    )
+
+    from a2a.utils.errors import ServerError
+
+    # Mock TaskManager.get_task to return None (task not found)
+    with patch(
+        'a2a.server.request_handlers.default_request_handler.TaskManager.get_task',
+        return_value=None,
+    ):
+        with pytest.raises(ServerError) as exc_info:
+            await request_handler.on_message_send(
+                params, create_server_call_context()
+            )
+
+    assert isinstance(exc_info.value.error, TaskNotFoundError)
+    assert exc_info.value.error.message
+    assert (
+        f'Task {task_id} was specified but does not exist'
+        in exc_info.value.error.message
+    )
+
+
+@pytest.mark.asyncio
+async def test_on_message_send_stream_task_id_provided_but_task_not_found():
+    """Test on_message_send_stream when taskId is provided but task doesn't exist."""
+    task_id = 'nonexistent_stream_task'
+    mock_task_store = AsyncMock(spec=TaskStore)
+
+    request_handler = DefaultRequestHandler(
+        agent_executor=DummyAgentExecutor(), task_store=mock_task_store
+    )
+
+    params = MessageSendParams(
+        message=Message(
+            role=Role.user,
+            messageId='msg_nonexistent_stream',
+            parts=[Part(root=TextPart(text='Hello'))],
+            taskId=task_id,
+            contextId='ctx1',
+        )
+    )
+
+    from a2a.utils.errors import ServerError
+
+    # Mock TaskManager.get_task to return None (task not found)
+    with patch(
+        'a2a.server.request_handlers.default_request_handler.TaskManager.get_task',
+        return_value=None,
+    ):
+        with pytest.raises(ServerError) as exc_info:
+            # Need to consume the async generator to trigger the error
+            async for _ in request_handler.on_message_send_stream(
+                params, create_server_call_context()
+            ):
+                pass
+
+    assert isinstance(exc_info.value.error, TaskNotFoundError)
+    assert exc_info.value.error.message
+    assert (
+        f'Task {task_id} was specified but does not exist'
+        in exc_info.value.error.message
+    )

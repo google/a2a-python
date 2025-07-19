@@ -200,6 +200,12 @@ class DefaultRequestHandler(RequestHandler):
                 )
 
             task = task_manager.update_with_message(params.message, task)
+        elif params.message.taskId:
+            raise ServerError(
+                error=TaskNotFoundError(
+                    message=f'Task {params.message.taskId} was specified but does not exist'
+                )
+            )
 
         # Build request context
         request_context = await self._request_context_builder.build(
