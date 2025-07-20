@@ -26,7 +26,7 @@ def new_task(request: Message) -> Task:
         raise ValueError('Message parts cannot be empty')
     for part in request.parts:
         if isinstance(part.root, TextPart) and not part.root.text:
-            raise ValueError('Message parts cannot have empty content')
+            raise ValueError('TextPart content cannot be empty')
 
     return Task(
         status=TaskStatus(state=TaskState.submitted),
