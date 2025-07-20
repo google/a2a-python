@@ -2,7 +2,7 @@
 
 import uuid
 
-from a2a.types import Artifact, Message, Task, TaskState, TaskStatus
+from a2a.types import Artifact, Message, Task, TaskState, TaskStatus, TextPart
 
 
 def new_task(request: Message) -> Task:
@@ -18,12 +18,15 @@ def new_task(request: Message) -> Task:
 
     Raises:
         TypeError: If the message role is None.
-        ValueError: If the message parts are empty.
+        ValueError: If the message parts are empty or if any part has empty content.
     """
     if not request.role:
         raise TypeError('Message role cannot be None')
     if not request.parts:
         raise ValueError('Message parts cannot be empty')
+    for part in request.parts:
+        if isinstance(part.root, TextPart) and not part.root.text:
+            raise ValueError('Message parts cannot have empty content')
 
     return Task(
         status=TaskStatus(state=TaskState.submitted),
