@@ -538,12 +538,6 @@ async def test_concurrent_updates_race_condition(event_queue):
 
 
 @pytest.mark.asyncio
-async def test_reject_invalid_task_id(event_queue):
-    """Test rejecting a task with an invalid ID is handled gracefully."""
-    pass
-
-
-@pytest.mark.asyncio
 async def test_reject_concurrently_with_complete(event_queue):
     """Test for race conditions when reject and complete are called concurrently."""
     task_updater = TaskUpdater(
