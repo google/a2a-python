@@ -144,7 +144,7 @@ class TestTask(unittest.TestCase):
                     messageId=str(uuid.uuid4()),
                 )
             )
-            
+
     def test_new_task_invalid_message_empty_content(self):
         with self.assertRaises(ValueError):
             new_task(
