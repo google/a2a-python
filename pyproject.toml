@@ -40,10 +40,10 @@ encryption = ["cryptography>=43.0.0"]
 grpc = ["grpcio>=1.60", "grpcio-tools>=1.60", "grpcio_reflection>=1.7.0", "protobuf==5.29.5", "google-api-core>=1.26.0"]
 
 [project.urls]
-homepage = "https://a2aproject.github.io/A2A/"
+homepage = "https://a2a-protocol.org/"
 repository = "https://github.com/a2aproject/a2a-python"
 changelog = "https://github.com/a2aproject/a2a-python/blob/main/CHANGELOG.md"
-documentation = "https://a2aproject.github.io/A2A/sdk/python/"
+documentation = "https://a2a-protocol.org/sdk/python/"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/a2a"]
