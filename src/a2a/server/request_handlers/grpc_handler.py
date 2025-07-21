@@ -3,7 +3,7 @@ import contextlib
 import logging
 
 from abc import ABC, abstractmethod
-from collections.abc import AsyncIterable
+from collections.abc import AsyncIterable, Sequence
 
 
 try:
@@ -16,10 +16,13 @@ except ImportError as e:
         "'pip install a2a-sdk[grpc]'"
     ) from e
 
+from grpc.aio import Metadata
+
 import a2a.grpc.a2a_pb2_grpc as a2a_grpc
 
 from a2a import types
 from a2a.auth.user import UnauthenticatedUser
+from a2a.extensions.common import HTTP_EXTENSION_HEADER
 from a2a.grpc import a2a_pb2
 from a2a.server.context import ServerCallContext
 from a2a.server.request_handlers.request_handler import RequestHandler
@@ -42,6 +45,25 @@ class CallContextBuilder(ABC):
         """Builds a ServerCallContext from a gRPC Request."""
 
 
+def _get_metadata_value(
+    context: grpc.aio.ServicerContext, key: str
+) -> list[str]:
+    md = context.invocation_metadata
+    vs = []
+    if isinstance(md, Metadata):
+        vs = [
+            e if isinstance(e, str) else e.decode('utf-8')
+            for e in md.get_all(key)
+        ]
+    elif isinstance(md, Sequence):
+        vs = [
+            e if isinstance(e, str) else e.decode('utf-8')
+            for (k, e) in md
+            if k == key.lower()
+        ]
+    return vs
+
+
 class DefaultCallContextBuilder(CallContextBuilder):
     """A default implementation of CallContextBuilder."""
 
@@ -51,7 +73,13 @@ class DefaultCallContextBuilder(CallContextBuilder):
         state = {}
         with contextlib.suppress(Exception):
             state['grpc_context'] = context
-        return ServerCallContext(user=user, state=state)
+        return ServerCallContext(
+            user=user,
+            state=state,
+            requested_extensions=set(
+                _get_metadata_value(context, HTTP_EXTENSION_HEADER)
+            ),
+        )
 
 
 class GrpcHandler(a2a_grpc.A2AServiceServicer):
@@ -102,6 +130,7 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
             task_or_message = await self.request_handler.on_message_send(
                 a2a_request, server_context
             )
+            self._set_extension_metadata(context, server_context)
             return proto_utils.ToProto.task_or_message(task_or_message)
         except ServerError as e:
             await self.abort_context(e, context)
@@ -140,6 +169,7 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
                 a2a_request, server_context
             ):
                 yield proto_utils.ToProto.stream_response(event)
+            self._set_extension_metadata(context, server_context)
         except ServerError as e:
             await self.abort_context(e, context)
         return
@@ -371,3 +401,16 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
                     grpc.StatusCode.UNKNOWN,
                     f'Unknown error type: {error.error}',
                 )
+
+    def _set_extension_metadata(
+        self,
+        context: grpc.aio.ServicerContext,
+        server_context: ServerCallContext,
+    ) -> None:
+        if server_context.activated_extensions:
+            context.set_trailing_metadata(
+                [
+                    (HTTP_EXTENSION_HEADER, e)
+                    for e in server_context.activated_extensions
+                ]
+            )
