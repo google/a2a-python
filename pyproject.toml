@@ -43,7 +43,7 @@ grpc = ["grpcio>=1.60", "grpcio-tools>=1.60", "grpcio_reflection>=1.7.0", "proto
 homepage = "https://a2a-protocol.org/"
 repository = "https://github.com/a2aproject/a2a-python"
 changelog = "https://github.com/a2aproject/a2a-python/blob/main/CHANGELOG.md"
-documentation = "https://a2a-protocol.org/sdk/python/"
+documentation = "https://a2a-protocol.org/latest/sdk/python/"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/a2a"]
