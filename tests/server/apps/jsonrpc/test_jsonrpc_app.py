@@ -81,7 +81,7 @@ class TestJSONRPCApplicationSetup:  # Renamed to avoid conflict
         # Ensure 'url' attribute exists on the mock_agent_card, as it's accessed in __init__
         mock_agent_card.url = 'http://mockurl.com'
         # Ensure 'supportsAuthenticatedExtendedCard' attribute exists
-        mock_agent_card.supportsAuthenticatedExtendedCard = False
+        mock_agent_card.supports_authenticated_extended_card = False
         mock_agent_card.capabilities = AgentCapabilities(streaming=True)
 
         # This will fail at definition time if an abstract method is not implemented

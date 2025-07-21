@@ -81,7 +81,6 @@ exclude = [
     "node_modules",
     "venv",
     "*/migrations/*",
-    "noxfile.py",
     "src/a2a/grpc/**",
     "tests/**",
 ]

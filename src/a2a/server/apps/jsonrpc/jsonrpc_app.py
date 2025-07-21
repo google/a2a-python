@@ -145,11 +145,11 @@ class JSONRPCApplication(ABC):
             agent_card=agent_card, request_handler=http_handler
         )
         if (
-            self.agent_card.supportsAuthenticatedExtendedCard
+            self.agent_card.supports_authenticated_extended_card
             and self.extended_agent_card is None
         ):
             logger.error(
-                'AgentCard.supportsAuthenticatedExtendedCard is True, but no extended_agent_card was provided. The /agent/authenticatedExtendedCard endpoint will return 404.'
+                'AgentCard.supports_authenticated_extended_card is True, but no extended_agent_card was provided. The /agent/authenticatedExtendedCard endpoint will return 404.'
             )
         self._context_builder = context_builder or DefaultCallContextBuilder()
 
@@ -440,7 +440,7 @@ class JSONRPCApplication(ABC):
         self, request: Request
     ) -> JSONResponse:
         """Handles GET requests for the authenticated extended agent card."""
-        if not self.agent_card.supportsAuthenticatedExtendedCard:
+        if not self.agent_card.supports_authenticated_extended_card:
             return JSONResponse(
                 {'error': 'Extended agent card not supported or not enabled.'},
                 status_code=404,
@@ -454,7 +454,7 @@ class JSONRPCApplication(ABC):
                     by_alias=True,
                 )
             )
-        # If supportsAuthenticatedExtendedCard is true, but no specific
+        # If supports_authenticated_extended_card is true, but no specific
         # extended_agent_card was provided during server initialization,
         # return a 404
         return JSONResponse(
