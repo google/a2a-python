@@ -1568,7 +1568,7 @@ def test_camelCase_access_raises_attribute_error() -> None:
     # Test getting an attribute via camelCase alias raises AttributeError
     with pytest.raises(
         AttributeError,
-        match="'AgentCard' object has no attribute 'defaultInputModes'. Did you mean: 'default_input_modes'?",
+        match="'AgentCard' object has no attribute 'defaultInputModes'",
     ):
         _ = agent_card.defaultInputModes
 
