@@ -22,6 +22,7 @@ from a2a.types import (
     FilePart,
     FileWithBytes,
     FileWithUri,
+    GetTaskPushNotificationConfigParams,
     GetTaskPushNotificationConfigRequest,
     GetTaskPushNotificationConfigResponse,
     GetTaskPushNotificationConfigSuccessResponse,
@@ -71,7 +72,6 @@ from a2a.types import (
     TaskStatusUpdateEvent,
     TextPart,
     UnsupportedOperationError,
-    GetTaskPushNotificationConfigParams,
 )
 
 

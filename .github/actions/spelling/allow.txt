@@ -20,6 +20,7 @@ JSONRPCt
 Llm
 POSTGRES
 RUF
+SLF
 aconnect
 adk
 agentic

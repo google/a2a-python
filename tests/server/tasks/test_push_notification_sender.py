@@ -1,13 +1,12 @@
-from a2a.server.tasks.base_push_notification_sender import (
-    BasePushNotificationSender,
-)
-
 import unittest
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 
+from a2a.server.tasks.base_push_notification_sender import (
+    BasePushNotificationSender,
+)
 from a2a.types import (
     PushNotificationConfig,
     Task,
