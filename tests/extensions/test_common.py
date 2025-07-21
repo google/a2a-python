@@ -3,8 +3,12 @@ from a2a.types import AgentCard, AgentExtension, AgentCapabilities
 
 
 def test_find_extension_by_uri():
-    ext1 = AgentExtension(uri='foo', name='Foo', description='The Foo extension')
-    ext2 = AgentExtension(uri='bar', name='Bar', description='The Bar extension')
+    ext1 = AgentExtension(
+        uri='foo', name='Foo', description='The Foo extension'
+    )
+    ext2 = AgentExtension(
+        uri='bar', name='Bar', description='The Bar extension'
+    )
     card = AgentCard(
         agent_id='test-agent',
         name='Test Agent',
