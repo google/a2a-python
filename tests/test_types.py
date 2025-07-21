@@ -1553,4 +1553,6 @@ def test_camelCase() -> None:
 
     agent_card.supportsAuthenticatedExtendedCard = False
 
+    default_input_modes = agent_card.defaultInputModes
     assert agent_card
+    assert default_input_modes == ['text']

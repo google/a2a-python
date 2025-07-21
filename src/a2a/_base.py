@@ -26,8 +26,9 @@ class A2ABaseModel(BaseModel):
     Provides a common configuration (e.g., alias-based population) and
     serves as the foundation for future extensions or shared utilities.
 
-    This implementation overrides __setattr__ to allow setting fields
-    using their camelCase alias for backward compatibility.
+    This implementation overrides __setattr__ and __getattr__ to allow
+    getting and setting fields using their camelCase alias for backward
+    compatibility.
     """
 
     model_config = ConfigDict(
@@ -40,31 +41,48 @@ class A2ABaseModel(BaseModel):
 
     # Cache for the alias -> field_name mapping.
     # We use a ClassVar so it's created once per class, not per instance.
-    # The type hint is now corrected to be `ClassVar[<optional_type>]`.
     _alias_to_field_name_map: ClassVar[dict[str, str] | None] = None
 
-    def __setattr__(self, name: str, value: Any) -> None:
-        """Allow setting attributes via their camelCase alias.
-
-        This is overridden to provide backward compatibility for code that
-        sets model fields using aliases after initialization.
-        """
-        # Build the alias-to-name mapping on first use and cache it.
-        if self.__class__._alias_to_field_name_map is None:  # noqa: SLF001
-            # Using a lock or other mechanism could make this more thread-safe
-            # for highly concurrent applications, but this is fine for most cases.
-            self.__class__._alias_to_field_name_map = {  # noqa: SLF001
+    @classmethod
+    def _initialize_alias_map(cls) -> None:
+        """Build and cache the alias-to-field-name mapping."""
+        if cls._alias_to_field_name_map is None:
+            cls._alias_to_field_name_map = {
                 field.alias: field_name
-                for field_name, field in self.model_fields.items()
+                for field_name, field in cls.model_fields.items()
                 if field.alias is not None
             }
 
-        # If the attribute name is a known alias, redirect the assignment
-        # to the actual (snake_case) field name.
+    def __setattr__(self, name: str, value: Any) -> None:
+        """Allow setting attributes via their camelCase alias."""
+        self.__class__._initialize_alias_map()  # noqa: SLF001
+        assert self.__class__._alias_to_field_name_map is not None  # noqa: SLF001
+
         field_name = self.__class__._alias_to_field_name_map.get(name)  # noqa: SLF001
         if field_name:
-            # Use the actual field name for the assignment
+            # If the name is an alias, set the actual (snake_case) attribute.
             super().__setattr__(field_name, value)
         else:
-            # Otherwise, perform a standard attribute assignment
+            # Otherwise, perform a standard attribute assignment.
             super().__setattr__(name, value)
+
+    def __getattr__(self, name: str) -> Any:
+        """Allow getting attributes via their camelCase alias.
+
+        This method is called as a fallback when the attribute 'name' is
+        not found through normal mechanisms.
+        """
+        self.__class__._initialize_alias_map()  # noqa: SLF001
+        # The map must exist at this point, so we can assert it for type checkers
+        assert self.__class__._alias_to_field_name_map is not None  # noqa: SLF001
+
+        field_name = self.__class__._alias_to_field_name_map.get(name)  # noqa: SLF001
+        if field_name:
+            # If the name is an alias, get the actual (snake_case) attribute.
+            return getattr(self, field_name)
+
+        # If the name is not a known alias, it's a genuine missing attribute.
+        # It is crucial to raise AttributeError to maintain normal Python behavior.
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{name}'"
+        )
