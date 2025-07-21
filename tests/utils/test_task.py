@@ -145,6 +145,16 @@ class TestTask(unittest.TestCase):
                 )
             )
 
+    def test_new_task_invalid_message_empty_content(self):
+        with self.assertRaises(ValueError):
+            new_task(
+                Message(
+                    role=Role.user,
+                    parts=[Part(root=TextPart(text=''))],
+                    messageId=str(uuid.uuid4()),
+                )
+            )
+
     def test_new_task_invalid_message_none_role(self):
         with self.assertRaises(TypeError):
             msg = Message.model_construct(
