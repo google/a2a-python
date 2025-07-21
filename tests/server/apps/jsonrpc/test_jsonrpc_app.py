@@ -82,7 +82,6 @@ class TestJSONRPCApplicationSetup:  # Renamed to avoid conflict
         mock_agent_card.url = 'http://mockurl.com'
         # Ensure 'supportsAuthenticatedExtendedCard' attribute exists
         mock_agent_card.supports_authenticated_extended_card = False
-        mock_agent_card.capabilities = AgentCapabilities(streaming=True)
 
         # This will fail at definition time if an abstract method is not implemented
         with pytest.raises(
@@ -120,7 +119,7 @@ class TestJSONRPCExtensions:
     def test_app(self, mock_handler):
         mock_agent_card = MagicMock(spec=AgentCard)
         mock_agent_card.url = 'http://mockurl.com'
-        mock_agent_card.supportsAuthenticatedExtendedCard = False
+        mock_agent_card.supports_authenticated_extended_card = False
 
         return A2AStarletteApplication(
             agent_card=mock_agent_card, http_handler=mock_handler
