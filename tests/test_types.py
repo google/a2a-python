@@ -1551,8 +1551,22 @@ def test_camelCase() -> None:
         supportsAuthenticatedExtendedCard=True,
     )
 
-    agent_card.supportsAuthenticatedExtendedCard = False
+    # Test setting an attribute via camelCase alias
+    # We expect a DeprecationWarning with a specific message
+    with pytest.warns(
+        DeprecationWarning,
+        match="Setting field 'supportsAuthenticatedExtendedCard'",
+    ):
+        agent_card.supportsAuthenticatedExtendedCard = False
 
-    default_input_modes = agent_card.defaultInputModes
-    assert agent_card
+    # Test getting an attribute via camelCase alias
+    # We expect another DeprecationWarning with a specific message
+    with pytest.warns(
+        DeprecationWarning, match="Accessing field 'defaultInputModes'"
+    ):
+        default_input_modes = agent_card.defaultInputModes
+
+    # Assert the functionality still works as expected
+    assert agent_card.supports_authenticated_extended_card is False
     assert default_input_modes == ['text']
+    assert agent_card.default_input_modes == ['text']
