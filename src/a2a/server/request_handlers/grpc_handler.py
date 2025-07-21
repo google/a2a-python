@@ -1,12 +1,15 @@
 # ruff: noqa: N802
 import contextlib
 import logging
+
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Sequence
+
 
 try:
     import grpc
     import grpc.aio
+
     from grpc.aio import Metadata
 except ImportError as e:
     raise ImportError(
@@ -16,6 +19,7 @@ except ImportError as e:
     ) from e
 
 import a2a.grpc.a2a_pb2_grpc as a2a_grpc
+
 from a2a import types
 from a2a.auth.user import UnauthenticatedUser
 from a2a.extensions.common import (
@@ -29,6 +33,7 @@ from a2a.types import AgentCard, TaskNotFoundError
 from a2a.utils import proto_utils
 from a2a.utils.errors import ServerError
 from a2a.utils.helpers import validate, validate_async_generator
+
 
 logger = logging.getLogger(__name__)
 
