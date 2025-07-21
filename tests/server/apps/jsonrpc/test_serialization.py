@@ -187,9 +187,7 @@ def test_handle_unicode_characters(agent_card_with_api_key: AgentCard):
     assert data['result']['parts'][0]['text'] == f'Received: {unicode_text}'
 
 
-def test_fastapi_sub_application(
-    agent_card_with_api_key: AgentCard,
-):
+def test_fastapi_sub_application(agent_card_with_api_key: AgentCard):
     """
     Tests that the A2AFastAPIApplication endpoint correctly passes the url in sub-application.
     """
