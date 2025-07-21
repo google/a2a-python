@@ -1798,10 +1798,10 @@ async def test_on_message_send_task_id_provided_but_task_not_found():
     params = MessageSendParams(
         message=Message(
             role=Role.user,
-            messageId='msg_nonexistent',
+            message_id='msg_nonexistent',
             parts=[Part(root=TextPart(text='Hello'))],
             task_id=task_id,
-            contextId='ctx1',
+            context_id='ctx1',
         )
     )
 
@@ -1838,10 +1838,10 @@ async def test_on_message_send_stream_task_id_provided_but_task_not_found():
     params = MessageSendParams(
         message=Message(
             role=Role.user,
-            messageId='msg_nonexistent_stream',
+            message_id='msg_nonexistent_stream',
             parts=[Part(root=TextPart(text='Hello'))],
             task_id=task_id,
-            contextId='ctx1',
+            context_id='ctx1',
         )
     )
 
