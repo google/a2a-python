@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from starlette.applications import Starlette
 from starlette.testclient import TestClient
 
 # Attempt to import StarletteBaseUser, fallback to MagicMock if not available
@@ -21,10 +20,10 @@ from a2a.server.request_handlers.request_handler import (
     RequestHandler,
 )  # For mock spec
 from a2a.types import (
-    AgentCapabilities,
     AgentCard,
     Message,
     MessageSendParams,
+    Part,
     Role,
     SendMessageRequest,
     SendMessageResponse,
@@ -107,9 +106,9 @@ class TestJSONRPCExtensions:
             root=SendMessageSuccessResponse(
                 id='1',
                 result=Message(
-                    messageId='test',
+                    message_id='test',
                     role=Role.agent,
-                    parts=[TextPart(text='response message')],
+                    parts=[Part(TextPart(text='response message'))],
                 ),
             )
         )
@@ -138,9 +137,9 @@ class TestJSONRPCExtensions:
                 id='1',
                 params=MessageSendParams(
                     message=Message(
-                        messageId='1',
+                        message_id='1',
                         role=Role.user,
-                        parts=[TextPart(text='hi')],
+                        parts=[Part(TextPart(text='hi'))],
                     )
                 ),
             ).model_dump(),
@@ -163,9 +162,9 @@ class TestJSONRPCExtensions:
                 id='1',
                 params=MessageSendParams(
                     message=Message(
-                        messageId='1',
+                        message_id='1',
                         role=Role.user,
-                        parts=[TextPart(text='hi')],
+                        parts=[Part(TextPart(text='hi'))],
                     )
                 ),
             ).model_dump(),
@@ -190,9 +189,9 @@ class TestJSONRPCExtensions:
                 id='1',
                 params=MessageSendParams(
                     message=Message(
-                        messageId='1',
+                        message_id='1',
                         role=Role.user,
-                        parts=[TextPart(text='hi')],
+                        parts=[Part(TextPart(text='hi'))],
                     )
                 ),
             ).model_dump(),
@@ -217,9 +216,9 @@ class TestJSONRPCExtensions:
                 id='1',
                 params=MessageSendParams(
                     message=Message(
-                        messageId='1',
+                        message_id='1',
                         role=Role.user,
-                        parts=[TextPart(text='hi')],
+                        parts=[Part(TextPart(text='hi'))],
                     )
                 ),
             ).model_dump(),
@@ -238,9 +237,9 @@ class TestJSONRPCExtensions:
                 root=SendMessageSuccessResponse(
                     id='1',
                     result=Message(
-                        messageId='test',
+                        message_id='test',
                         role=Role.agent,
-                        parts=[TextPart(text='response message')],
+                        parts=[Part(TextPart(text='response message'))],
                     ),
                 )
             )
@@ -253,9 +252,9 @@ class TestJSONRPCExtensions:
                 id='1',
                 params=MessageSendParams(
                     message=Message(
-                        messageId='1',
+                        message_id='1',
                         role=Role.user,
-                        parts=[TextPart(text='hi')],
+                        parts=[Part(TextPart(text='hi'))],
                     )
                 ),
             ).model_dump(),

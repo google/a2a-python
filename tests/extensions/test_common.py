@@ -33,8 +33,8 @@ def test_find_extension_by_uri():
         version='1.0',
         url='http://test.com',
         skills=[],
-        defaultInputModes=['text/plain'],
-        defaultOutputModes=['text/plain'],
+        default_input_modes=['text/plain'],
+        default_output_modes=['text/plain'],
         capabilities=AgentCapabilities(extensions=[ext1, ext2]),
     )
 
@@ -50,8 +50,8 @@ def test_find_extension_by_uri_no_extensions():
         version='1.0',
         url='http://test.com',
         skills=[],
-        defaultInputModes=['text/plain'],
-        defaultOutputModes=['text/plain'],
+        default_input_modes=['text/plain'],
+        default_output_modes=['text/plain'],
         capabilities=AgentCapabilities(extensions=None),
     )
 
