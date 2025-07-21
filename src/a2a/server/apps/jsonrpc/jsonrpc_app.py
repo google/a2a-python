@@ -392,7 +392,7 @@ class JSONRPCApplication(ABC):
         """
         headers = {}
         if exts := context.activated_extensions:
-            headers[HTTP_EXTENSION_HEADER] = ', '.join(exts)
+            headers[HTTP_EXTENSION_HEADER] = ', '.join(sorted(exts))
         if isinstance(handler_result, AsyncGenerator):
             # Result is a stream of SendStreamingMessageResponse objects
             async def event_generator(

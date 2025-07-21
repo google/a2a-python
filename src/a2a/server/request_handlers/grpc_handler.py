@@ -52,19 +52,13 @@ def _get_metadata_value(
     context: grpc.aio.ServicerContext, key: str
 ) -> list[str]:
     md = context.invocation_metadata
-    vs = []
+    raw_values: list[str | bytes] = []
     if isinstance(md, Metadata):
-        vs = [
-            e if isinstance(e, str) else e.decode('utf-8')
-            for e in md.get_all(key)
-        ]
+        raw_values = md.get_all(key)
     elif isinstance(md, Sequence):
-        vs = [
-            e if isinstance(e, str) else e.decode('utf-8')
-            for (k, e) in md
-            if k == key.lower()
-        ]
-    return vs
+        lower_key = key.lower()
+        raw_values = [e for (k, e) in md if k == lower_key]
+    return [e if isinstance(e, str) else e.decode('utf-8') for e in raw_values]
 
 
 class DefaultCallContextBuilder(CallContextBuilder):
@@ -414,6 +408,6 @@ class GrpcHandler(a2a_grpc.A2AServiceServicer):
             context.set_trailing_metadata(
                 [
                     (HTTP_EXTENSION_HEADER, e)
-                    for e in server_context.activated_extensions
+                    for e in sorted(server_context.activated_extensions)
                 ]
             )
