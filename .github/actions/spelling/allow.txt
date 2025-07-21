@@ -1,5 +1,6 @@
 ACard
 AClient
+ACMRTUXB
 aconnect
 adk
 AError
@@ -62,6 +63,7 @@ postgresql
 protoc
 pyi
 pypistats
+pyupgrade
 pyversions
 respx
 resub
