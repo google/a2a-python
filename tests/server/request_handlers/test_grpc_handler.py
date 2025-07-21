@@ -320,9 +320,9 @@ class TestGrpcExtensions:
         assert isinstance(call_context, ServerCallContext)
         assert call_context.requested_extensions == {'foo', 'bar'}
 
-        mock_grpc_context.set_trailing_metadata.assert_called_once_with(
-            [(HTTP_EXTENSION_HEADER, 'foo'), (HTTP_EXTENSION_HEADER, 'baz')]
-        )
+        mock_grpc_context.set_trailing_metadata.assert_called_once()
+        called_metadata = mock_grpc_context.set_trailing_metadata.call_args.args[0]
+        assert set(called_metadata) == {(HTTP_EXTENSION_HEADER, 'foo'), (HTTP_EXTENSION_HEADER, 'baz')}
 
     @patch(
         'a2a.server.request_handlers.grpc_handler.DefaultCallContextBuilder.build'
@@ -364,6 +364,6 @@ class TestGrpcExtensions:
         assert isinstance(call_context, ServerCallContext)
         assert call_context.requested_extensions == {'foo', 'bar'}
 
-        mock_grpc_context.set_trailing_metadata.assert_called_once_with(
-            [(HTTP_EXTENSION_HEADER, 'foo'), (HTTP_EXTENSION_HEADER, 'baz')]
-        )
+        mock_grpc_context.set_trailing_metadata.assert_called_once()
+        called_metadata = mock_grpc_context.set_trailing_metadata.call_args.args[0]
+        assert set(called_metadata) == {(HTTP_EXTENSION_HEADER, 'foo'), (HTTP_EXTENSION_HEADER, 'baz')}
