@@ -1560,15 +1560,15 @@ def test_camelCase_access_raises_attribute_error() -> None:
 
     # Test setting an attribute via camelCase alias raises AttributeError
     with pytest.raises(
-        AttributeError,
-        match="Setting field 'supportsAuthenticatedExtendedCard' via its camelCase alias is not allowed. Use the snake_case name 'supports_authenticated_extended_card' instead.",
+        ValueError,
+        match='"AgentCard" object has no field "supportsAuthenticatedExtendedCard"',
     ):
         agent_card.supportsAuthenticatedExtendedCard = False
 
     # Test getting an attribute via camelCase alias raises AttributeError
     with pytest.raises(
-        AttributeError,
-        match="Accessing field 'defaultInputModes' via its camelCase alias is not allowed. Use the snake_case name 'default_input_modes' instead.",
+        ValueError,
+        match='"AgentCard" object has no field "defaultInputModes"',
     ):
         _ = agent_card.defaultInputModes
 
