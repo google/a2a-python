@@ -1530,7 +1530,11 @@ def test_use_get_task_push_notification_params_for_request() -> None:
     )
 
 
-def test_camelCase() -> None:
+def test_camelCase_access_raises_attribute_error() -> None:
+    """
+    Tests that accessing or setting fields via their camelCase alias
+    raises an AttributeError.
+    """
     skill = AgentSkill(
         id='hello_world',
         name='Returns hello world',
@@ -1539,6 +1543,7 @@ def test_camelCase() -> None:
         examples=['hi', 'hello world'],
     )
 
+    # Initialization with camelCase still works due to Pydantic's populate_by_name config
     agent_card = AgentCard(
         name='Hello World Agent',
         description='Just a hello world agent',
@@ -1551,22 +1556,31 @@ def test_camelCase() -> None:
         supportsAuthenticatedExtendedCard=True,
     )
 
-    # Test setting an attribute via camelCase alias
-    # We expect a DeprecationWarning with a specific message
-    with pytest.warns(
-        DeprecationWarning,
-        match="Setting field 'supportsAuthenticatedExtendedCard'",
+    # --- Test that using camelCase aliases raises errors ---
+
+    # Test setting an attribute via camelCase alias raises AttributeError
+    with pytest.raises(
+        AttributeError,
+        match="Setting field 'supportsAuthenticatedExtendedCard' via its camelCase alias is not allowed. Use the snake_case name 'supports_authenticated_extended_card' instead.",
     ):
         agent_card.supportsAuthenticatedExtendedCard = False
 
-    # Test getting an attribute via camelCase alias
-    # We expect another DeprecationWarning with a specific message
-    with pytest.warns(
-        DeprecationWarning, match="Accessing field 'defaultInputModes'"
+    # Test getting an attribute via camelCase alias raises AttributeError
+    with pytest.raises(
+        AttributeError,
+        match="Accessing field 'defaultInputModes' via its camelCase alias is not allowed. Use the snake_case name 'default_input_modes' instead.",
     ):
-        default_input_modes = agent_card.defaultInputModes
+        _ = agent_card.defaultInputModes
 
-    # Assert the functionality still works as expected
+    # --- Test that using snake_case names works correctly ---
+
+    # The value should be unchanged because the camelCase setattr failed
+    assert agent_card.supports_authenticated_extended_card is True
+
+    # Now, set it correctly using the snake_case name
+    agent_card.supports_authenticated_extended_card = False
     assert agent_card.supports_authenticated_extended_card is False
+
+    # Get the attribute correctly using the snake_case name
+    default_input_modes = agent_card.default_input_modes
     assert default_input_modes == ['text']
-    assert agent_card.default_input_modes == ['text']
