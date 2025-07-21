@@ -1528,3 +1528,29 @@ def test_use_get_task_push_notification_params_for_request() -> None:
     assert (
         a2a_req_get_push_req.root.method == 'tasks/pushNotificationConfig/get'
     )
+
+
+def test_camelCase() -> None:
+    skill = AgentSkill(
+        id='hello_world',
+        name='Returns hello world',
+        description='just returns hello world',
+        tags=['hello world'],
+        examples=['hi', 'hello world'],
+    )
+
+    agent_card = AgentCard(
+        name='Hello World Agent',
+        description='Just a hello world agent',
+        url='http://localhost:9999/',
+        version='1.0.0',
+        defaultInputModes=['text'],
+        defaultOutputModes=['text'],
+        capabilities=AgentCapabilities(streaming=True),
+        skills=[skill],
+        supportsAuthenticatedExtendedCard=True,
+    )
+
+    agent_card.supportsAuthenticatedExtendedCard = False
+
+    assert agent_card

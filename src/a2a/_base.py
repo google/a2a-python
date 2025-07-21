@@ -1,3 +1,5 @@
+from typing import Any, ClassVar
+
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
@@ -23,6 +25,9 @@ class A2ABaseModel(BaseModel):
 
     Provides a common configuration (e.g., alias-based population) and
     serves as the foundation for future extensions or shared utilities.
+
+    This implementation overrides __setattr__ to allow setting fields
+    using their camelCase alias for backward compatibility.
     """
 
     model_config = ConfigDict(
@@ -32,3 +37,34 @@ class A2ABaseModel(BaseModel):
         serialize_by_alias=True,
         alias_generator=to_camel_custom,
     )
+
+    # Cache for the alias -> field_name mapping.
+    # We use a ClassVar so it's created once per class, not per instance.
+    # The type hint is now corrected to be `ClassVar[<optional_type>]`.
+    _alias_to_field_name_map: ClassVar[dict[str, str] | None] = None
+
+    def __setattr__(self, name: str, value: Any):
+        """Allow setting attributes via their camelCase alias.
+
+        This is overridden to provide backward compatibility for code that
+        sets model fields using aliases after initialization.
+        """
+        # Build the alias-to-name mapping on first use and cache it.
+        if self.__class__._alias_to_field_name_map is None:
+            # Using a lock or other mechanism could make this more thread-safe
+            # for highly concurrent applications, but this is fine for most cases.
+            self.__class__._alias_to_field_name_map = {
+                field.alias: field_name
+                for field_name, field in self.model_fields.items()
+                if field.alias is not None
+            }
+
+        # If the attribute name is a known alias, redirect the assignment
+        # to the actual (snake_case) field name.
+        field_name = self.__class__._alias_to_field_name_map.get(name)
+        if field_name:
+            # Use the actual field name for the assignment
+            super().__setattr__(field_name, value)
+        else:
+            # Otherwise, perform a standard attribute assignment
+            super().__setattr__(name, value)
