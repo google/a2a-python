@@ -104,9 +104,10 @@ class DefaultCallContextBuilder(CallContextBuilder):
             user=user,
             state=state,
             requested_extensions={
-                ext
+                stripped
                 for h in request.headers.getlist(HTTP_EXTENSION_HEADER)
-                for ext in h.split(', ')
+                for ext in h.split(',')
+                if (stripped := ext.strip())
             },
         )
 
