@@ -88,6 +88,9 @@ dev = [
   "types-protobuf",
   "types-requests",
   "pre-commit",
+  "pyupgrade",
+  "autoflake",
+  "no_implicit_optional",
 ]
 
 [[tool.uv.index]]
