@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -o pipefail
 
 # Sort Spelling Allowlist
 # The user did not provide this file, so we check for its existence.
