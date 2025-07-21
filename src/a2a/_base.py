@@ -43,17 +43,17 @@ class A2ABaseModel(BaseModel):
     # The type hint is now corrected to be `ClassVar[<optional_type>]`.
     _alias_to_field_name_map: ClassVar[dict[str, str] | None] = None
 
-    def __setattr__(self, name: str, value: Any):
+    def __setattr__(self, name: str, value: Any) -> None:
         """Allow setting attributes via their camelCase alias.
 
         This is overridden to provide backward compatibility for code that
         sets model fields using aliases after initialization.
         """
         # Build the alias-to-name mapping on first use and cache it.
-        if self.__class__._alias_to_field_name_map is None:
+        if self.__class__._alias_to_field_name_map is None:  # noqa: SLF001
             # Using a lock or other mechanism could make this more thread-safe
             # for highly concurrent applications, but this is fine for most cases.
-            self.__class__._alias_to_field_name_map = {
+            self.__class__._alias_to_field_name_map = {  # noqa: SLF001
                 field.alias: field_name
                 for field_name, field in self.model_fields.items()
                 if field.alias is not None
@@ -61,7 +61,7 @@ class A2ABaseModel(BaseModel):
 
         # If the attribute name is a known alias, redirect the assignment
         # to the actual (snake_case) field name.
-        field_name = self.__class__._alias_to_field_name_map.get(name)
+        field_name = self.__class__._alias_to_field_name_map.get(name)  # noqa: SLF001
         if field_name:
             # Use the actual field name for the assignment
             super().__setattr__(field_name, value)
