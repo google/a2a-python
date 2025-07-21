@@ -22,7 +22,10 @@ import a2a.grpc.a2a_pb2_grpc as a2a_grpc
 
 from a2a import types
 from a2a.auth.user import UnauthenticatedUser
-from a2a.extensions.common import HTTP_EXTENSION_HEADER
+from a2a.extensions.common import (
+    HTTP_EXTENSION_HEADER,
+    get_requested_extensions,
+)
 from a2a.grpc import a2a_pb2
 from a2a.server.context import ServerCallContext
 from a2a.server.request_handlers.request_handler import RequestHandler
@@ -76,7 +79,7 @@ class DefaultCallContextBuilder(CallContextBuilder):
         return ServerCallContext(
             user=user,
             state=state,
-            requested_extensions=set(
+            requested_extensions=get_requested_extensions(
                 _get_metadata_value(context, HTTP_EXTENSION_HEADER)
             ),
         )

@@ -177,6 +177,33 @@ class TestJSONRPCExtensions:
         call_context = mock_handler.on_message_send.call_args[0][1]
         assert call_context.requested_extensions == {'foo', 'bar'}
 
+    def test_request_with_comma_separated_extensions_no_space(
+        self, client, mock_handler
+    ):
+        headers = [
+            (HTTP_EXTENSION_HEADER, 'foo,  bar'),
+            (HTTP_EXTENSION_HEADER, 'baz'),
+        ]
+        response = client.post(
+            '/',
+            headers=headers,
+            json=SendMessageRequest(
+                id='1',
+                params=MessageSendParams(
+                    message=Message(
+                        messageId='1',
+                        role=Role.user,
+                        parts=[TextPart(text='hi')],
+                    )
+                ),
+            ).model_dump(),
+        )
+        response.raise_for_status()
+
+        mock_handler.on_message_send.assert_called_once()
+        call_context = mock_handler.on_message_send.call_args[0][1]
+        assert call_context.requested_extensions == {'foo', 'bar', 'baz'}
+
     def test_request_with_multiple_extension_headers(
         self, client, mock_handler
     ):

@@ -19,7 +19,10 @@ from starlette.status import HTTP_413_REQUEST_ENTITY_TOO_LARGE
 
 from a2a.auth.user import UnauthenticatedUser
 from a2a.auth.user import User as A2AUser
-from a2a.extensions.common import HTTP_EXTENSION_HEADER
+from a2a.extensions.common import (
+    HTTP_EXTENSION_HEADER,
+    get_requested_extensions,
+)
 from a2a.server.context import ServerCallContext
 from a2a.server.request_handlers.jsonrpc_handler import JSONRPCHandler
 from a2a.server.request_handlers.request_handler import RequestHandler
@@ -103,12 +106,9 @@ class DefaultCallContextBuilder(CallContextBuilder):
         return ServerCallContext(
             user=user,
             state=state,
-            requested_extensions={
-                stripped
-                for h in request.headers.getlist(HTTP_EXTENSION_HEADER)
-                for ext in h.split(',')
-                if (stripped := ext.strip())
-            },
+            requested_extensions=get_requested_extensions(
+                request.headers.getlist(HTTP_EXTENSION_HEADER)
+            ),
         )
 
 

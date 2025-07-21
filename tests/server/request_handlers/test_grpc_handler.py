@@ -1,6 +1,7 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import grpc
+import grpc.aio
 import pytest
 
 from a2a import types
@@ -22,7 +23,6 @@ def mock_request_handler() -> AsyncMock:
 def mock_grpc_context() -> AsyncMock:
     context = AsyncMock(spec=grpc.aio.ServicerContext)
     context.abort = AsyncMock()
-    context.invocation_metadata = MagicMock()
     context.set_trailing_metadata = MagicMock()
     return context
 
@@ -286,18 +286,15 @@ async def test_abort_context_error_mapping(
 
 @pytest.mark.asyncio
 class TestGrpcExtensions:
-    @patch(
-        'a2a.server.request_handlers.grpc_handler.DefaultCallContextBuilder.build'
-    )
     async def test_send_message_with_extensions(
         self,
-        mock_build,
         grpc_handler: GrpcHandler,
         mock_request_handler: AsyncMock,
         mock_grpc_context: AsyncMock,
     ):
-        mock_build.return_value = ServerCallContext(
-            requested_extensions={'foo', 'bar'}
+        mock_grpc_context.invocation_metadata = grpc.aio.Metadata(
+            (HTTP_EXTENSION_HEADER, 'foo'),
+            (HTTP_EXTENSION_HEADER, 'bar'),
         )
 
         def side_effect(request, context: ServerCallContext):
@@ -321,21 +318,48 @@ class TestGrpcExtensions:
         assert call_context.requested_extensions == {'foo', 'bar'}
 
         mock_grpc_context.set_trailing_metadata.assert_called_once()
-        called_metadata = mock_grpc_context.set_trailing_metadata.call_args.args[0]
-        assert set(called_metadata) == {(HTTP_EXTENSION_HEADER, 'foo'), (HTTP_EXTENSION_HEADER, 'baz')}
+        called_metadata = (
+            mock_grpc_context.set_trailing_metadata.call_args.args[0]
+        )
+        assert set(called_metadata) == {
+            (HTTP_EXTENSION_HEADER, 'foo'),
+            (HTTP_EXTENSION_HEADER, 'baz'),
+        }
 
-    @patch(
-        'a2a.server.request_handlers.grpc_handler.DefaultCallContextBuilder.build'
-    )
-    async def test_send_streaming_message_with_extensions(
+    async def test_send_message_with_comma_separated_extensions(
         self,
-        mock_build,
         grpc_handler: GrpcHandler,
         mock_request_handler: AsyncMock,
         mock_grpc_context: AsyncMock,
     ):
-        mock_build.return_value = ServerCallContext(
-            requested_extensions={'foo', 'bar'}
+        mock_grpc_context.invocation_metadata = grpc.aio.Metadata(
+            (HTTP_EXTENSION_HEADER, 'foo ,, bar,'),
+            (HTTP_EXTENSION_HEADER, 'baz  , bar'),
+        )
+        mock_request_handler.on_message_send.return_value = types.Message(
+            messageId='1',
+            role=types.Role.agent,
+            parts=[types.TextPart(text='test')],
+        )
+
+        await grpc_handler.SendMessage(
+            a2a_pb2.SendMessageRequest(), mock_grpc_context
+        )
+
+        mock_request_handler.on_message_send.assert_awaited_once()
+        call_context = mock_request_handler.on_message_send.call_args[0][1]
+        assert isinstance(call_context, ServerCallContext)
+        assert call_context.requested_extensions == {'foo', 'bar', 'baz'}
+
+    async def test_send_streaming_message_with_extensions(
+        self,
+        grpc_handler: GrpcHandler,
+        mock_request_handler: AsyncMock,
+        mock_grpc_context: AsyncMock,
+    ):
+        mock_grpc_context.invocation_metadata = grpc.aio.Metadata(
+            (HTTP_EXTENSION_HEADER, 'foo'),
+            (HTTP_EXTENSION_HEADER, 'bar'),
         )
 
         async def side_effect(request, context: ServerCallContext):
@@ -365,5 +389,10 @@ class TestGrpcExtensions:
         assert call_context.requested_extensions == {'foo', 'bar'}
 
         mock_grpc_context.set_trailing_metadata.assert_called_once()
-        called_metadata = mock_grpc_context.set_trailing_metadata.call_args.args[0]
-        assert set(called_metadata) == {(HTTP_EXTENSION_HEADER, 'foo'), (HTTP_EXTENSION_HEADER, 'baz')}
+        called_metadata = (
+            mock_grpc_context.set_trailing_metadata.call_args.args[0]
+        )
+        assert set(called_metadata) == {
+            (HTTP_EXTENSION_HEADER, 'foo'),
+            (HTTP_EXTENSION_HEADER, 'baz'),
+        }
