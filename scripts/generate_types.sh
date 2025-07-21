@@ -35,8 +35,7 @@ uv run datamodel-codegen \
   --use-subclass-enum \
   --base-class a2a._base.A2ABaseModel \
   --field-constraints \
-  --snake-case-field \
-  --no-alias
+  --snake-case-field
 
 echo "Formatting generated file with ruff..."
 uv run ruff format "$GENERATED_FILE"
