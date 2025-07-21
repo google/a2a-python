@@ -1,3 +1,5 @@
+import warnings
+
 from typing import Any, ClassVar
 
 from pydantic import BaseModel, ConfigDict
@@ -27,13 +29,13 @@ class A2ABaseModel(BaseModel):
     serves as the foundation for future extensions or shared utilities.
 
     This implementation provides backward compatibility for camelCase aliases
-    by lazy-loading an alias map upon first use.
+    by lazy-loading an alias map upon first use. Accessing or setting
+    attributes via their camelCase alias will raise a DeprecationWarning.
     """
 
     model_config = ConfigDict(
         # SEE: https://docs.pydantic.dev/latest/api/config/#pydantic.config.ConfigDict.populate_by_name
-        validate_by_name=True,
-        validate_by_alias=True,
+        populate_by_name=True,  # Recommended over validate_by_name/validate_by_alias
         serialize_by_alias=True,
         alias_generator=to_camel_custom,
     )
@@ -60,6 +62,18 @@ class A2ABaseModel(BaseModel):
         """Allow setting attributes via their camelCase alias."""
         # Get the map and find the corresponding snake_case field name.
         field_name = type(self)._get_alias_map().get(name)  # noqa: SLF001
+
+        if field_name:
+            # An alias was used, issue a warning.
+            warnings.warn(
+                (
+                    f"Setting field '{name}' via its camelCase alias is deprecated and will be removed in version 0.3.0 "
+                    f"Use the snake_case name '{field_name}' instead."
+                ),
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
         # If an alias was used, field_name will be set; otherwise, use the original name.
         super().__setattr__(field_name or name, value)
 
@@ -67,7 +81,18 @@ class A2ABaseModel(BaseModel):
         """Allow getting attributes via their camelCase alias."""
         # Get the map and find the corresponding snake_case field name.
         field_name = type(self)._get_alias_map().get(name)  # noqa: SLF001
+
         if field_name:
+            # An alias was used, issue a warning.
+            warnings.warn(
+                (
+                    f"Accessing field '{name}' via its camelCase alias is deprecated and will be removed in version 0.3.0 "
+                    f"Use the snake_case name '{field_name}' instead."
+                ),
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
             # If an alias was used, retrieve the actual snake_case attribute.
             return getattr(self, field_name)
 
