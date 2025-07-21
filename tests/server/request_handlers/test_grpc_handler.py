@@ -1,13 +1,14 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import grpc
 import pytest
 
 from a2a import types
+from a2a.extensions.common import HTTP_EXTENSION_HEADER
 from a2a.grpc import a2a_pb2
+from a2a.server.context import ServerCallContext
 from a2a.server.request_handlers import GrpcHandler, RequestHandler
 from a2a.utils.errors import ServerError
-
 
 # --- Fixtures ---
 
@@ -21,6 +22,8 @@ def mock_request_handler() -> AsyncMock:
 def mock_grpc_context() -> AsyncMock:
     context = AsyncMock(spec=grpc.aio.ServicerContext)
     context.abort = AsyncMock()
+    context.invocation_metadata = MagicMock()
+    context.set_trailing_metadata = MagicMock()
     return context
 
 
@@ -279,3 +282,88 @@ async def test_abort_context_error_mapping(
     call_args, _ = mock_grpc_context.abort.call_args
     assert call_args[0] == grpc_status_code
     assert error_message_part in call_args[1]
+
+
+@pytest.mark.asyncio
+class TestGrpcExtensions:
+    @patch(
+        'a2a.server.request_handlers.grpc_handler.DefaultCallContextBuilder.build'
+    )
+    async def test_send_message_with_extensions(
+        self,
+        mock_build,
+        grpc_handler: GrpcHandler,
+        mock_request_handler: AsyncMock,
+        mock_grpc_context: AsyncMock,
+    ):
+        mock_build.return_value = ServerCallContext(
+            requested_extensions={'foo', 'bar'}
+        )
+
+        def side_effect(request, context: ServerCallContext):
+            context.activated_extensions.add('foo')
+            context.activated_extensions.add('baz')
+            return types.Task(
+                id='task-1',
+                contextId='ctx-1',
+                status=types.TaskStatus(state=types.TaskState.completed),
+            )
+
+        mock_request_handler.on_message_send.side_effect = side_effect
+
+        await grpc_handler.SendMessage(
+            a2a_pb2.SendMessageRequest(), mock_grpc_context
+        )
+
+        mock_request_handler.on_message_send.assert_awaited_once()
+        call_context = mock_request_handler.on_message_send.call_args[0][1]
+        assert isinstance(call_context, ServerCallContext)
+        assert call_context.requested_extensions == {'foo', 'bar'}
+
+        mock_grpc_context.set_trailing_metadata.assert_called_once_with(
+            [(HTTP_EXTENSION_HEADER, 'foo'), (HTTP_EXTENSION_HEADER, 'baz')]
+        )
+
+    @patch(
+        'a2a.server.request_handlers.grpc_handler.DefaultCallContextBuilder.build'
+    )
+    async def test_send_streaming_message_with_extensions(
+        self,
+        mock_build,
+        grpc_handler: GrpcHandler,
+        mock_request_handler: AsyncMock,
+        mock_grpc_context: AsyncMock,
+    ):
+        mock_build.return_value = ServerCallContext(
+            requested_extensions={'foo', 'bar'}
+        )
+
+        async def side_effect(request, context: ServerCallContext):
+            context.activated_extensions.add('foo')
+            context.activated_extensions.add('baz')
+            yield types.Task(
+                id='task-1',
+                contextId='ctx-1',
+                status=types.TaskStatus(state=types.TaskState.working),
+            )
+
+        mock_request_handler.on_message_send_stream.side_effect = side_effect
+
+        results = [
+            result
+            async for result in grpc_handler.SendStreamingMessage(
+                a2a_pb2.SendMessageRequest(), mock_grpc_context
+            )
+        ]
+        assert results
+
+        mock_request_handler.on_message_send_stream.assert_called_once()
+        call_context = mock_request_handler.on_message_send_stream.call_args[0][
+            1
+        ]
+        assert isinstance(call_context, ServerCallContext)
+        assert call_context.requested_extensions == {'foo', 'bar'}
+
+        mock_grpc_context.set_trailing_metadata.assert_called_once_with(
+            [(HTTP_EXTENSION_HEADER, 'foo'), (HTTP_EXTENSION_HEADER, 'baz')]
+        )
