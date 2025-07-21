@@ -1787,7 +1787,7 @@ async def test_on_resubscribe_to_task_in_terminal_state(terminal_state):
 
 @pytest.mark.asyncio
 async def test_on_message_send_task_id_provided_but_task_not_found():
-    """Test on_message_send when taskId is provided but task doesn't exist."""
+    """Test on_message_send when task_id is provided but task doesn't exist."""
     task_id = 'nonexistent_task'
     mock_task_store = AsyncMock(spec=TaskStore)
 
@@ -1800,7 +1800,7 @@ async def test_on_message_send_task_id_provided_but_task_not_found():
             role=Role.user,
             messageId='msg_nonexistent',
             parts=[Part(root=TextPart(text='Hello'))],
-            taskId=task_id,
+            task_id=task_id,
             contextId='ctx1',
         )
     )
@@ -1827,7 +1827,7 @@ async def test_on_message_send_task_id_provided_but_task_not_found():
 
 @pytest.mark.asyncio
 async def test_on_message_send_stream_task_id_provided_but_task_not_found():
-    """Test on_message_send_stream when taskId is provided but task doesn't exist."""
+    """Test on_message_send_stream when task_id is provided but task doesn't exist."""
     task_id = 'nonexistent_stream_task'
     mock_task_store = AsyncMock(spec=TaskStore)
 
@@ -1840,7 +1840,7 @@ async def test_on_message_send_stream_task_id_provided_but_task_not_found():
             role=Role.user,
             messageId='msg_nonexistent_stream',
             parts=[Part(root=TextPart(text='Hello'))],
-            taskId=task_id,
+            task_id=task_id,
             contextId='ctx1',
         )
     )

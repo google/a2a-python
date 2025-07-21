@@ -200,10 +200,10 @@ class DefaultRequestHandler(RequestHandler):
                 )
 
             task = task_manager.update_with_message(params.message, task)
-        elif params.message.taskId:
+        elif params.message.task_id:
             raise ServerError(
                 error=TaskNotFoundError(
-                    message=f'Task {params.message.taskId} was specified but does not exist'
+                    message=f'Task {params.message.task_id} was specified but does not exist'
                 )
             )
 
