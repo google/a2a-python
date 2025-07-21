@@ -57,7 +57,7 @@ def _get_metadata_value(
         raw_values = md.get_all(key)
     elif isinstance(md, Sequence):
         lower_key = key.lower()
-        raw_values = [e for (k, e) in md if k == lower_key]
+        raw_values = [e for (k, e) in md if k.lower() == lower_key]
     return [e if isinstance(e, str) else e.decode('utf-8') for e in raw_values]
 
 
