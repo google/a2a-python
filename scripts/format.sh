@@ -15,7 +15,7 @@ git fetch origin "${GITHUB_BASE_REF:-main}" --depth=1
 MERGE_BASE=$(git merge-base HEAD "$TARGET_BRANCH")
 
 # Get python files changed in this PR, excluding grpc generated files
-CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRTUXB "$MERGE_BASE" HEAD | grep '\.py$' | grep -v 'src/a2a/grpc/' || true)
+CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRTUXB "$MERGE_BASE" HEAD -- '*.py' ':!src/a2a/grpc/*')
 
 if [ -z "$CHANGED_FILES" ]; then
     echo "No changed Python files to format."
