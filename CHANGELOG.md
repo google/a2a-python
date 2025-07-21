@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.15](https://github.com/a2aproject/a2a-python/compare/v0.2.14...v0.2.15) (2025-07-21)
+
+
+### Bug Fixes
+
+* Add Input Validation for Empty Message Content ([#327](https://github.com/a2aproject/a2a-python/issues/327)) ([5061834](https://github.com/a2aproject/a2a-python/commit/5061834e112a4eb523ac505f9176fc42d86d8178))
+* Prevent import grpc issues for Client after making dependencies optional ([#330](https://github.com/a2aproject/a2a-python/issues/330)) ([53ad485](https://github.com/a2aproject/a2a-python/commit/53ad48530b47ef1cbd3f40d0432f9170b663839d)), closes [#326](https://github.com/a2aproject/a2a-python/issues/326)
+
 ## [0.2.14](https://github.com/a2aproject/a2a-python/compare/v0.2.13...v0.2.14) (2025-07-18)
 
 
