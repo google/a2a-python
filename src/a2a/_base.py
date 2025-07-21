@@ -1,4 +1,21 @@
 from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
+
+
+def to_camel_custom(snake: str) -> str:
+    """Convert a snake_case string to camelCase.
+
+    Args:
+        snake: The string to convert.
+
+    Returns:
+        The converted camelCase string.
+    """
+    # First, remove any trailing underscores. This is common for names that
+    # conflict with Python keywords, like 'in_' or 'from_'.
+    if snake.endswith('_'):
+        snake = snake.rstrip('_')
+    return to_camel(snake)
 
 
 class A2ABaseModel(BaseModel):
@@ -13,4 +30,5 @@ class A2ABaseModel(BaseModel):
         validate_by_name=True,
         validate_by_alias=True,
         serialize_by_alias=True,
+        alias_generator=to_camel_custom,
     )
