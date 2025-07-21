@@ -749,7 +749,7 @@ async def test_task_resubscription(
                 b'"artifactId":"artifact-0"' in content
             )  # Check for the actual JSON payload
             assert (
-                b'"artifact_id":"artifact-1"' in content
+                b'"artifactId":"artifact-1"' in content
             )  # Check for the actual JSON payload
             assert (
                 b'"artifactId":"artifact-2"' in content
