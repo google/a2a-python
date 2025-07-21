@@ -27,8 +27,12 @@ echo "$CHANGED_FILES"
 
 # Formatters are already installed in the activated venv from the GHA step.
 # Use xargs to pass the file list to the formatters.
-echo "$CHANGED_FILES" | xargs -r no_implicit_optional --use-union-or
-echo "$CHANGED_FILES" | xargs -r pyupgrade --exit-zero-even-if-changed --py310-plus
-echo "$CHANGED_FILES" | xargs -r autoflake -i -r --remove-all-unused-imports
-echo "$CHANGED_FILES" | xargs -r ruff check --fix-only
-echo "$CHANGED_FILES" | xargs -r ruff format
+run_formatter() {
+    echo "$CHANGED_FILES" | xargs -r "$@"
+}
+
+run_formatter no_implicit_optional --use-union-or
+run_formatter pyupgrade --exit-zero-even-if-changed --py310-plus
+run_formatter autoflake -i -r --remove-all-unused-imports
+run_formatter ruff check --fix-only
+run_formatter ruff format
