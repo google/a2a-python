@@ -65,6 +65,7 @@ pyi
 pypistats
 pyupgrade
 pyversions
+redef
 respx
 resub
 RUF
