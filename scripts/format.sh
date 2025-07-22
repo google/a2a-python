@@ -32,7 +32,6 @@ run_formatter() {
     echo "$CHANGED_FILES" | xargs -r "$@"
 }
 
-run_formatter no_implicit_optional --use-union-or
 run_formatter pyupgrade --exit-zero-even-if-changed --py310-plus
 run_formatter autoflake -i -r --remove-all-unused-imports
 run_formatter ruff check --fix-only
