@@ -1,7 +1,9 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+
 from starlette.testclient import TestClient
+
 
 # Attempt to import StarletteBaseUser, fallback to MagicMock if not available
 try:
@@ -30,6 +32,7 @@ from a2a.types import (
     SendMessageSuccessResponse,
     TextPart,
 )
+
 
 # --- StarletteUserProxy Tests ---
 
