@@ -9,6 +9,7 @@ agentic
 AGrpc
 aio
 aiomysql
+apicatalog
 aproject
 ARequest
 ARun
@@ -39,6 +40,8 @@ genai
 getkwargs
 gle
 GVsb
+httpapi
+ietf
 initdb
 inmemory
 INR
@@ -48,15 +51,19 @@ JSONRPCt
 kwarg
 langgraph
 lifecycles
+linkset
+Linkset
 linting
 Llm
 lstrips
 mockurl
 notif
 oauthoidc
+ognis
 oidc
 opensource
 otherurl
+poc
 postgres
 POSTGRES
 postgresql
