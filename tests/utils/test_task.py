@@ -188,6 +188,48 @@ class TestTask(unittest.TestCase):
                 history=[],
             )
 
+    def test_new_task_with_invalid_context_id(self):
+        """Test that new_task raises a ValueError with an invalid context_id."""
+        with pytest.raises(
+            ValueError,
+            match="Invalid context_id: 'not-a-uuid' is not a valid UUID.",
+        ):
+            new_task(
+                Message(
+                    role=Role.user,
+                    parts=[Part(root=TextPart(text='test message'))],
+                    message_id=str(uuid.uuid4()),
+                    context_id='not-a-uuid',
+                )
+            )
+
+    def test_new_task_with_empty_string_context_id(self):
+        """Test that new_task raises a ValueError with an empty string context_id."""
+        with pytest.raises(
+            ValueError, match="Invalid context_id: '' is not a valid UUID."
+        ):
+            new_task(
+                Message(
+                    role=Role.user,
+                    parts=[Part(root=TextPart(text='test message'))],
+                    message_id=str(uuid.uuid4()),
+                    context_id='',
+                )
+            )
+
+    def test_new_task_with_valid_context_id(self):
+        """Test that new_task accepts a valid context_id."""
+        valid_uuid = '123e4567-e89b-12d3-a456-426614174000'
+        task = new_task(
+            Message(
+                role=Role.user,
+                parts=[Part(root=TextPart(text='test message'))],
+                message_id=str(uuid.uuid4()),
+                context_id=valid_uuid,
+            )
+        )
+        self.assertEqual(task.context_id, valid_uuid)
+
 
 if __name__ == '__main__':
     unittest.main()
