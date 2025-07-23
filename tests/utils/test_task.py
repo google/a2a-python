@@ -190,7 +190,7 @@ class TestTask(unittest.TestCase):
 
     def test_new_task_with_invalid_context_id(self):
         """Test that new_task raises a ValueError for various invalid context_id formats."""
-        invalid_ids = ["not-a-uuid", ""]
+        invalid_ids = ['not-a-uuid', '']
         for invalid_id in invalid_ids:
             with self.subTest(invalid_id=invalid_id):
                 with pytest.raises(
