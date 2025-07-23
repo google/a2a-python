@@ -29,18 +29,15 @@ def new_task(request: Message) -> Task:
             raise ValueError('TextPart content cannot be empty')
 
     context_id_str = request.context_id
-    context_id = request.context_id
-    if context_id is not None:
+    if context_id_str is not None:
         try:
-            # Validate that the provided context_id is a valid UUID.
-            uuid.UUID(context_id)
-        except ValueError:
-            # Re-raise as ValueError with a more specific message.
+            uuid.UUID(context_id_str)
+            context_id = context_id_str
+        except (ValueError, AttributeError, TypeError) as e:
             raise ValueError(
-                f"Invalid context_id: '{context_id}' is not a valid UUID."
-            ) from None
+                f"Invalid context_id: '{context_id_str}' is not a valid UUID."
+            ) from e
     else:
-        # Generate a new UUID if no context_id is provided.
         context_id = str(uuid.uuid4())
 
     return Task(
