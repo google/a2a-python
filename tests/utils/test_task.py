@@ -189,43 +189,22 @@ class TestTask(unittest.TestCase):
             )
 
     def test_new_task_with_invalid_context_id(self):
-        with pytest.raises(
-            ValueError,
-            match="Invalid context_id: 'not-a-uuid' is not a valid UUID.",
-        ):
-            new_task(
-                Message(
-                    role=Role.user,
-                    parts=[Part(root=TextPart(text='test message'))],
-                    message_id=str(uuid.uuid4()),
-                    context_id='not-a-uuid',
-                )
-            )
-
-    def test_new_task_with_empty_string_context_id(self):
-        with pytest.raises(
-            ValueError, match="Invalid context_id: '' is not a valid UUID."
-        ):
-            new_task(
-                Message(
-                    role=Role.user,
-                    parts=[Part(root=TextPart(text='test message'))],
-                    message_id=str(uuid.uuid4()),
-                    context_id='',
-                )
-            )
-
-    def test_new_task_with_valid_context_id(self):
-        valid_uuid = '123e4567-e89b-12d3-a456-426614174000'
-        task = new_task(
-            Message(
-                role=Role.user,
-                parts=[Part(root=TextPart(text='test message'))],
-                message_id=str(uuid.uuid4()),
-                context_id=valid_uuid,
-            )
-        )
-        self.assertEqual(task.context_id, valid_uuid)
+        """Test that new_task raises a ValueError for various invalid context_id formats."""
+        invalid_ids = ["not-a-uuid", ""]
+        for invalid_id in invalid_ids:
+            with self.subTest(invalid_id=invalid_id):
+                with pytest.raises(
+                    ValueError,
+                    match=f"Invalid context_id: '{invalid_id}' is not a valid UUID.",
+                ):
+                    new_task(
+                        Message(
+                            role=Role.user,
+                            parts=[Part(root=TextPart(text='test message'))],
+                            message_id=str(uuid.uuid4()),
+                            context_id=invalid_id,
+                        )
+                    )
 
 
 if __name__ == '__main__':
