@@ -143,6 +143,24 @@ class RequestContext:
             return {}
         return self._params.metadata or {}
 
+    def add_activated_extension(self, uri: str) -> None:
+        """Add an extension to the set of activated extensions for this request.
+
+        This causes the extension to be indicated back to the client in the
+        response.
+        """
+        if self._call_context:
+            self._call_context.activated_extensions.add(uri)
+
+    @property
+    def requested_extensions(self) -> set[str]:
+        """Extensions that the client requested to activate."""
+        return (
+            self._call_context.requested_extensions
+            if self._call_context
+            else set()
+        )
+
     def _check_or_generate_task_id(self) -> None:
         """Ensures a task ID is present, generating one if necessary."""
         if not self._params:

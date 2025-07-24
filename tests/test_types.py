@@ -741,7 +741,7 @@ def test_send_message_streaming_artifact_update_response() -> None:
 def test_set_task_push_notification_response() -> None:
     task_push_config = TaskPushNotificationConfig(
         task_id='t2',
-        pushNotificationConfig=PushNotificationConfig(
+        push_notification_config=PushNotificationConfig(
             url='https://example.com', token='token'
         ),
     )
@@ -802,7 +802,7 @@ def test_set_task_push_notification_response() -> None:
 def test_get_task_push_notification_response() -> None:
     task_push_config = TaskPushNotificationConfig(
         task_id='t2',
-        pushNotificationConfig=PushNotificationConfig(
+        push_notification_config=PushNotificationConfig(
             url='https://example.com', token='token'
         ),
     )
@@ -914,7 +914,7 @@ def test_a2a_request_root_model() -> None:
     # SetTaskPushNotificationConfigRequest
     task_push_config = TaskPushNotificationConfig(
         task_id='t2',
-        pushNotificationConfig=PushNotificationConfig(
+        push_notification_config=PushNotificationConfig(
             url='https://example.com', token='token'
         ),
     )
@@ -1022,7 +1022,7 @@ def test_a2a_request_root_model_id_validation() -> None:
     # SetTaskPushNotificationConfigRequest
     task_push_config = TaskPushNotificationConfig(
         task_id='t2',
-        pushNotificationConfig=PushNotificationConfig(
+        push_notification_config=PushNotificationConfig(
             url='https://example.com', token='token'
         ),
     )
@@ -1304,7 +1304,7 @@ def test_task_push_notification_config() -> None:
     assert push_notification_config.authentication == auth_info
 
     task_push_notification_config = TaskPushNotificationConfig(
-        task_id='task-123', pushNotificationConfig=push_notification_config
+        task_id='task-123', push_notification_config=push_notification_config
     )
     assert task_push_notification_config.task_id == 'task-123'
     assert (
