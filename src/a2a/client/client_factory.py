@@ -123,7 +123,7 @@ class ClientFactory:
             raise ValueError('no compatible transports found.')
         if transport not in self._registry:
             raise ValueError(f'no client available for {transport}')
-        all_consumers = self._consumers
+        all_consumers = self._consumers.copy()
         if consumers:
             all_consumers.extend(consumers)
         return self._registry[transport](
