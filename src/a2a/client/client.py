@@ -4,7 +4,7 @@ import logging
 
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator, Callable, Coroutine
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import httpx
 

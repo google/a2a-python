@@ -292,7 +292,7 @@ class RESTHandler:
         try:
             task_id = request.path_params['id']
             history_length = request.query_params.get('historyLength', None)
-            if historyLength:
+            if history_length:
                 history_length = int(history_length)
             params = TaskQueryParams(id=task_id, history_length=history_length)
             task = await self.request_handler.on_get_task(params, context)

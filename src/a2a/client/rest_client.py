@@ -18,6 +18,7 @@ from a2a.types import (
     AgentCard,
     GetTaskPushNotificationConfigParams,
     Message,
+    MessageSendConfiguration,
     MessageSendParams,
     Task,
     TaskArtifactUpdateEvent,
@@ -316,8 +317,8 @@ class RestTransportClient:
         )
         response_data = await self._send_get_request(
             f'/v1/tasks/{request.taskId}',
-            {'historyLength': request.historyLength}
-            if request.historyLength
+            {'historyLength': request.history_length}
+            if request.history_length
             else {},
             modified_kwargs,
         )
