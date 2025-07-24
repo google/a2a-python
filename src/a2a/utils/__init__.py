@@ -28,7 +28,7 @@ from a2a.utils.task import (
     completed_task,
     new_task,
 )
-
+from a2a.utils.transports import Transports
 
 __all__ = [
     'AGENT_CARD_WELL_KNOWN_PATH',
@@ -49,4 +49,5 @@ __all__ = [
     'new_data_artifact',
     'new_task',
     'new_text_artifact',
+    'Transports',
 ]

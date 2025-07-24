@@ -69,6 +69,10 @@ class A2ARESTFastAPIApplication:
         app = FastAPI(**kwargs)
         router = APIRouter()
         for route, callback in self._handler.routes().items():
+<<<<<<< Updated upstream
+=======
+            print("Attaching ", route)
+>>>>>>> Stashed changes
             router.add_api_route(
                 f'{rpc_url}{route[0]}',
                 callback,

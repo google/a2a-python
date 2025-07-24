@@ -117,6 +117,10 @@ class RESTHandler:
         """
         try:
             body = await request.body()
+<<<<<<< Updated upstream
+=======
+            print('Request body', body)
+>>>>>>> Stashed changes
             params = a2a_pb2.SendMessageRequest()
             Parse(body, params)
             # Transform the proto object to the python internal objects
