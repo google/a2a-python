@@ -640,7 +640,7 @@ class JsonRpcClient(Client):
         response = await self._transport_client.cancel_task(
             CancelTaskRequest(
                 params=request,
-                id=srt(uuid4()),
+                id=str(uuid4()),
             ),
             http_kwargs=self.get_http_args(context),
             context=context,
@@ -691,7 +691,7 @@ class JsonRpcClient(Client):
             )
         async for event in self._transport_client.resubscribe(
             TaskResubscriptionRequest(
-                params=TaskIdParams,
+                params=request,
                 id=str(uuid4()),
             ),
             http_kwargs=self.get_http_args(context),

@@ -169,7 +169,7 @@ class RestTransportClient:
         """
         pb = a2a_pb2.SendMessageRequest(
             request=proto_utils.ToProto.message(request.message),
-            configuration=proto_utils.ToProto.message_send_configuration(
+            configuration=proto_utils.ToProto.send_message_config(
                 request.configuration
             ),
             metadata=(
@@ -359,7 +359,7 @@ class RestTransportClient:
             context,
         )
         response_data = await self._send_post_request(
-            f'/v1/tasks/{request.taskId}:cancel',
+            f'/v1/tasks/{request.id}:cancel',
             payload,
             modified_kwargs
         )
@@ -445,7 +445,7 @@ class RestTransportClient:
             context,
         )
         response_data = await self._send_get_request(
-            f'/v1/tasks/{request.taskId}/pushNotificationConfigs/{request.pushNotificationId}',
+            f'/v1/tasks/{request.id}/pushNotificationConfigs/{request.push_notification_config_id}',
             {},
             modified_kwargs
         )
@@ -536,12 +536,12 @@ class RestTransportClient:
             A2AClientJSONError: If the response body cannot be decoded as JSON or validated.
         """
         # If we don't have the public card, try to get that first.
-        card = self.card
+        card = self.agent_card
         if not card:
             resolver = A2ACardResolver(self.httpx_client, self.url)
-            card = resolver.get_agent_card(http_kwargs=http_kwargs)
+            card = await resolver.get_agent_card(http_kwargs=http_kwargs)
             self._needs_extended_card = card.supportsAuthenticatedExtendedCard
-            self.card = card
+            self.agent_card = card
 
         if not self._needs_extended_card:
             return card
@@ -627,7 +627,7 @@ class RestClient(Client):
         ):
             # Update task, check for errors, etc.
             if isinstance(event, Message):
-                yield result
+                yield event
                 return
             await tracker.process(event)
             result = (
@@ -688,7 +688,7 @@ class RestClient(Client):
             http_kwargs=self.get_http_args(context),
             context=context,
         )
-        return response.result
+        return response
 
     async def resubscribe(
         self,
@@ -701,7 +701,7 @@ class RestClient(Client):
                 'client and/or server do not support resubscription.'
             )
         async for event in self._transport_client.resubscribe(
-            TaskIdParams,
+            request,
             http_kwargs=self.get_http_args(context),
             context=context,
         ):
