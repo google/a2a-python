@@ -489,7 +489,7 @@ class RestTransportClient:
         async with aconnect_sse(
             self.httpx_client,
             'POST',
-            f'{self.url}/v1/tasks/{request.taskId}:subscribe',
+            f'{self.url}/v1/tasks/{request.id}:subscribe',
             json=payload,
             **modified_kwargs,
         ) as event_source:
@@ -551,7 +551,7 @@ class RestTransportClient:
             '/v1/card/get', {}, modified_kwargs
         )
         card = AgentCard.model_validate(response_data)
-        self.card = card
+        self.agent_card = card
         self._needs_extended_card = False
         return card
 
@@ -594,11 +594,20 @@ class RestClient(Client):
         *,
         context: ClientCallContext | None = None,
     ) -> AsyncIterator[Task | Message]:
-        # TODO: Set the request params from config
+        config = MessageSendConfiguration(
+            accepted_output_modes=self._config.accepted_output_modes,
+            blocking=not self._config.polling,
+            push_notification_config=(
+                self._config.push_notification_configs[0]
+                if self._config.push_notification_configs
+                else None
+            ),
+        )
         if not self._config.streaming or not self._card.capabilities.streaming:
             response = await self._transport_client.send_message(
                 MessageSendParams(
                     message=request,
+                    configuration=config,
                 ),
                 http_kwargs=self.get_http_args(context),
                 context=context,
@@ -613,6 +622,7 @@ class RestClient(Client):
         async for event in self._transport_client.send_message_streaming(
             MessageSendParams(
                 message=request,
+                configuration=config,
             ),
             http_kwargs=self.get_http_args(context),
             context=context,

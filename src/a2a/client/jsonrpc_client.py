@@ -11,7 +11,11 @@ from httpx_sse import SSEError, aconnect_sse
 
 from a2a.client.client import A2ACardResolver, Client, ClientConfig, Consumer
 from a2a.client.client_task_manager import ClientTaskManager
-from a2a.client.errors import A2AClientHTTPError, A2AClientJSONError
+from a2a.client.errors import (
+    A2AClientHTTPError,
+    A2AClientJSONError,
+    A2AClientTimeoutError,
+)
 from a2a.client.middleware import ClientCallContext, ClientCallInterceptor
 from a2a.types import (
     AgentCard,
@@ -271,6 +275,8 @@ class JsonRpcTransportClient:
             )
             response.raise_for_status()
             return response.json()
+        except httpx.ReadTimeout as e:
+            raise A2AClientTimeoutError('Client Request timed out') from e
         except httpx.HTTPStatusError as e:
             raise A2AClientHTTPError(e.response.status_code, str(e)) from e
         except json.JSONDecodeError as e:
@@ -525,7 +531,7 @@ class JsonRpcTransportClient:
         )
         response_data = await self._send_request(payload, modified_kwargs)
         card = AgentCard.model_validate(response_data)
-        self.card = card
+        self.agent_card = card
         self._needs_extended_card = False
         return card
 
@@ -568,12 +574,21 @@ class JsonRpcClient(Client):
         *,
         context: ClientCallContext | None = None,
     ) -> AsyncIterator[Task | Message]:
-        # TODO: Set the request params from config
+        config = MessageSendConfiguration(
+            accepted_output_modes=self._config.accepted_output_modes,
+            blocking=not self._config.polling,
+            push_notification_config=(
+                self._config.push_notification_configs[0]
+                if self._config.push_notification_configs
+                else None
+            ),
+        )
         if not self._config.streaming or not self._card.capabilities.streaming:
             response = await self._transport_client.send_message(
                 SendMessageRequest(
                     params=MessageSendParams(
                         message=request,
+                        configuration=config,
                     ),
                     id=str(uuid4()),
                 ),
@@ -592,6 +607,7 @@ class JsonRpcClient(Client):
             SendStreamingMessageRequest(
                 params=MessageSendParams(
                     message=request,
+                    configuration=config,
                 ),
                 id=str(uuid4()),
             ),
