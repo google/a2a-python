@@ -504,12 +504,12 @@ class JsonRpcTransportClient:
             A2AClientJSONError: If the response body cannot be decoded as JSON or validated.
         """
         # If we don't have the public card, try to get that first.
-        card = self.card
+        card = self.agent_card
         if not card:
             resolver = A2ACardResolver(self.httpx_client, self.url)
-            card = resolver.get_agent_card(http_kwargs=http_kwargs)
+            card = await resolver.get_agent_card(http_kwargs=http_kwargs)
             self._needs_extended_card = card.supportsAuthenticatedExtendedCard
-            self.card = card
+            self.agent_card = card
 
         if not self._needs_extended_card:
             return card
