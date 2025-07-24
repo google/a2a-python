@@ -1530,7 +1530,7 @@ def test_use_get_task_push_notification_params_for_request() -> None:
     )
 
 
-def test_camelCase(recwarn) -> None:
+def test_camelCase() -> None:
     skill = AgentSkill(
         id='hello_world',
         name='Returns hello world',
