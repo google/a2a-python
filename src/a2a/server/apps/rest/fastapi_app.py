@@ -12,6 +12,7 @@ from a2a.server.apps.rest.rest_app import (
 )
 from a2a.server.request_handlers.request_handler import RequestHandler
 from a2a.types import AgentCard
+from a2a.utils.constants import AGENT_CARD_WELL_KNOWN_PATH
 
 
 logger = logging.getLogger(__name__)
@@ -51,7 +52,7 @@ class A2ARESTFastAPIApplication:
 
     def build(
         self,
-        agent_card_url: str = '/.well-known/agent.json',
+        agent_card_url: str = AGENT_CARD_WELL_KNOWN_PATH,
         rpc_url: str = '',
         **kwargs: Any,
     ) -> FastAPI:
