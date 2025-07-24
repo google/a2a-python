@@ -1,42 +1,33 @@
-import contextlib
+import functools
 import json
 import logging
 import traceback
-import functools
 
-from abc import ABC, abstractmethod
-from collections.abc import AsyncGenerator, AsyncIterator, Awaitable
-from typing import Any, Tuple, Callable
-from fastapi import FastAPI
-from pydantic import BaseModel, ValidationError
+from collections.abc import AsyncGenerator, AsyncIterator, Awaitable, Callable
+from typing import Any
 
+from pydantic import ValidationError
 from sse_starlette.sse import EventSourceResponse
-from starlette.applications import Starlette
-from starlette.authentication import BaseUser
 from starlette.requests import Request
-from starlette.responses import JSONResponse, Response
+from starlette.responses import JSONResponse
 
-from a2a.auth.user import UnauthenticatedUser
-from a2a.auth.user import User as A2AUser
+from a2a.server.apps.jsonrpc import (
+    CallContextBuilder,
+    DefaultCallContextBuilder,
+)
 from a2a.server.context import ServerCallContext
+from a2a.server.request_handlers.request_handler import RequestHandler
 from a2a.server.request_handlers.rest_handler import (
     RESTHandler,
 )
-from a2a.server.request_handlers.request_handler import RequestHandler
 from a2a.types import (
-    A2AError,
     AgentCard,
-    JSONParseError,
-    UnsupportedOperationError,
     InternalError,
     InvalidRequestError,
+    JSONParseError,
+    UnsupportedOperationError,
 )
 from a2a.utils.errors import MethodNotImplementedError
-from a2a.server.apps.jsonrpc import (
-    CallContextBuilder,
-    StarletteUserProxy,
-    DefaultCallContextBuilder
-)
 
 
 logger = logging.getLogger(__name__)
@@ -102,23 +93,21 @@ class RESTApplication:
         traceback.print_exc()
         if isinstance(error, MethodNotImplementedError):
             return self._generate_error_response(UnsupportedOperationError())
-        elif isinstance(error, json.decoder.JSONDecodeError):
+        if isinstance(error, json.decoder.JSONDecodeError):
             return self._generate_error_response(
                 JSONParseError(message=str(error))
             )
-        elif isinstance(error, ValidationError):
+        if isinstance(error, ValidationError):
             return self._generate_error_response(
                 InvalidRequestError(data=json.loads(error.json())),
             )
         logger.error(f'Unhandled exception: {error}')
-        return self._generate_error_response(
-            InternalError(message=str(error))
-        )
+        return self._generate_error_response(InternalError(message=str(error)))
 
     async def _handle_request(
         self,
         method: Callable[[Request, ServerCallContext], Awaitable[str]],
-        request: Request
+        request: Request,
     ) -> JSONResponse:
         try:
             call_context = self._context_builder.build(request)
@@ -130,18 +119,21 @@ class RESTApplication:
     async def _handle_streaming_request(
         self,
         method: Callable[[Request, ServerCallContext], AsyncIterator[str]],
-        request: Request
+        request: Request,
     ) -> EventSourceResponse:
         try:
             call_context = self._context_builder.build(request)
+
             async def event_generator(
                 stream: AsyncGenerator[str],
             ) -> AsyncGenerator[dict[str, str]]:
                 async for item in stream:
                     yield {'data': item}
+
             return EventSourceResponse(
-                event_generator(method(request, call_context)))
-        except Exception as e:
+                event_generator(method(request, call_context))
+            )
+        except Exception:
             # Since the stream has started, we can't return a JSONResponse.
             # Instead, we run the error handling logic (provides logging)
             return EventSourceResponse(
@@ -169,7 +161,9 @@ class RESTApplication:
             self.agent_card.model_dump(mode='json', exclude_none=True)
         )
 
-    async def handle_authenticated_agent_card(self, request: Request) -> JSONResponse:
+    async def handle_authenticated_agent_card(
+        self, request: Request
+    ) -> JSONResponse:
         """Hook for per credential agent card response.
 
         If a dynamic card is needed based on the credentials provided in the request
@@ -183,48 +177,49 @@ class RESTApplication:
         """
         if not self.agent_card.supportsAuthenticatedExtendedCard:
             return JSONResponse(
-                '{"detail": "Authenticated card not supported"}', status_code=404
+                '{"detail": "Authenticated card not supported"}',
+                status_code=404,
             )
         return JSONResponse(
             self.agent_card.model_dump(mode='json', exclude_none=True)
         )
 
-    def routes(self) -> dict[Tuple[str, str], Callable[[Request],Any]]:
+    def routes(self) -> dict[tuple[str, str], Callable[[Request], Any]]:
         routes = {
             ('/v1/message:send', 'POST'): functools.partial(
-                self._handle_request,
-                self.handler.on_message_send
+                self._handle_request, self.handler.on_message_send
             ),
             ('/v1/message:stream', 'POST'): functools.partial(
                 self._handle_streaming_request,
-                self.handler.on_message_send_stream
+                self.handler.on_message_send_stream,
             ),
             ('/v1/tasks/{id}:subscribe', 'POST'): functools.partial(
                 self._handle_streaming_request,
-                self.handler.on_resubscribe_to_task
+                self.handler.on_resubscribe_to_task,
             ),
             ('/v1/tasks/{id}', 'GET'): functools.partial(
-                self._handle_request,
-                self.handler.on_get_task
+                self._handle_request, self.handler.on_get_task
             ),
-            ('/v1/tasks/{id}/pushNotificationConfigs/{push_id}', 'GET'):
-                functools.partial(
-                    self._handle_request,
-                    self.handler.get_push_notification
+            (
+                '/v1/tasks/{id}/pushNotificationConfigs/{push_id}',
+                'GET',
+            ): functools.partial(
+                self._handle_request, self.handler.get_push_notification
             ),
-            ('/v1/tasks/{id}/pushNotificationConfigs', 'POST'):
-                functools.partial(
-                    self._handle_request,
-                    self.handler.set_push_notification
+            (
+                '/v1/tasks/{id}/pushNotificationConfigs',
+                'POST',
+            ): functools.partial(
+                self._handle_request, self.handler.set_push_notification
             ),
-            ('/v1/tasks/{id}/pushNotificationConfigs', 'GET'):
-                functools.partial(
-                    self._handle_request,
-                    self.handler.list_push_notifications
+            (
+                '/v1/tasks/{id}/pushNotificationConfigs',
+                'GET',
+            ): functools.partial(
+                self._handle_request, self.handler.list_push_notifications
             ),
             ('/v1/tasks', 'GET'): functools.partial(
-                self._handle_request,
-                self.handler.list_tasks
+                self._handle_request, self.handler.list_tasks
             ),
         }
         if self.agent_card.supportsAuthenticatedExtendedCard:

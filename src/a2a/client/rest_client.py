@@ -3,17 +3,17 @@ import logging
 
 from collections.abc import AsyncGenerator, AsyncIterator
 from typing import Any
-from uuid import uuid4
 
 import httpx
 
+from google.protobuf.json_format import MessageToDict, Parse
 from httpx_sse import SSEError, aconnect_sse
-from pydantic import ValidationError
 
-from a2a.client.client import Client, ClientConfig, A2ACardResolver, Consumer
+from a2a.client.client import A2ACardResolver, Client, ClientConfig, Consumer
+from a2a.client.client_task_manager import ClientTaskManager
 from a2a.client.errors import A2AClientHTTPError, A2AClientJSONError
 from a2a.client.middleware import ClientCallContext, ClientCallInterceptor
-from a2a.client.client_task_manager import ClientTaskManager
+from a2a.grpc import a2a_pb2
 from a2a.types import (
     AgentCard,
     GetTaskPushNotificationConfigParams,
@@ -22,17 +22,12 @@ from a2a.types import (
     Task,
     TaskArtifactUpdateEvent,
     TaskIdParams,
-    TaskQueryParams,
     TaskPushNotificationConfig,
+    TaskQueryParams,
     TaskStatusUpdateEvent,
 )
-from a2a.utils.constants import (
-    AGENT_CARD_WELL_KNOWN_PATH,
-)
-from a2a.utils.telemetry import SpanKind, trace_class
-from a2a.grpc import a2a_pb2
 from a2a.utils import proto_utils
-from google.protobuf.json_format import Parse, MessageToDict
+from a2a.utils.telemetry import SpanKind, trace_class
 
 
 logger = logging.getLogger(__name__)
@@ -69,7 +64,7 @@ class RestTransportClient:
         else:
             raise ValueError('Must provide either agent_card or url')
         # If the url ends in / remove it as this is added by the routes
-        if self.url.endswith("/"):
+        if self.url.endswith('/'):
             self.url = self.url[:-1]
         self.httpx_client = httpx_client
         self.agent_card = agent_card
@@ -80,7 +75,9 @@ class RestTransportClient:
         # card.
         self._needs_extended_card = (
             not agent_card.supportsAuthenticatedExtendedCard
-            if agent_card else True)
+            if agent_card
+            else True
+        )
 
     async def _apply_interceptors(
         self,
@@ -123,7 +120,8 @@ class RestTransportClient:
             ),
             metadata=(
                 proto_utils.ToProto.metadata(request.metadata)
-                if request.metadata else None
+                if request.metadata
+                else None
             ),
         )
         payload = MessageToDict(pb)
@@ -134,9 +132,7 @@ class RestTransportClient:
             context,
         )
         response_data = await self._send_post_request(
-            '/v1/message:send',
-            payload,
-            modified_kwargs
+            '/v1/message:send', payload, modified_kwargs
         )
         response_pb = a2a_pb2.SendMessageResponse()
         Parse(response_data, response_pb)
@@ -148,7 +144,9 @@ class RestTransportClient:
         *,
         http_kwargs: dict[str, Any] | None = None,
         context: ClientCallContext | None = None,
-    ) -> AsyncGenerator[Task | TaskStatusUpdateEvent | TaskArtifactUpdateEvent | Message]:
+    ) -> AsyncGenerator[
+        Task | TaskStatusUpdateEvent | TaskArtifactUpdateEvent | Message
+    ]:
         """Sends a streaming message request to the agent and yields responses as they arrive.
 
         This method uses Server-Sent Events (SSE) to receive a stream of updates from the agent.
@@ -174,7 +172,8 @@ class RestTransportClient:
             ),
             metadata=(
                 proto_utils.ToProto.metadata(request.metadata)
-                if request.metadata else None
+                if request.metadata
+                else None
             ),
         )
         payload = MessageToDict(pb)
@@ -236,7 +235,7 @@ class RestTransportClient:
             response = await self.httpx_client.post(
                 f'{self.url}{target}',
                 json=rpc_request_payload,
-                **(http_kwargs or {})
+                **(http_kwargs or {}),
             )
             response.raise_for_status()
             return response.json()
@@ -274,7 +273,7 @@ class RestTransportClient:
             response = await self.httpx_client.get(
                 f'{self.url}{target}',
                 params=query_params,
-                **(http_kwargs or {})
+                **(http_kwargs or {}),
             )
             response.raise_for_status()
             return response.json()
@@ -317,10 +316,10 @@ class RestTransportClient:
         )
         response_data = await self._send_get_request(
             f'/v1/tasks/{request.taskId}',
-            {
-                'historyLength': request.historyLength
-            } if request.historyLength else {},
-            modified_kwargs
+            {'historyLength': request.historyLength}
+            if request.historyLength
+            else {},
+            modified_kwargs,
         )
         task = a2a_pb2.Task()
         Parse(response_data, task)
@@ -348,9 +347,7 @@ class RestTransportClient:
             A2AClientHTTPError: If an HTTP error occurs during the request.
             A2AClientJSONError: If the response body cannot be decoded as JSON or validated.
         """
-        pb = a2a_pb2.CancelTaskRequest(
-            name=f'tasks/{request.id}'
-        )
+        pb = a2a_pb2.CancelTaskRequest(name=f'tasks/{request.id}')
         payload = MessageToDict(pb)
         # Apply interceptors before sending
         payload, modified_kwargs = await self._apply_interceptors(
@@ -359,9 +356,7 @@ class RestTransportClient:
             context,
         )
         response_data = await self._send_post_request(
-            f'/v1/tasks/{request.id}:cancel',
-            payload,
-            modified_kwargs
+            f'/v1/tasks/{request.id}:cancel', payload, modified_kwargs
         )
         task = a2a_pb2.Task()
         Parse(response_data, task)
@@ -399,14 +394,12 @@ class RestTransportClient:
         payload = MessageToDict(pb)
         # Apply interceptors before sending
         payload, modified_kwargs = await self._apply_interceptors(
-            payload,
-            http_kwargs,
-            context
+            payload, http_kwargs, context
         )
         response_data = await self._send_post_request(
             f'/v1/tasks/{request.taskId}/pushNotificationConfigs/',
             payload,
-            modified_kwargs
+            modified_kwargs,
         )
         config = a2a_pb2.TaskPushNotificationConfig()
         Parse(response_data, config)
@@ -447,7 +440,7 @@ class RestTransportClient:
         response_data = await self._send_get_request(
             f'/v1/tasks/{request.id}/pushNotificationConfigs/{request.push_notification_config_id}',
             {},
-            modified_kwargs
+            modified_kwargs,
         )
         config = a2a_pb2.TaskPushNotificationConfig()
         Parse(response_data, config)
@@ -459,7 +452,9 @@ class RestTransportClient:
         *,
         http_kwargs: dict[str, Any] | None = None,
         context: ClientCallContext | None = None,
-    ) -> AsyncGenerator[Task | TaskStatusUpdateEvent | TaskArtifactUpdateEvent | Message]:
+    ) -> AsyncGenerator[
+        Task | TaskStatusUpdateEvent | TaskArtifactUpdateEvent | Message
+    ]:
         """Reconnects to get task updates
 
         This method uses Server-Sent Events (SSE) to receive a stream of updates from the agent.
@@ -553,9 +548,8 @@ class RestTransportClient:
             context,
         )
         response_data = await self._send_get_request(
-            '/v1/card/get',
-            {},
-            modified_kwargs)
+            '/v1/card/get', {}, modified_kwargs
+        )
         card = AgentCard.model_validate(response_data)
         self.card = card
         self._needs_extended_card = False
@@ -610,9 +604,7 @@ class RestClient(Client):
                 context=context,
             )
             result = (
-                response
-                if isinstance(response, Message)
-                else (response, None)
+                response if isinstance(response, Message) else (response, None)
             )
             await self.consume(result, self._card)
             yield result
@@ -632,8 +624,7 @@ class RestClient(Client):
             await tracker.process(event)
             result = (
                 tracker.get_task(),
-                None if isinstance(event, Task)
-                else event
+                None if isinstance(event, Task) else event,
             )
             await self.consume(result, self._card)
             yield result
@@ -718,11 +709,12 @@ class RestClient(Client):
             context=context,
         )
 
+
 def NewRestfulClient(
     card: AgentCard,
     config: ClientConfig,
     consumers: list[Consumer],
-    middleware: list[ClientCallInterceptor]
+    middleware: list[ClientCallInterceptor],
 ) -> Client:
     """Generator for the `RestClient` implementation."""
     return RestClient(card, config, consumers, middleware)

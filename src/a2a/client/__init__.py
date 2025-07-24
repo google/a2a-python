@@ -7,41 +7,42 @@ from a2a.client.auth import (
     CredentialService,
     InMemoryContextCredentialStore,
 )
+from a2a.client.client import (
+    A2ACardResolver,
+    Client,
+    ClientConfig,
+    ClientEvent,
+    Consumer,
+)
+from a2a.client.client_factory import (
+    ClientFactory,
+    ClientProducer,
+    minimal_agent_card,
+)
 from a2a.client.errors import (
     A2AClientError,
     A2AClientHTTPError,
     A2AClientJSONError,
     A2AClientTimeoutError,
 )
+from a2a.client.grpc_client import (
+    GrpcClient,
+    GrpcTransportClient,
+    NewGrpcClient,
+)
+from a2a.client.helpers import create_text_message_object
 from a2a.client.jsonrpc_client import (
     JsonRpcClient,
     JsonRpcTransportClient,
     NewJsonRpcClient,
 )
-from a2a.client.grpc_client import (
-    GrpcTransportClient,
-    GrpcClient,
-    NewGrpcClient,
-)
-from a2a.client.rest_client import (
-    RestTransportClient,
-    RestClient,
-    NewRestfulClient,
-)
-from a2a.client.helpers import create_text_message_object
 from a2a.client.middleware import ClientCallContext, ClientCallInterceptor
-from a2a.client.client import (
-    A2ACardResolver,
-    Client,
-    ClientConfig,
-    Consumer,
-    ClientEvent,
+from a2a.client.rest_client import (
+    NewRestfulClient,
+    RestClient,
+    RestTransportClient,
 )
-from a2a.client.client_factory import (
-    ClientFactory,
-    ClientProducer,
-    minimal_agent_card
-)
+
 
 # For backward compatability define this alias. This will be deprecated in
 # a future release.
@@ -71,32 +72,32 @@ except ImportError as e:
 
 __all__ = [
     'A2ACardResolver',
+    'A2AClient',  # for backward compatability
     'A2AClientError',
     'A2AClientHTTPError',
     'A2AClientJSONError',
     'A2AClientTimeoutError',
+    'A2AGrpcClient',  # for backward compatability
     'AuthInterceptor',
+    'Client',
     'ClientCallContext',
     'ClientCallInterceptor',
-    'Consumer',
-    'CredentialService',
-    'InMemoryContextCredentialStore',
-    'create_text_message_object',
-    'A2AClient',  # for backward compatability
-    'A2AGrpcClient', # for backward compatability
-    'Client',
+    'ClientConfig',
     'ClientEvent',
     'ClientFactory',
-    'ClientConfig',
     'ClientProducer',
-    'GrpcTransportClient',
+    'Consumer',
+    'CredentialService',
     'GrpcClient',
-    'NewGrpcClient',
+    'GrpcTransportClient',
+    'InMemoryContextCredentialStore',
     'JsonRpcClient',
     'JsonRpcTransportClient',
+    'NewGrpcClient',
     'NewJsonRpcClient',
-    'minimal_agent_card',
-    'RestTransportClient',
-    'RestClient',
     'NewRestfulClient',
+    'RestClient',
+    'RestTransportClient',
+    'create_text_message_object',
+    'minimal_agent_card',
 ]

@@ -2,7 +2,7 @@ import logging
 
 from typing import Any
 
-from fastapi import FastAPI, Request, Response, APIRouter
+from fastapi import APIRouter, FastAPI, Request, Response
 
 from a2a.server.apps.jsonrpc.jsonrpc_app import (
     CallContextBuilder,
@@ -70,9 +70,7 @@ class A2ARESTFastAPIApplication:
         router = APIRouter()
         for route, callback in self._handler.routes().items():
             router.add_api_route(
-                f'{rpc_url}{route[0]}',
-                callback,
-                methods=[route[1]]
+                f'{rpc_url}{route[0]}', callback, methods=[route[1]]
             )
 
         @router.get(f'{rpc_url}{agent_card_url}')

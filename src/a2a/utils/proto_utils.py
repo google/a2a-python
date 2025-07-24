@@ -290,7 +290,9 @@ class ToProto:
             protocol_version=card.protocol_version,
             additional_interfaces=[
                 cls.agent_interface(x) for x in card.additional_interfaces
-            ] if card.additional_interfaces else None,
+            ]
+            if card.additional_interfaces
+            else None,
         )
 
     @classmethod
@@ -682,7 +684,9 @@ class FromProto:
             protocol_version=card.protocol_version,
             additional_interfaces=[
                 cls.agent_interface(x) for x in card.additional_interfaces
-            ] if card.additional_interfaces else None,
+            ]
+            if card.additional_interfaces
+            else None,
         )
 
     @classmethod
@@ -827,10 +831,12 @@ class FromProto:
     def stream_response(
         cls,
         response: a2a_pb2.StreamResponse,
-    ) -> (types.Message
-          | types.Task
-          | types.TaskStatusUpdateEvent
-          | types.TaskArtifactUpdateEvent):
+    ) -> (
+        types.Message
+        | types.Task
+        | types.TaskStatusUpdateEvent
+        | types.TaskArtifactUpdateEvent
+    ):
         if response.HasField('msg'):
             return cls.message(response.msg)
         if response.HasField('task'):

@@ -1,33 +1,20 @@
 from __future__ import annotations
-import json
+
 import logging
 
-from collections.abc import AsyncGenerator
-from typing import Any, TYPE_CHECKING, Callable
-
-import httpx
-
-from httpx_sse import SSEError, aconnect_sse
-from pydantic import ValidationError
-
-from a2a.utils import Transports
+from collections.abc import Callable
 
 from a2a.client.client import Client, ClientConfig, Consumer
-from a2a.client.jsonrpc_client import NewJsonRpcClient
 from a2a.client.grpc_client import NewGrpcClient
+from a2a.client.jsonrpc_client import NewJsonRpcClient
+from a2a.client.middleware import ClientCallInterceptor
 from a2a.client.rest_client import NewRestfulClient
-from a2a.client.errors import A2AClientHTTPError, A2AClientJSONError
-from a2a.client.middleware import ClientCallContext, ClientCallInterceptor
 from a2a.types import (
     AgentCapabilities,
     AgentCard,
-    Message,
-    Task,
-    TaskIdParams,
-    TaskQueryParams,
-    GetTaskPushNotificationConfigParams,
-    TaskPushNotificationConfig,
 )
+from a2a.utils import Transports
+
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +23,11 @@ ClientProducer = Callable[
         AgentCard | str,
         ClientConfig,
         list[Consumer],
-        list[ClientCallInterceptor]
+        list[ClientCallInterceptor],
     ],
-    Client
+    Client,
 ]
+
 
 class ClientFactory:
     """ClientFactory is used to generate the appropriate client for the agent.
@@ -103,9 +91,7 @@ class ClientFactory:
         # Determine preferential transport
         server_set = [card.preferred_transport or 'JSONRPC']
         if card.additional_interfaces:
-            server_set.extend(
-                [x.transport for x in card.additional_interfaces]
-            )
+            server_set.extend([x.transport for x in card.additional_interfaces])
         client_set = self._config.supported_transports or ['JSONRPC']
         transport = None
         # Two options, use the client ordering or the server ordering.
@@ -129,6 +115,7 @@ class ClientFactory:
         return self._registry[transport](
             card, self._config, all_consumers, interceptors
         )
+
 
 def minimal_agent_card(url: str, transports: list[str] = []) -> AgentCard:
     """Generates a minimal card to simplify bootstrapping client creation.

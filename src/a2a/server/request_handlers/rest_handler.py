@@ -1,33 +1,28 @@
 import logging
 
 from collections.abc import AsyncIterable
-from starlette.requests import Request
-from pydantic import BaseModel, Field, RootModel
 
+from google.protobuf.json_format import MessageToJson, Parse
+from starlette.requests import Request
+
+from a2a.grpc import a2a_pb2
 from a2a.server.context import ServerCallContext
 from a2a.server.request_handlers.request_handler import RequestHandler
 from a2a.types import (
     A2AError,
     AgentCard,
-    InternalError,
-    Message,
-    Task,
-    TaskArtifactUpdateEvent,
-    TaskNotFoundError,
-    TaskPushNotificationConfig,
-    TaskStatusUpdateEvent,
     GetTaskPushNotificationConfigParams,
-    MessageSendParams,
+    InternalError,
+    Task,
     TaskIdParams,
+    TaskNotFoundError,
     TaskPushNotificationConfig,
     TaskQueryParams,
 )
+from a2a.utils import proto_utils
 from a2a.utils.errors import ServerError
 from a2a.utils.helpers import validate
 from a2a.utils.telemetry import SpanKind, trace_class
-from a2a.grpc import a2a_pb2
-from a2a.utils import proto_utils
-from google.protobuf.json_format import Parse, MessageToJson
 
 
 logger = logging.getLogger(__name__)
@@ -87,11 +82,11 @@ class RESTHandler:
             task_or_message = await self.request_handler.on_message_send(
                 a2a_request, context
             )
-            return MessageToJson(proto_utils.ToProto.task_or_message(task_or_message))
+            return MessageToJson(
+                proto_utils.ToProto.task_or_message(task_or_message)
+            )
         except ServerError as e:
-            raise A2AError(
-                error=e.error if e.error else InternalError()
-            ) from e
+            raise A2AError(error=e.error if e.error else InternalError()) from e
 
     @validate(
         lambda self: self.agent_card.capabilities.streaming,
@@ -130,9 +125,7 @@ class RESTHandler:
                 response = proto_utils.ToProto.stream_response(event)
                 yield MessageToJson(response)
         except ServerError as e:
-            raise A2AError(
-                error=e.error if e.error else InternalError()
-            ) from e
+            raise A2AError(error=e.error if e.error else InternalError()) from e
         return
 
     async def on_cancel_task(
@@ -192,12 +185,11 @@ class RESTHandler:
             async for event in self.request_handler.on_resubscribe_to_task(
                 TaskIdParams(id=task_id), context
             ):
-                yield(MessageToJson(proto_utils.ToProto.stream_response(event)))
+                yield (
+                    MessageToJson(proto_utils.ToProto.stream_response(event))
+                )
         except ServerError as e:
-            raise A2AError(
-                error=e.error if e.error else InternalError()
-            ) from e
-
+            raise A2AError(error=e.error if e.error else InternalError()) from e
 
     async def get_push_notification(
         self,
@@ -218,19 +210,22 @@ class RESTHandler:
         try:
             task_id = request.path_params['id']
             push_id = request.path_params['push_id']
-            if push_id:                params = GetTaskPushNotificationConfigParams(id=task_id, push_id=push_id)
+            if push_id:
+                params = GetTaskPushNotificationConfigParams(
+                    id=task_id, push_id=push_id
+                )
             else:
                 params = TaskIdParams(id=task_id)
-            config = await self.request_handler.on_get_task_push_notification_config(
-                params, context
+            config = (
+                await self.request_handler.on_get_task_push_notification_config(
+                    params, context
+                )
             )
             return MessageToJson(
                 proto_utils.ToProto.task_push_notification_config(config)
             )
         except ServerError as e:
-            raise A2AError(
-                error=e.error if e.error else InternalError()
-            )
+            raise A2AError(error=e.error if e.error else InternalError())
 
     @validate(
         lambda self: self.agent_card.capabilities.pushNotifications,
@@ -266,16 +261,16 @@ class RESTHandler:
             a2a_request = proto_utils.FromProto.task_push_notification_config(
                 params,
             )
-            config = await self.request_handler.on_set_task_push_notification_config(
-                a2a_request, context
+            config = (
+                await self.request_handler.on_set_task_push_notification_config(
+                    a2a_request, context
+                )
             )
             return MessageToJson(
                 proto_utils.ToProto.task_push_notification_config(config)
             )
         except ServerError as e:
-            raise A2AError(
-                error=e.error if e.error else InternalError()
-            ) from e
+            raise A2AError(error=e.error if e.error else InternalError()) from e
 
     async def on_get_task(
         self,
@@ -305,9 +300,7 @@ class RESTHandler:
                 return MessageToJson(proto_utils.ToProto.task(task))
             raise ServerError(error=TaskNotFoundError())
         except ServerError as e:
-            raise A2AError(
-                error=e.error if e.error else InternalError()
-            ) from e
+            raise A2AError(error=e.error if e.error else InternalError()) from e
 
     async def list_push_notifications(
         self,

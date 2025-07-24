@@ -17,11 +17,11 @@ from a2a.client.client import (
     Client,
     ClientCallContext,
     ClientConfig,
-    Consumer,
     ClientEvent,
+    Consumer,
 )
-from a2a.client.middleware import ClientCallInterceptor
 from a2a.client.client_task_manager import ClientTaskManager
+from a2a.client.middleware import ClientCallInterceptor
 from a2a.grpc import a2a_pb2, a2a_pb2_grpc
 from a2a.types import (
     AgentCard,
@@ -64,8 +64,7 @@ class GrpcTransportClient:
         # If they don't provide an agent card, but do have a stub, lookup the
         # card from the stub.
         self._needs_extended_card = (
-            agent_card.supportsAuthenticatedExtendedCard
-            if agent_card else True
+            agent_card.supportsAuthenticatedExtendedCard if agent_card else True
         )
 
     async def send_message(
@@ -251,7 +250,7 @@ class GrpcTransportClient:
         card_pb = await self.stub.GetAgentCard(
             a2a_pb2.GetAgentCardRequest(),
         )
-        card =  proto_utils.FromProto.agent_card(card_pb)
+        card = proto_utils.FromProto.agent_card(card_pb)
         self.agent_card = card
         self._needs_extended_card = False
         return card
@@ -324,7 +323,7 @@ class GrpcClient(Client):
             await tracker.process(event)
             result = (
                 tracker.get_task(),
-                None if isinstance(event, Task) else event
+                None if isinstance(event, Task) else event,
             )
             await self.consume(result, self._card)
             yield result
@@ -410,7 +409,7 @@ def NewGrpcClient(
     card: AgentCard,
     config: ClientConfig,
     consumers: list[Consumer],
-    middleware: list[ClientCallInterceptor]
+    middleware: list[ClientCallInterceptor],
 ) -> Client:
     """Generator for the `GrpcClient` implementation."""
     return GrpcClient(card, config, consumers, middleware)

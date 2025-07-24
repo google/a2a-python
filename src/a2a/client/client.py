@@ -3,14 +3,13 @@ import json
 import logging
 
 from abc import ABC, abstractmethod
-from collections.abc import AsyncIterator
-from typing import Any, Callable, Coroutine
-from uuid import uuid4
+from collections.abc import AsyncIterator, Callable, Coroutine
+from typing import Any
 
 import httpx
 
-from httpx_sse import SSEError, aconnect_sse
 from pydantic import ValidationError
+
 
 # Attempt to import the optional module
 try:
@@ -19,15 +18,15 @@ except ImportError:
     # If grpc.aio is not available, define a dummy type for type checking.
     # This dummy type will only be used by type checkers.
     if TYPE_CHECKING:
+
         class Channel:  # type: ignore[no-redef]
             pass
     else:
-        Channel = None # At runtime, pd will be None if the import failed.
+        Channel = None  # At runtime, pd will be None if the import failed.
 
 from a2a.client.errors import (
     A2AClientHTTPError,
     A2AClientJSONError,
-    A2AClientTimeoutError,
 )
 from a2a.client.middleware import ClientCallContext, ClientCallInterceptor
 from a2a.types import (
@@ -36,14 +35,13 @@ from a2a.types import (
     Message,
     PushNotificationConfig,
     Task,
-    TaskIdParams,
-    TaskQueryParams,
-    TaskPushNotificationConfig,
-    TaskStatusUpdateEvent,
     TaskArtifactUpdateEvent,
+    TaskIdParams,
+    TaskPushNotificationConfig,
+    TaskQueryParams,
+    TaskStatusUpdateEvent,
 )
 from a2a.utils.constants import AGENT_CARD_WELL_KNOWN_PATH
-from a2a.utils.telemetry import SpanKind, trace_class
 
 
 logger = logging.getLogger(__name__)
@@ -136,6 +134,7 @@ class A2ACardResolver:
 
         return agent_card
 
+
 @dataclasses.dataclass
 class ClientConfig:
     """Configuration class for the A2A Client Factory"""
@@ -154,7 +153,7 @@ class ClientConfig:
     grpc_channel_factory: Callable[[str], Channel] | None = None
     """Generates a grpc connection channel for a given url."""
 
-    supported_transports: list[str] =  dataclasses.field(default_factory=list)
+    supported_transports: list[str] = dataclasses.field(default_factory=list)
     """Ordered list of transports for connecting to agent
        (in order of preference). Empty implies JSONRPC only.
 
@@ -166,11 +165,14 @@ class ClientConfig:
     """Whether to use client transport preferences over server preferences.
        Recommended to use server preferences in most situations."""
 
-    accepted_outputModes: list[str] =  dataclasses.field(default_factory=list)
+    accepted_outputModes: list[str] = dataclasses.field(default_factory=list)
     """The set of accepted output modes for the client."""
 
-    push_notification_configs: list[PushNotificationConfig] = dataclasses.field(default_factory=list)
+    push_notification_configs: list[PushNotificationConfig] = dataclasses.field(
+        default_factory=list
+    )
     """Push notification callbacks to use for every request."""
+
 
 UpdateEvent = TaskStatusUpdateEvent | TaskArtifactUpdateEvent | None
 # Alias for emitted events from client
@@ -183,7 +185,6 @@ Consumer = Callable[
 
 
 class Client(ABC):
-
     def __init__(
         self,
         consumers: list[Consumer] = [],
@@ -252,14 +253,11 @@ class Client(ABC):
         *,
         context: ClientCallContext | None = None,
     ) -> AsyncIterator[Task | Message]:
-        pass
         yield
 
     @abstractmethod
     async def get_card(
-        self,
-        *,
-        context: ClientCallContext | None = None
+        self, *, context: ClientCallContext | None = None
     ) -> AgentCard:
         pass
 

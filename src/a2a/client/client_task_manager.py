@@ -1,8 +1,8 @@
 import logging
 
+from a2a.client.errors import A2AClientInvalidArgsError
 from a2a.server.events.event_queue import Event
 from a2a.types import (
-    InvalidParamsError,
     Message,
     Task,
     TaskArtifactUpdateEvent,
@@ -11,7 +11,6 @@ from a2a.types import (
     TaskStatusUpdateEvent,
 )
 from a2a.utils import append_artifact_to_task
-from a2a.client.errors import A2AClientInvalidArgsError
 
 
 logger = logging.getLogger(__name__)
@@ -74,7 +73,7 @@ class ClientTaskManager:
         if isinstance(event, Task):
             if self._current_task:
                 raise A2AClientInvalidArgsError(
-                    "Task is already set, create new manager for new tasks."
+                    'Task is already set, create new manager for new tasks.'
                 )
             await self._save_task(event)
             return event
@@ -101,7 +100,9 @@ class ClientTaskManager:
             )
         if isinstance(event, TaskStatusUpdateEvent):
             logger.debug(
-                'Updating task %s status to: %s', event.taskId, event.status.state
+                'Updating task %s status to: %s',
+                event.taskId,
+                event.status.state,
             )
             if event.status.message:
                 if not task.history:
