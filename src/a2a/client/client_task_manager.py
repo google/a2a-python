@@ -25,7 +25,7 @@ class ClientTaskManager:
 
     def __init__(
         self,
-    ):
+    ) -> None:
         """Initializes the `ClientTaskManager`."""
         self._current_task: Task | None = None
         self._task_id: str | None = None
@@ -132,7 +132,7 @@ class ClientTaskManager:
         return event
 
     async def _save_task(self, task: Task) -> None:
-        """Saves the given task to the `_current_task` and updated `_task_id` and `_context_id`
+        """Saves the given task to the `_current_task` and updated `_task_id` and `_context_id`.
 
         Args:
             task: The `Task` object to save.

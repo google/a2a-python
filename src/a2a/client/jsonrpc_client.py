@@ -437,7 +437,7 @@ class JsonRpcTransportClient:
         http_kwargs: dict[str, Any] | None = None,
         context: ClientCallContext | None = None,
     ) -> AsyncGenerator[SendStreamingMessageResponse]:
-        """Reconnects to get task updates
+        """Reconnects to get task updates.
 
         This method uses Server-Sent Events (SSE) to receive a stream of updates from the agent.
 

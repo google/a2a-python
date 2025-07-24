@@ -455,7 +455,7 @@ class RestTransportClient:
     ) -> AsyncGenerator[
         Task | TaskStatusUpdateEvent | TaskArtifactUpdateEvent | Message
     ]:
-        """Reconnects to get task updates
+        """Reconnects to get task updates.
 
         This method uses Server-Sent Events (SSE) to receive a stream of updates from the agent.
 
@@ -645,12 +645,11 @@ class RestClient(Client):
         *,
         context: ClientCallContext | None = None,
     ) -> Task:
-        response = await self._transport_client.get_task(
+        return await self._transport_client.get_task(
             request,
             http_kwargs=self.get_http_args(context),
             context=context,
         )
-        return response
 
     async def cancel_task(
         self,
@@ -658,12 +657,11 @@ class RestClient(Client):
         *,
         context: ClientCallContext | None = None,
     ) -> Task:
-        response = await self._transport_client.cancel_task(
+        return await self._transport_client.cancel_task(
             request,
             http_kwargs=self.get_http_args(context),
             context=context,
         )
-        return response
 
     async def set_task_callback(
         self,
@@ -671,12 +669,11 @@ class RestClient(Client):
         *,
         context: ClientCallContext | None = None,
     ) -> TaskPushNotificationConfig:
-        response = await self._transport_client.set_task_callback(
+        return await self._transport_client.set_task_callback(
             request,
             http_kwargs=self.get_http_args(context),
             context=context,
         )
-        return response
 
     async def get_task_callback(
         self,
@@ -684,12 +681,11 @@ class RestClient(Client):
         *,
         context: ClientCallContext | None = None,
     ) -> TaskPushNotificationConfig:
-        response = await self._transport_client.get_task_callback(
+        return await self._transport_client.get_task_callback(
             request,
             http_kwargs=self.get_http_args(context),
             context=context,
         )
-        return response
 
     async def resubscribe(
         self,

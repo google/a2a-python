@@ -137,7 +137,7 @@ class A2ACardResolver:
 
 @dataclasses.dataclass
 class ClientConfig:
-    """Configuration class for the A2A Client Factory"""
+    """Configuration class for the A2AClient Factory."""
 
     streaming: bool = True
     """Whether client supports streaming"""
@@ -165,7 +165,7 @@ class ClientConfig:
     """Whether to use client transport preferences over server preferences.
        Recommended to use server preferences in most situations."""
 
-    accepted_outputModes: list[str] = dataclasses.field(default_factory=list)
+    accepted_output_modes: list[str] = dataclasses.field(default_factory=list)
     """The set of accepted output modes for the client."""
 
     push_notification_configs: list[PushNotificationConfig] = dataclasses.field(
@@ -187,9 +187,13 @@ Consumer = Callable[
 class Client(ABC):
     def __init__(
         self,
-        consumers: list[Consumer] = [],
-        middleware: list[ClientCallInterceptor] = [],
+        consumers: list[Consumer] | None = None,
+        middleware: list[ClientCallInterceptor] | None = None,
     ):
+        if middleware is None:
+            middleware = []
+        if consumers is None:
+            consumers = []
         self._consumers = consumers or []
         self._middleware = middleware or []
 
@@ -261,19 +265,21 @@ class Client(ABC):
     ) -> AgentCard:
         pass
 
-    async def add_event_consumer(self, consumer: Consumer):
-        """Attaches additional consumers to the `Client`"""
+    async def add_event_consumer(self, consumer: Consumer) -> None:
+        """Attaches additional consumers to the `Client`."""
         self._consumers.append(consumer)
 
-    async def add_request_middleware(self, middleware: ClientCallInterceptor):
-        """Attaches additional middleware to the `Client`"""
+    async def add_request_middleware(
+        self, middleware: ClientCallInterceptor
+    ) -> None:
+        """Attaches additional middleware to the `Client`."""
         self._middleware.append(middleware)
 
     async def consume(
         self,
         event: tuple[Task, UpdateEvent] | Message | None,
         card: AgentCard,
-    ):
+    ) -> None:
         """Processes the event via all the registered `Consumer`s."""
         if not event:
             return

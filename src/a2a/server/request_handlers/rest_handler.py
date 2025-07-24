@@ -253,7 +253,7 @@ class RESTHandler:
                 found.
         """
         try:
-            task_id = request.path_params['id']
+            _ = request.path_params['id']
             body = await request.body()
             params = a2a_pb2.TaskPushNotificationConfig()
             Parse(body, params)

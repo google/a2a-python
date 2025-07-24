@@ -48,8 +48,10 @@ class ClientFactory:
     def __init__(
         self,
         config: ClientConfig,
-        consumers: list[Consumer] = [],
+        consumers: list[Consumer] | None = None,
     ):
+        if consumers is None:
+            consumers = []
         self._config = config
         self._consumers = consumers
         self._registry: dict[str, ClientProducer] = {}
@@ -62,7 +64,7 @@ class ClientFactory:
         if Transports.GRPC in self._config.supported_transports:
             self._registry[Transports.GRPC] = NewGrpcClient
 
-    def register(self, label: str, generator: ClientProducer):
+    def register(self, label: str, generator: ClientProducer) -> None:
         """Register a new client producer for a given transport label."""
         self._registry[label] = generator
 
@@ -117,7 +119,9 @@ class ClientFactory:
         )
 
 
-def minimal_agent_card(url: str, transports: list[str] = []) -> AgentCard:
+def minimal_agent_card(
+    url: str, transports: list[str] | None = None
+) -> AgentCard:
     """Generates a minimal card to simplify bootstrapping client creation.
 
     This minimal card is not viable itself to interact with the remote agent.
@@ -126,6 +130,8 @@ def minimal_agent_card(url: str, transports: list[str] = []) -> AgentCard:
     correct agent card. This pattern is necessary for gRPC based card access
     as typically these servers won't expose a well known path card.
     """
+    if transports is None:
+        transports = []
     return AgentCard(
         url=url,
         preferred_transport=transports[0] if transports else None,

@@ -27,8 +27,8 @@ from a2a.types import (
     AgentCard,
     GetTaskPushNotificationConfigParams,
     Message,
-    MessageSendParams,
     MessageSendConfiguration,
+    MessageSendParams,
     Task,
     TaskArtifactUpdateEvent,
     TaskIdParams,
@@ -335,11 +335,10 @@ class GrpcClient(Client):
         *,
         context: ClientCallContext | None = None,
     ) -> Task:
-        response = await self._transport_client.get_task(
+        return await self._transport_client.get_task(
             request,
             context=context,
         )
-        return response
 
     async def cancel_task(
         self,
@@ -347,11 +346,10 @@ class GrpcClient(Client):
         *,
         context: ClientCallContext | None = None,
     ) -> Task:
-        response = await self._transport_client.cancel_task(
+        return await self._transport_client.cancel_task(
             request,
             context=context,
         )
-        return response
 
     async def set_task_callback(
         self,
@@ -359,11 +357,10 @@ class GrpcClient(Client):
         *,
         context: ClientCallContext | None = None,
     ) -> TaskPushNotificationConfig:
-        response = await self._transport_client.set_task_callback(
+        return await self._transport_client.set_task_callback(
             request,
             context=context,
         )
-        return response
 
     async def get_task_callback(
         self,
@@ -371,11 +368,10 @@ class GrpcClient(Client):
         *,
         context: ClientCallContext | None = None,
     ) -> TaskPushNotificationConfig:
-        response = await self._transport_client.get_task_callback(
+        return await self._transport_client.get_task_callback(
             request,
             context=context,
         )
-        return response
 
     async def resubscribe(
         self,
