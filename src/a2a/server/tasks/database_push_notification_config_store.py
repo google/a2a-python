@@ -166,7 +166,7 @@ class DatabasePushNotificationConfigStore(PushNotificationConfigStore):
         payload = model_instance.config_data
 
         if self._fernet:
-            from cryptography.fernet import InvalidToken
+            from cryptography.fernet import InvalidToken  # noqa: PLC0415
 
             try:
                 decrypted_payload = self._fernet.decrypt(payload)
