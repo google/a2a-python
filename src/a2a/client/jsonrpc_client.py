@@ -8,12 +8,11 @@ from uuid import uuid4
 import httpx
 
 from httpx_sse import SSEError, aconnect_sse
-from pydantic import ValidationError
 
-from a2a.client.client import Client, ClientConfig, A2ACardResolver, Consumer
+from a2a.client.client import A2ACardResolver, Client, ClientConfig, Consumer
+from a2a.client.client_task_manager import ClientTaskManager
 from a2a.client.errors import A2AClientHTTPError, A2AClientJSONError
 from a2a.client.middleware import ClientCallContext, ClientCallInterceptor
-from a2a.client.client_task_manager import ClientTaskManager
 from a2a.types import (
     AgentCard,
     CancelTaskRequest,
@@ -34,8 +33,8 @@ from a2a.types import (
     SetTaskPushNotificationConfigResponse,
     Task,
     TaskIdParams,
-    TaskQueryParams,
     TaskPushNotificationConfig,
+    TaskQueryParams,
     TaskResubscriptionRequest,
 )
 from a2a.utils.constants import (
@@ -87,7 +86,9 @@ class JsonRpcTransportClient:
         # card.
         self._needs_extended_card = (
             not agent_card.supportsAuthenticatedExtendedCard
-            if agent_card else True)
+            if agent_card
+            else True
+        )
 
     async def _apply_interceptors(
         self,
@@ -379,7 +380,7 @@ class JsonRpcTransportClient:
             'tasks/pushNotificationConfig/set',
             request.model_dump(mode='json', exclude_none=True),
             http_kwargs,
-            context
+            context,
         )
         response_data = await self._send_request(payload, modified_kwargs)
         return SetTaskPushNotificationConfigResponse.model_validate(
@@ -448,7 +449,6 @@ class JsonRpcTransportClient:
             A2AClientHTTPError: If an HTTP or SSE protocol error occurs during the request.
             A2AClientJSONError: If an SSE event data cannot be decoded as JSON or validated.
         """
-
         # Apply interceptors before sending
         payload, modified_kwargs = await self._apply_interceptors(
             'tasks/resubscribe',
@@ -508,7 +508,9 @@ class JsonRpcTransportClient:
         if not card:
             resolver = A2ACardResolver(self.httpx_client, self.url)
             card = await resolver.get_agent_card(http_kwargs=http_kwargs)
-            self._needs_extended_card = card.supports_authenticated_extended_card
+            self._needs_extended_card = (
+                card.supports_authenticated_extended_card
+            )
             self.agent_card = card
 
         if not self._needs_extended_card:
@@ -533,7 +535,7 @@ class JsonRpcClient(Client):
     """JsonRpcClient is the implementation of the JSONRPC A2A client.
 
     This client proxies requests to the JsonRpcTransportClient implementation
-    and manages the JSONRPC specific details. If passing additional arguements
+    and manages the JSONRPC specific details. If passing additional arguments
     in the http.post command, these should be attached to the ClientCallContext
     under the dictionary key 'http_kwargs'.
     """
@@ -606,8 +608,7 @@ class JsonRpcClient(Client):
             await tracker.process(result)
             result = (
                 tracker.get_task(),
-                None if isinstance(result, Task)
-                else result
+                None if isinstance(result, Task) else result,
             )
             await self.consume(result, self._card)
             yield result
@@ -707,11 +708,12 @@ class JsonRpcClient(Client):
             context=context,
         )
 
+
 def NewJsonRpcClient(
     card: AgentCard,
     config: ClientConfig,
     consumers: list[Consumer],
-    middleware: list[ClientCallInterceptor]
+    middleware: list[ClientCallInterceptor],
 ) -> Client:
     """Generator for the `JsonRpcClient` implementation."""
     return JsonRpcClient(card, config, consumers, middleware)
