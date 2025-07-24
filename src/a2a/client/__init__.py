@@ -21,6 +21,11 @@ from a2a.client.grpc_client import (
     GrpcClient,
     NewGrpcClient,
 )
+from a2a.client.rest_client import (
+    RestTransportClient,
+    RestClient,
+    NewRestfulClient,
+)
 from a2a.client.helpers import create_text_message_object
 from a2a.client.middleware import ClientCallContext, ClientCallInterceptor
 from a2a.client.client import (
@@ -68,4 +73,7 @@ __all__ = [
     'JsonRpcTransportClient',
     'NewJsonRpcClient',
     'minimal_agent_card',
+    'RestTransportClient',
+    'RestClient',
+    'NewRestfulClient',
 ]
