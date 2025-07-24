@@ -42,7 +42,6 @@ __all__ = [
     'GrpcHandler',
     'JSONRPCHandler',
     'RESTHandler',
-    'RESTHandler',
     'RequestHandler',
     'build_error_response',
     'prepare_response_object',

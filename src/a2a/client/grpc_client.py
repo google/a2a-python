@@ -28,6 +28,7 @@ from a2a.types import (
     GetTaskPushNotificationConfigParams,
     Message,
     MessageSendParams,
+    MessageSendConfiguration,
     Task,
     TaskArtifactUpdateEvent,
     TaskIdParams,

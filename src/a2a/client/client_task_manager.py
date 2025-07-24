@@ -26,15 +26,7 @@ class ClientTaskManager:
     def __init__(
         self,
     ):
-        """Initializes the `TaskManager`.
-
-        Args:
-            task_id: The ID of the task, if known from the request.
-            context_id: The ID of the context, if known from the request.
-            task_store: The `TaskStore` instance for persistence.
-            initial_message: The `Message` that initiated the task, if any.
-                             Used when creating a new task object.
-        """
+        """Initializes the `ClientTaskManager`."""
         self._current_task: Task | None = None
         self._task_id: str | None = None
         self._context_id: str | None = None
