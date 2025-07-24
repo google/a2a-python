@@ -12,6 +12,7 @@ from a2a.server.request_handlers.response_helpers import (
     build_error_response,
     prepare_response_object,
 )
+from a2a.server.request_handlers.rest_handler import RESTHandler
 
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,7 @@ except ImportError as e:
     _original_error = e
     logger.debug(
         'GrpcHandler not loaded. This is expected if gRPC dependencies are not installed. Error: %s',
+        _original_error,
     )
 
     class GrpcHandler:  # type: ignore
@@ -40,6 +42,7 @@ __all__ = [
     'DefaultRequestHandler',
     'GrpcHandler',
     'JSONRPCHandler',
+    'RESTHandler',
     'RequestHandler',
     'RESTHandler',
     'build_error_response',

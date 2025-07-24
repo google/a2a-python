@@ -1,5 +1,7 @@
 """Client-side components for interacting with an A2A agent."""
 
+import logging
+
 from a2a.client.auth import (
     AuthInterceptor,
     CredentialService,
@@ -45,6 +47,27 @@ from a2a.client.client_factory import (
 # a future release.
 A2AClient = JsonRpcTransportClient
 A2AGrpcClient = GrpcTransportClient
+
+logger = logging.getLogger(__name__)
+
+try:
+    from a2a.client.grpc_client import A2AGrpcClient  # type: ignore
+except ImportError as e:
+    _original_error = e
+    logger.debug(
+        'A2AGrpcClient not loaded. This is expected if gRPC dependencies are not installed. Error: %s',
+        _original_error,
+    )
+
+    class A2AGrpcClient:  # type: ignore
+        """Placeholder for A2AGrpcClient when dependencies are not installed."""
+
+        def __init__(self, *args, **kwargs):
+            raise ImportError(
+                'To use A2AGrpcClient, its dependencies must be installed. '
+                'You can install them with \'pip install "a2a-sdk[grpc]"\''
+            ) from _original_error
+
 
 __all__ = [
     'A2ACardResolver',

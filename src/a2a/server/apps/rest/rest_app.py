@@ -144,10 +144,15 @@ class RESTApplication:
         except Exception as e:
             # Since the stream has started, we can't return a JSONResponse.
             # Instead, we run the error handling logic (provides logging)
+            return EventSourceResponse(
+                event_generator(method(request, call_context))
+            )
+        except Exception as e:
+            # Since the stream has started, we can't return a JSONResponse.
+            # Instead, we runt the error handling logic (provides logging)
             # and reraise the error and let server framework manage
             self._handle_error(e)
             raise e
-
 
     async def _handle_get_agent_card(self, request: Request) -> JSONResponse:
         """Handles GET requests for the agent card endpoint.
@@ -224,4 +229,5 @@ class RESTApplication:
         }
         if self.agent_card.supportsAuthenticatedExtendedCard:
             routes[('/v1/card', 'GET')] = self.handle_authenticated_agent_card
+
         return routes

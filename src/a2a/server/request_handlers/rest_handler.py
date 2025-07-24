@@ -71,6 +71,7 @@ class RESTHandler:
 
         Returns:
             A `str` containing the JSON result (Task or Message)
+
         Raises:
             A2AError if a `ServerError` is raised by the handler.
         """
@@ -197,6 +198,7 @@ class RESTHandler:
                 error=e.error if e.error else InternalError()
             ) from e
 
+
     async def get_push_notification(
         self,
         request: Request,
@@ -216,8 +218,7 @@ class RESTHandler:
         try:
             task_id = request.path_params['id']
             push_id = request.path_params['push_id']
-            if push_id:
-                params = GetTaskPushNotificationConfigParams(id=task_id, push_id=push_id)
+            if push_id:                params = GetTaskPushNotificationConfigParams(id=task_id, push_id=push_id)
             else:
                 params = TaskIdParams(id=task_id)
             config = await self.request_handler.on_get_task_push_notification_config(
@@ -313,11 +314,11 @@ class RESTHandler:
         request: Request,
         context: ServerCallContext | None = None,
     ) -> list[TaskPushNotificationConfig]:
-      raise NotImplementedError("list notifications not implemented")
+        raise NotImplementedError('list notifications not implemented')
 
     async def list_tasks(
         self,
         request: Request,
         context: ServerCallContext | None = None,
     ) -> list[Task]:
-      raise NotImplementedError("list tasks not implemented")
+        raise NotImplementedError('list tasks not implemented')

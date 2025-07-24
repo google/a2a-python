@@ -84,7 +84,7 @@ task_status_submitted = TaskStatus(
 )
 MINIMAL_TASK_OBJ = Task(
     id='task-abc',
-    contextId='session-xyz',
+    context_id='session-xyz',
     status=task_status_submitted,
     kind='task',
     metadata={'test_key': 'test_value'},

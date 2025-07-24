@@ -24,7 +24,7 @@ def create_sample_message(
     content='test message', msg_id='msg1', role=Role.user
 ):
     return Message(
-        messageId=msg_id,
+        message_id=msg_id,
         role=role,
         parts=[Part(root=TextPart(text=content))],
     )
@@ -36,7 +36,7 @@ def create_sample_task(
 ):
     return Task(
         id=task_id,
-        contextId=context_id,
+        context_id=context_id,
         status=TaskStatus(state=status_state),
     )
 
@@ -46,8 +46,8 @@ def create_sample_status_update(
     task_id='task1', status_state=TaskState.working, context_id='ctx1'
 ):
     return TaskStatusUpdateEvent(
-        taskId=task_id,
-        contextId=context_id,
+        task_id=task_id,
+        context_id=context_id,
         status=TaskStatus(state=status_state),
         final=False,  # Typically false unless it's the very last update
     )
