@@ -75,16 +75,23 @@ class AgentExtension(A2ABaseModel):
 class AgentInterface(A2ABaseModel):
     """
     Declares a combination of a target URL and a transport protocol for interacting with the agent.
+    This allows agents to expose the same functionality over multiple transport mechanisms.
     """
 
-    transport: str
+    transport: str = Field(..., examples=['JSONRPC', 'GRPC', 'HTTP+JSON'])
     """
-    The transport protocol supported at this URL. This is a string to allow for future
-    extension. Core supported transports include 'JSONRPC', 'GRPC', and 'HTTP+JSON'.
+    The transport protocol supported at this URL.
     """
-    url: str
+    url: str = Field(
+        ...,
+        examples=[
+            'https://api.example.com/a2a/v1',
+            'https://grpc.example.com/a2a',
+            'https://rest.example.com/v1',
+        ],
+    )
     """
-    The URL where this interface is available.
+    The URL where this interface is available. Must be a valid absolute HTTPS URL in production.
     """
 
 
@@ -928,6 +935,16 @@ class TextPart(A2ABaseModel):
     """
 
 
+class TransportProtocol(str, Enum):
+    """
+    Supported A2A transport protocols.
+    """
+
+    jsonrpc = 'JSONRPC'
+    grpc = 'GRPC'
+    http_json = 'HTTP+JSON'
+
+
 class UnsupportedOperationError(A2ABaseModel):
     """
     An A2A-specific error indicating that the requested operation is not supported by the agent.
@@ -1615,7 +1632,16 @@ class AgentCard(A2ABaseModel):
     additional_interfaces: list[AgentInterface] | None = None
     """
     A list of additional supported interfaces (transport and URL combinations).
-    A client can use any of these to communicate with the agent.
+    This allows agents to expose multiple transports, potentially at different URLs.
+
+    Best practices:
+    - SHOULD include all supported transports for completeness
+    - SHOULD include an entry matching the main 'url' and 'preferredTransport'
+    - MAY reuse URLs if multiple transports are available at the same endpoint
+    - MUST accurately declare the transport available at each URL
+
+    Clients can select any interface from this list based on their transport capabilities
+    and preferences. This enables transport negotiation and fallback scenarios.
     """
     capabilities: AgentCapabilities
     """
@@ -1650,9 +1676,16 @@ class AgentCard(A2ABaseModel):
     """
     A human-readable name for the agent.
     """
-    preferred_transport: str | None = None
+    preferred_transport: str | None = Field(
+        default='JSONRPC', examples=['JSONRPC', 'GRPC', 'HTTP+JSON']
+    )
     """
-    The transport protocol for the preferred endpoint. Defaults to 'JSONRPC' if not specified.
+    The transport protocol for the preferred endpoint (the main 'url' field).
+    If not specified, defaults to 'JSONRPC'.
+
+    IMPORTANT: The transport specified here MUST be available at the main 'url'.
+    This creates a binding between the main URL and its supported transport protocol.
+    Clients should prefer this transport and URL combination when both are supported.
     """
     protocol_version: str | None = '0.2.6'
     """
@@ -1681,9 +1714,10 @@ class AgentCard(A2ABaseModel):
     If true, the agent can provide an extended agent card with additional details
     to authenticated users. Defaults to false.
     """
-    url: str
+    url: str = Field(..., examples=['https://api.example.com/a2a/v1'])
     """
     The preferred endpoint URL for interacting with the agent.
+    This URL MUST support the transport specified by 'preferredTransport'.
     """
     version: str = Field(..., examples=['1.0.0'])
     """
