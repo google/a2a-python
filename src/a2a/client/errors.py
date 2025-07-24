@@ -47,7 +47,7 @@ class A2AClientTimeoutError(A2AClientError):
 
 
 class A2AClientInvalidArgsError(A2AClientError):
-    """Client exception for timeout errors during a request."""
+    """Client exception for invalid arguments passed to a method."""
 
     def __init__(self, message: str):
         """Initializes the A2AClientInvalidArgsError.
