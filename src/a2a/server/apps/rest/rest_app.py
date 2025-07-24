@@ -139,18 +139,11 @@ class RESTApplication:
             ) -> AsyncGenerator[dict[str, str]]:
                 async for item in stream:
                     yield {'data': item}
-<<<<<<< Updated upstream
-            return EventSourceResponse(event_generator(method(request, call_context)))
-        except Exception as e:
-            # Since the stream has started, we can't return a JSONResponse.
-            # Instead, we runt the error handling logic (provides logging)
-=======
             return EventSourceResponse(
                 event_generator(method(request, call_context)))
         except Exception as e:
             # Since the stream has started, we can't return a JSONResponse.
             # Instead, we run the error handling logic (provides logging)
->>>>>>> Stashed changes
             # and reraise the error and let server framework manage
             self._handle_error(e)
             raise e
