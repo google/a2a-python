@@ -508,14 +508,11 @@ class JsonRpcTransportClient:
         if not card:
             resolver = A2ACardResolver(self.httpx_client, self.url)
             card = await resolver.get_agent_card(http_kwargs=http_kwargs)
-            self._needs_extended_card = card.supportsAuthenticatedExtendedCard
+            self._needs_extended_card = card.supports_authenticated_extended_card
             self.agent_card = card
 
         if not self._needs_extended_card:
             return card
-
-        if not request.id:
-            request.id = str(uuid4())
 
         # Apply interceptors before sending
         payload, modified_kwargs = await self._apply_interceptors(
