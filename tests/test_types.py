@@ -1530,7 +1530,7 @@ def test_use_get_task_push_notification_params_for_request() -> None:
     )
 
 
-def test_camelCase() -> None:
+def test_camelCase(recwarn) -> None:
     skill = AgentSkill(
         id='hello_world',
         name='Returns hello world',
@@ -1551,8 +1551,14 @@ def test_camelCase() -> None:
         supportsAuthenticatedExtendedCard=True,
     )
 
+    # Test accessing a standard property like 'version' should not produce a deprecation warning
+    version = agent_card.version
+    assert version == '1.0.0'
+    assert (
+        not recwarn.list  # Assert that no warnings were emitted during the access
+    )
+
     # Test setting an attribute via camelCase alias
-    # We expect a DeprecationWarning with a specific message
     with pytest.warns(
         DeprecationWarning,
         match="Setting field 'supportsAuthenticatedExtendedCard'",
@@ -1560,7 +1566,6 @@ def test_camelCase() -> None:
         agent_card.supportsAuthenticatedExtendedCard = False
 
     # Test getting an attribute via camelCase alias
-    # We expect another DeprecationWarning with a specific message
     with pytest.warns(
         DeprecationWarning, match="Accessing field 'defaultInputModes'"
     ):
