@@ -207,7 +207,6 @@ class Client(ABC):
         pairs, or a `Message`. Client will also send these values to any
         configured `Consumer`s in the client.
         """
-        pass
         yield
 
     @abstractmethod
