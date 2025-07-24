@@ -215,7 +215,7 @@ class RESTHandler:
                     id=task_id, push_id=push_id
                 )
             else:
-                params = TaskIdParams['id']
+                params = TaskIdParams(id=task_id)
             config = (
                 await self.request_handler.on_get_task_push_notification_config(
                     params, context
@@ -257,11 +257,9 @@ class RESTHandler:
             body = await request.body()
             params = a2a_pb2.TaskPushNotificationConfig()
             Parse(body, params)
-            params = TaskPushNotificationConfig.validate_model(body)
-            a2a_request = (
-                proto_utils.FromProto.task_push_notification_config(
-                    params,
-                ),
+            params = TaskPushNotificationConfig.model_validate(body)
+            a2a_request = proto_utils.FromProto.task_push_notification_config(
+                params,
             )
             config = (
                 await self.request_handler.on_set_task_push_notification_config(
@@ -293,10 +291,10 @@ class RESTHandler:
         """
         try:
             task_id = request.path_params['id']
-            historyLength = None
-            if 'historyLength' in request.query_params:
-                historyLength = request.query_params['historyLength']
-            params = TaskQueryParams(id=task_id, historyLength=historyLength)
+            history_length = request.query_params.get('historyLength', None)
+            if historyLength:
+                history_length = int(history_length)
+            params = TaskQueryParams(id=task_id, history_length=history_length)
             task = await self.request_handler.on_get_task(params, context)
             if task:
                 return MessageToJson(proto_utils.ToProto.task(task))

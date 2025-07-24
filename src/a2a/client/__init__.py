@@ -7,16 +7,47 @@ from a2a.client.auth import (
     CredentialService,
     InMemoryContextCredentialStore,
 )
-from a2a.client.client import A2ACardResolver, A2AClient
+from a2a.client.client import (
+    A2ACardResolver,
+    Client,
+    ClientConfig,
+    ClientEvent,
+    Consumer,
+)
+from a2a.client.client_factory import (
+    ClientFactory,
+    ClientProducer,
+    minimal_agent_card,
+)
 from a2a.client.errors import (
     A2AClientError,
     A2AClientHTTPError,
     A2AClientJSONError,
     A2AClientTimeoutError,
 )
+from a2a.client.grpc_client import (
+    GrpcClient,
+    GrpcTransportClient,
+    NewGrpcClient,
+)
 from a2a.client.helpers import create_text_message_object
+from a2a.client.jsonrpc_client import (
+    JsonRpcClient,
+    JsonRpcTransportClient,
+    NewJsonRpcClient,
+)
 from a2a.client.middleware import ClientCallContext, ClientCallInterceptor
+from a2a.client.rest_client import (
+    NewRestfulClient,
+    RestClient,
+    RestTransportClient,
+)
 
+
+# For backward compatability define this alias. This will be deprecated in
+# a future release.
+A2AClient = JsonRpcTransportClient
+A2AGrpcClient = GrpcTransportClient
 
 logger = logging.getLogger(__name__)
 
@@ -41,16 +72,32 @@ except ImportError as e:
 
 __all__ = [
     'A2ACardResolver',
-    'A2AClient',
+    'A2AClient',  # for backward compatability
     'A2AClientError',
     'A2AClientHTTPError',
     'A2AClientJSONError',
     'A2AClientTimeoutError',
-    'A2AGrpcClient',
+    'A2AGrpcClient',  # for backward compatability
     'AuthInterceptor',
+    'Client',
     'ClientCallContext',
     'ClientCallInterceptor',
+    'ClientConfig',
+    'ClientEvent',
+    'ClientFactory',
+    'ClientProducer',
+    'Consumer',
     'CredentialService',
+    'GrpcClient',
+    'GrpcTransportClient',
     'InMemoryContextCredentialStore',
+    'JsonRpcClient',
+    'JsonRpcTransportClient',
+    'NewGrpcClient',
+    'NewJsonRpcClient',
+    'NewRestfulClient',
+    'RestClient',
+    'RestTransportClient',
     'create_text_message_object',
+    'minimal_agent_card',
 ]

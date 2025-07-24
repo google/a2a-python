@@ -133,6 +133,12 @@ class RESTApplication:
             return EventSourceResponse(
                 event_generator(method(request, call_context))
             )
+        except Exception:
+            # Since the stream has started, we can't return a JSONResponse.
+            # Instead, we run the error handling logic (provides logging)
+            return EventSourceResponse(
+                event_generator(method(request, call_context))
+            )
         except Exception as e:
             # Since the stream has started, we can't return a JSONResponse.
             # Instead, we runt the error handling logic (provides logging)
@@ -180,49 +186,43 @@ class RESTApplication:
 
     def routes(self) -> dict[tuple[str, str], Callable[[Request], Any]]:
         routes = {
-            ('/v1/message:send', 'POST'): (
-                functools.partial(
-                    self._handle_request, self.handler.on_message_send
-                ),
+            ('/v1/message:send', 'POST'): functools.partial(
+                self._handle_request, self.handler.on_message_send
             ),
-            ('/v1/message:stream', 'POST'): (
-                functools.partial(
-                    self._handle_streaming_request,
-                    self.handler.on_message_send_stream,
-                ),
+            ('/v1/message:stream', 'POST'): functools.partial(
+                self._handle_streaming_request,
+                self.handler.on_message_send_stream,
             ),
-            ('/v1/tasks/{id}:subscribe', 'POST'): (
-                functools.partial(
-                    self._handle_streaming_request,
-                    self.handler.on_resubscribe_to_task,
-                ),
+            ('/v1/tasks/{id}:subscribe', 'POST'): functools.partial(
+                self._handle_streaming_request,
+                self.handler.on_resubscribe_to_task,
             ),
-            ('/v1/tasks/{id}', 'GET'): (
-                functools.partial(
-                    self._handle_request, self.handler.on_get_task
-                ),
+            ('/v1/tasks/{id}', 'GET'): functools.partial(
+                self._handle_request, self.handler.on_get_task
             ),
-            ('/v1/tasks/{id}/pushNotificationConfigs/{push_id}', 'GET'): (
-                functools.partial(
-                    self._handle_request, self.handler.get_push_notification
-                ),
+            (
+                '/v1/tasks/{id}/pushNotificationConfigs/{push_id}',
+                'GET',
+            ): functools.partial(
+                self._handle_request, self.handler.get_push_notification
             ),
-            ('/v1/tasks/{id}/pushNotificationConfigs', 'POST'): (
-                functools.partial(
-                    self._handle_request, self.handler.set_push_notification
-                ),
+            (
+                '/v1/tasks/{id}/pushNotificationConfigs',
+                'POST',
+            ): functools.partial(
+                self._handle_request, self.handler.set_push_notification
             ),
-            ('/v1/tasks/{id}/pushNotificationConfigs', 'GET'): (
-                functools.partial(
-                    self._handle_request, self.handler.list_push_notifications
-                ),
+            (
+                '/v1/tasks/{id}/pushNotificationConfigs',
+                'GET',
+            ): functools.partial(
+                self._handle_request, self.handler.list_push_notifications
             ),
-            ('/v1/tasks', 'GET'): (
-                functools.partial(
-                    self._handle_request, self.handler.list_tasks
-                ),
+            ('/v1/tasks', 'GET'): functools.partial(
+                self._handle_request, self.handler.list_tasks
             ),
         }
         if self.agent_card.supportsAuthenticatedExtendedCard:
-            routes['/v1/card'] = (self.handle_authenticated_agent_card, 'GET')
+            routes[('/v1/card', 'GET')] = self.handle_authenticated_agent_card
+
         return routes

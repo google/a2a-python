@@ -28,12 +28,14 @@ from a2a.utils.task import (
     completed_task,
     new_task,
 )
+from a2a.utils.transports import Transports
 
 
 __all__ = [
     'AGENT_CARD_WELL_KNOWN_PATH',
     'DEFAULT_RPC_URL',
     'EXTENDED_AGENT_CARD_PATH',
+    'Transports',
     'append_artifact_to_task',
     'are_modalities_compatible',
     'build_text_artifact',
