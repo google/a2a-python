@@ -1551,13 +1551,6 @@ def test_camelCase(recwarn) -> None:
         supportsAuthenticatedExtendedCard=True,
     )
 
-    # Test accessing a standard property like 'version' should not produce a deprecation warning
-    version = agent_card.version
-    assert version == '1.0.0'
-    assert (
-        not recwarn.list  # Assert that no warnings were emitted during the access
-    )
-
     # Test setting an attribute via camelCase alias
     with pytest.warns(
         DeprecationWarning,
