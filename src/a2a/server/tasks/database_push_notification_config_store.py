@@ -94,7 +94,7 @@ class DatabasePushNotificationConfigStore(PushNotificationConfigStore):
 
         if encryption_key:
             try:
-                from cryptography.fernet import Fernet
+                from cryptography.fernet import Fernet  # noqa: PLC0415
             except ImportError as e:
                 raise ImportError(
                     "DatabasePushNotificationConfigStore with encryption requires the 'cryptography' "
