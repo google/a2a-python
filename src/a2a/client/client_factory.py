@@ -9,10 +9,7 @@ from a2a.client.grpc_client import NewGrpcClient
 from a2a.client.jsonrpc_client import NewJsonRpcClient
 from a2a.client.middleware import ClientCallInterceptor
 from a2a.client.rest_client import NewRestfulClient
-from a2a.types import (
-    AgentCapabilities,
-    AgentCard,
-)
+from a2a.types import AgentCapabilities, AgentCard, AgentInterface
 from a2a.utils import Transports
 
 
@@ -135,7 +132,11 @@ def minimal_agent_card(
     return AgentCard(
         url=url,
         preferred_transport=transports[0] if transports else None,
-        additional_interfaces=transports[1:] if len(transports) > 1 else [],
+        additional_interfaces=[
+            AgentInterface(transport=t, url=url) for t in transports[1:]
+        ]
+        if len(transports) > 1
+        else [],
         supports_authenticated_extended_card=True,
         capabilities=AgentCapabilities(),
         default_input_modes=[],
