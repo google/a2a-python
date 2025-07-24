@@ -716,4 +716,5 @@ def NewJsonRpcClient(
     consumers: list[Consumer],
     middleware: list[ClientCallInterceptor]
 ) -> Client:
+    """Generator for the `JsonRpcClient` implementation."""
     return JsonRpcClient(card, config, consumers, middleware)

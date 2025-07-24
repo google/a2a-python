@@ -33,7 +33,7 @@ from a2a.utils.telemetry import SpanKind, trace_class
 logger = logging.getLogger(__name__)
 
 
-#@trace_class(kind=SpanKind.CLIENT)
+@trace_class(kind=SpanKind.CLIENT)
 class GrpcTransportClient:
     """Transport specific details for interacting with an A2A agent via gRPC."""
 
@@ -248,7 +248,6 @@ class GrpcTransportClient:
         return card
 
 
-#@trace_class(kind=SpanKind.CLIENT)
 class GrpcClient(Client):
     """GrpcClient provides the Client interface for the gRPC transport."""
 
@@ -276,30 +275,35 @@ class GrpcClient(Client):
         *,
         context: ClientCallContext | None = None,
     ) -> AsyncIterator[ClientEvent | Message]:
-        # TODO: Set the request params from config
+        config = MessageSendConfiguration(
+            accepted_output_modes=self._config.accepted_output_modes,
+            blocking=not self._config.polling,
+            push_notification_config=(
+                self._config.push_notification_configs[0]
+                if self._config.push_notification_configs
+                else None
+            ),
+        )
         if not self._config.streaming or not self._card.capabilities.streaming:
-            print("Using blocking interaction")
             response = await self._transport_client.send_message(
                 MessageSendParams(
                     message=request,
-                    # TODO: set params
+                    configuration=config,
                 ),
                 context=context,
             )
             result = (
                 (response, None) if isinstance(response, Task) else response
             )
-            # Spin off consumers - in thread, out of thread, etc?
             await self.consume(result, self._card)
             yield result
             return
         # Get Task tracker
-        print("Using streaming interactions")
         tracker = ClientTaskManager()
         async for event in self._transport_client.send_message_streaming(
             MessageSendParams(
                 message=request,
-                # TODO: set params
+                configuration=config,
             ),
             context=context,
         ):
@@ -399,4 +403,5 @@ def NewGrpcClient(
     consumers: list[Consumer],
     middleware: list[ClientCallInterceptor]
 ) -> Client:
+    """Generator for the `GrpcClient` implementation."""
     return GrpcClient(card, config, consumers, middleware)

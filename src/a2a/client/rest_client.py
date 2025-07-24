@@ -94,41 +94,6 @@ class RestTransportClient:
         # TODO: Implement interceptors for other transports
         return final_request_payload, final_http_kwargs
 
-    @staticmethod
-    async def get_client_from_agent_card_url(
-        httpx_client: httpx.AsyncClient,
-        base_url: str,
-        agent_card_path: str = AGENT_CARD_WELL_KNOWN_PATH,
-        http_kwargs: dict[str, Any] | None = None,
-    ) -> 'A2AClient':
-        """[deprecated] Fetches the public AgentCard and initializes an A2A client.
-
-        This method will always fetch the public agent card. If an authenticated
-        or extended agent card is required, the A2ACardResolver should be used
-        directly to fetch the specific card, and then the A2AClient should be
-        instantiated with it.
-
-        Args:
-            httpx_client: An async HTTP client instance (e.g., httpx.AsyncClient).
-            base_url: The base URL of the agent's host.
-            agent_card_path: The path to the agent card endpoint, relative to the base URL.
-            http_kwargs: Optional dictionary of keyword arguments to pass to the
-                underlying httpx.get request when fetching the agent card.
-
-        Returns:
-            An initialized `A2AClient` instance.
-
-        Raises:
-            A2AClientHTTPError: If an HTTP error occurs fetching the agent card.
-            A2AClientJSONError: If the agent card response is invalid.
-        """
-        agent_card: AgentCard = await A2ACardResolver(
-            httpx_client, base_url=base_url, agent_card_path=agent_card_path
-        ).get_agent_card(
-            http_kwargs=http_kwargs
-        )  # Fetches public card by default
-        return A2AClient(httpx_client=httpx_client, agent_card=agent_card)
-
     async def send_message(
         self,
         request: MessageSendParams,
@@ -759,4 +724,5 @@ def NewRestfulClient(
     consumers: list[Consumer],
     middleware: list[ClientCallInterceptor]
 ) -> Client:
+    """Generator for the `RestClient` implementation."""
     return RestClient(card, config, consumers, middleware)

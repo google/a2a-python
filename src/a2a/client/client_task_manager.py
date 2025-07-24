@@ -27,7 +27,7 @@ class ClientTaskManager:
     def __init__(
         self,
     ):
-        """Initializes the TaskManager.
+        """Initializes the `TaskManager`.
 
         Args:
             task_id: The ID of the task, if known from the request.
@@ -41,10 +41,9 @@ class ClientTaskManager:
         self._context_id: str | None = None
 
     def get_task(self) -> Task | None:
-        """Retrieves the current task object, either from memory or the store.
+        """Retrieves the current task object, either from memory.
 
-        If `task_id` is set, it first checks the in-memory `_current_task`,
-        then attempts to load it from the `task_store`.
+        If `task_id` is set, it returns `_current_task` otherwise None.
 
         Returns:
             The `Task` object if found, otherwise `None`.
@@ -69,7 +68,7 @@ class ClientTaskManager:
             The updated `Task` object after processing the event.
 
         Raises:
-            ServerError: If the task ID in the event conflicts with the TaskManager's ID
+            ClientError: If the task ID in the event conflicts with the TaskManager's ID
                          when the TaskManager's ID is already set.
         """
         if isinstance(event, Task):
@@ -142,7 +141,7 @@ class ClientTaskManager:
         return event
 
     async def _save_task(self, task: Task) -> None:
-        """Saves the given task to the task store and updates the in-memory `_current_task`.
+        """Saves the given task to the `_current_task` and updated `_task_id` and `_context_id`
 
         Args:
             task: The `Task` object to save.
@@ -155,7 +154,7 @@ class ClientTaskManager:
             self._context_id = task.contextId
 
     def update_with_message(self, message: Message, task: Task) -> Task:
-        """Updates a task object in memory by adding a new message to its history.
+        """Updates a task object adding a new message to its history.
 
         If the task has a message in its current status, that message is moved
         to the history first.

@@ -144,7 +144,9 @@ class ClientConfig:
     """Whether client supports streaming"""
 
     polling: bool = False
-    """Whether client prefers to poll for updates from message:send"""
+    """Whether client prefers to poll for updates from message:send. It is
+    the callers job to check if the response is completed and if not run a
+    polling loop."""
 
     httpx_client: httpx.AsyncClient | None = None
     """Http client to use to connect to agent."""
@@ -164,10 +166,10 @@ class ClientConfig:
     """Whether to use client transport preferences over server preferences.
        Recommended to use server preferences in most situations."""
 
-    acceptedOutputModes: list[str] =  dataclasses.field(default_factory=list)
+    accepted_outputModes: list[str] =  dataclasses.field(default_factory=list)
     """The set of accepted output modes for the client."""
 
-    pushNotificationConfigs: list[PushNotificationConfig] = dataclasses.field(default_factory=list)
+    push_notification_configs: list[PushNotificationConfig] = dataclasses.field(default_factory=list)
     """Push notification callbacks to use for every request."""
 
 UpdateEvent = TaskStatusUpdateEvent | TaskArtifactUpdateEvent | None
@@ -197,6 +199,14 @@ class Client(ABC):
         *,
         context: ClientCallContext | None = None,
     ) -> AsyncIterator[ClientEvent | Message]:
+        """Sends a message to the server.
+
+        This will automatically use the streaming or non-streaming approach
+        as supported by the server and the client config. Client will
+        aggregate update events and return an iterator of (`Task`,`Update`)
+        pairs, or a `Message`. Client will also send these values to any
+        configured `Consumer`s in the client.
+        """
         pass
         yield
 
@@ -255,9 +265,11 @@ class Client(ABC):
         pass
 
     async def add_event_consumer(self, consumer: Consumer):
+        """Attaches additional consumers to the `Client`"""
         self._consumers.append(consumer)
 
     async def add_request_middleware(self, middleware: ClientCallInterceptor):
+        """Attaches additional middleware to the `Client`"""
         self._middleware.append(middleware)
 
     async def consume(
@@ -265,6 +277,7 @@ class Client(ABC):
         event: tuple[Task, UpdateEvent] | Message | None,
         card: AgentCard,
     ):
+        """Processes the event via all the registered `Consumer`s."""
         if not event:
             return
         for c in self._consumers:
