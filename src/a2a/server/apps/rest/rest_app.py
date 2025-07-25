@@ -21,6 +21,7 @@ from a2a.server.request_handlers.rest_handler import (
     RESTHandler,
 )
 from a2a.types import (
+    A2AError,
     AgentCard,
     InternalError,
     InvalidRequestError,
@@ -62,8 +63,8 @@ class RESTApplication:
         )
         self._context_builder = context_builder or DefaultCallContextBuilder()
 
-    def _generate_error_response(self, error) -> JSONResponse:
-        """Creates a JSONResponse for a errors.
+    def _generate_error_response(self, error: A2AError) -> JSONResponse:
+        """Creates a JSONResponse for an error.
 
         Logs the error based on its type.
 
@@ -179,6 +180,16 @@ class RESTApplication:
         )
 
     def routes(self) -> dict[tuple[str, str], Callable[[Request], Any]]:
+        """Constructs a dictionary of API routes and their corresponding handlers.
+
+        This method maps URL paths and HTTP methods to the appropriate handler
+        functions from the RESTHandler. It can be used by a web framework
+        (like Starlette or FastAPI) to set up the application's endpoints.
+
+        Returns:
+            A dictionary where each key is a tuple of (path, http_method) and
+            the value is the callable handler for that route.
+        """
         routes = {
             ('/v1/message:send', 'POST'): functools.partial(
                 self._handle_request, self.handler.on_message_send
