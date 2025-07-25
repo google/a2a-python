@@ -1552,7 +1552,6 @@ def test_camelCase() -> None:
     )
 
     # Test setting an attribute via camelCase alias
-    # We expect a DeprecationWarning with a specific message
     with pytest.warns(
         DeprecationWarning,
         match="Setting field 'supportsAuthenticatedExtendedCard'",
@@ -1560,7 +1559,6 @@ def test_camelCase() -> None:
         agent_card.supportsAuthenticatedExtendedCard = False
 
     # Test getting an attribute via camelCase alias
-    # We expect another DeprecationWarning with a specific message
     with pytest.warns(
         DeprecationWarning, match="Accessing field 'defaultInputModes'"
     ):
