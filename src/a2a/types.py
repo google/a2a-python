@@ -48,6 +48,27 @@ class APIKeySecurityScheme(A2ABaseModel):
     """
 
 
+class AgentCardSignature(A2ABaseModel):
+    """
+    AgentCardSignature represents a JWS signature of an AgentCard.
+    This follows the JSON format of an RFC 7515 JSON Web Signature (JWS).
+    """
+
+    header: dict[str, Any] | None = None
+    """
+    The unprotected JWS header values.
+    """
+    protected: str
+    """
+    The protected JWS header for the signature. This is a Base64url-encoded
+    JSON object, as per RFC 7515.
+    """
+    signature: str
+    """
+    The computed signature, Base64url-encoded.
+    """
+
+
 class AgentExtension(A2ABaseModel):
     """
     A declaration of a protocol extension supported by an Agent.
@@ -1704,6 +1725,10 @@ class AgentCard(A2ABaseModel):
     """
     A declaration of the security schemes available to authorize requests. The key is the
     scheme name. Follows the OpenAPI 3.0 Security Scheme Object.
+    """
+    signatures: list[AgentCardSignature] | None = None
+    """
+    JSON Web Signatures computed for this AgentCard.
     """
     skills: list[AgentSkill]
     """
