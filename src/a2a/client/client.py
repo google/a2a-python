@@ -40,6 +40,7 @@ from a2a.types import (
     TaskPushNotificationConfig,
     TaskQueryParams,
     TaskStatusUpdateEvent,
+    TransportProtocol,
 )
 from a2a.utils.constants import AGENT_CARD_WELL_KNOWN_PATH
 
@@ -153,11 +154,13 @@ class ClientConfig:
     grpc_channel_factory: Callable[[str], Channel] | None = None
     """Generates a grpc connection channel for a given url."""
 
-    supported_transports: list[str] = dataclasses.field(default_factory=list)
+    supported_transports: list[TransportProtocol | str] = dataclasses.field(
+        default_factory=list
+    )
     """Ordered list of transports for connecting to agent
        (in order of preference). Empty implies JSONRPC only.
 
-       This is a string type and not a Transports enum type to allow custom
+       This is a string type to allow custom
        transports to exist in closed ecosystems.
     """
 

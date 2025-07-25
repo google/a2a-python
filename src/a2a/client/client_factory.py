@@ -9,8 +9,12 @@ from a2a.client.grpc_client import NewGrpcClient
 from a2a.client.jsonrpc_client import NewJsonRpcClient
 from a2a.client.middleware import ClientCallInterceptor
 from a2a.client.rest_client import NewRestfulClient
-from a2a.types import AgentCapabilities, AgentCard, AgentInterface
-from a2a.utils import Transports
+from a2a.types import (
+    AgentCapabilities,
+    AgentCard,
+    AgentInterface,
+    TransportProtocol,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -54,12 +58,12 @@ class ClientFactory:
         self._registry: dict[str, ClientProducer] = {}
         # By default register the 3 core transports if in the config.
         # Can be overridden with custom clients via the register method.
-        if Transports.JSONRPC in self._config.supported_transports:
-            self._registry[Transports.JSONRPC] = NewJsonRpcClient
-        if Transports.RESTful in self._config.supported_transports:
-            self._registry[Transports.RESTful] = NewRestfulClient
-        if Transports.GRPC in self._config.supported_transports:
-            self._registry[Transports.GRPC] = NewGrpcClient
+        if TransportProtocol.jsonrpc in self._config.supported_transports:
+            self._registry[TransportProtocol.jsonrpc] = NewJsonRpcClient
+        if TransportProtocol.http_json in self._config.supported_transports:
+            self._registry[TransportProtocol.http_json] = NewRestfulClient
+        if TransportProtocol.grpc in self._config.supported_transports:
+            self._registry[TransportProtocol.grpc] = NewGrpcClient
 
     def register(self, label: str, generator: ClientProducer) -> None:
         """Register a new client producer for a given transport label."""
@@ -88,10 +92,12 @@ class ClientFactory:
           server configuration, a `ValueError` is raised.
         """
         # Determine preferential transport
-        server_set = [card.preferred_transport or 'JSONRPC']
+        server_set = [card.preferred_transport or TransportProtocol.jsonrpc]
         if card.additional_interfaces:
             server_set.extend([x.transport for x in card.additional_interfaces])
-        client_set = self._config.supported_transports or ['JSONRPC']
+        client_set = self._config.supported_transports or [
+            TransportProtocol.jsonrpc
+        ]
         transport = None
         # Two options, use the client ordering or the server ordering.
         if self._config.use_client_preference:
