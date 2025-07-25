@@ -124,7 +124,7 @@ class ResultAggregator:
 
             should_interrupt = False
             is_auth_required = (
-                isinstance(event, (Task, TaskStatusUpdateEvent))
+                isinstance(event, Task | TaskStatusUpdateEvent)
                 and event.status.state == TaskState.auth_required
             )
 
