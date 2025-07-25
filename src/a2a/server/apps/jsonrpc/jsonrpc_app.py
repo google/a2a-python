@@ -436,6 +436,15 @@ class JSONRPCApplication(ABC):
             )
         )
 
+    async def handle_deprecated_agent_card_path(
+        self, request: Request
+    ) -> JSONResponse:
+        """Handles GET requests for the deprecated agent card endpoint."""
+        logger.warning(
+            'Deprecated agent card endpoint accessed. /.well-known/agent.json endpoint will be removed in the future'
+        )
+        return await self._handle_get_agent_card(request)
+
     async def _handle_get_authenticated_extended_agent_card(
         self, request: Request
     ) -> JSONResponse:
