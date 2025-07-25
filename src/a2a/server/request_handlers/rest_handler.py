@@ -225,7 +225,7 @@ class RESTHandler:
                 proto_utils.ToProto.task_push_notification_config(config)
             )
         except ServerError as e:
-            raise A2AError(error=e.error if e.error else InternalError())
+            raise A2AError(error=e.error if e.error else InternalError()) from e
 
     @validate(
         lambda self: self.agent_card.capabilities.pushNotifications,
@@ -307,6 +307,20 @@ class RESTHandler:
         request: Request,
         context: ServerCallContext | None = None,
     ) -> list[TaskPushNotificationConfig]:
+        """Handles the 'tasks/pushNotificationConfig/list' REST method.
+
+        This method is currently not implemented.
+
+        Args:
+            request: The incoming `Request` object.
+            context: Context provided by the server.
+
+        Returns:
+            A list of `TaskPushNotificationConfig` objects.
+
+        Raises:
+            NotImplementedError: This method is not yet implemented.
+        """
         raise NotImplementedError('list notifications not implemented')
 
     async def list_tasks(
@@ -314,4 +328,18 @@ class RESTHandler:
         request: Request,
         context: ServerCallContext | None = None,
     ) -> list[Task]:
+        """Handles the 'tasks/list' REST method.
+
+        This method is currently not implemented.
+
+        Args:
+            request: The incoming `Request` object.
+            context: Context provided by the server.
+
+        Returns:
+            A list of `Task` objects.
+
+        Raises:
+            NotImplementedError: This method is not yet implemented.
+        """
         raise NotImplementedError('list tasks not implemented')
