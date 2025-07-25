@@ -383,7 +383,7 @@ def test_fastapi_build_with_extra_routes(
 def test_fastapi_build_custom_agent_card_path(
     app: A2AFastAPIApplication, agent_card: AgentCard
 ):
-    """Test building the app with additional routes."""
+    """Test building the app with a custom agent card path."""
 
     test_app = app.build(agent_card_url='/agent-card')
     client = TestClient(test_app)
