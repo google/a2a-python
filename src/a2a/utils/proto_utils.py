@@ -286,6 +286,23 @@ class ToProto:
             supports_authenticated_extended_card=bool(
                 card.supports_authenticated_extended_card
             ),
+            preferred_transport=card.preferred_transport,
+            protocol_version=card.protocol_version,
+            additional_interfaces=[
+                cls.agent_interface(x) for x in card.additional_interfaces
+            ]
+            if card.additional_interfaces
+            else None,
+        )
+
+    @classmethod
+    def agent_interface(
+        cls,
+        interface: types.AgentInterface,
+    ) -> a2a_pb2.AgentInterface:
+        return a2a_pb2.AgentInterface(
+            transport=interface.transport,
+            url=interface.url,
         )
 
     @classmethod
@@ -663,6 +680,23 @@ class FromProto:
             url=card.url,
             version=card.version,
             supports_authenticated_extended_card=card.supports_authenticated_extended_card,
+            preferred_transport=card.preferred_transport,
+            protocol_version=card.protocol_version,
+            additional_interfaces=[
+                cls.agent_interface(x) for x in card.additional_interfaces
+            ]
+            if card.additional_interfaces
+            else None,
+        )
+
+    @classmethod
+    def agent_interface(
+        cls,
+        interface: a2a_pb2.AgentInterface,
+    ) -> types.AgentInterface:
+        return types.AgentInterface(
+            transport=interface.transport,
+            url=interface.url,
         )
 
     @classmethod
@@ -792,6 +826,24 @@ class FromProto:
                 token_url=flows.password.token_url,
             ),
         )
+
+    @classmethod
+    def stream_response(
+        cls,
+        response: a2a_pb2.StreamResponse,
+    ) -> (
+        types.Message
+        | types.Task
+        | types.TaskStatusUpdateEvent
+        | types.TaskArtifactUpdateEvent
+    ):
+        if response.HasField('msg'):
+            return cls.message(response.msg)
+        if response.HasField('task'):
+            return cls.task(response.task)
+        if response.HasField('status_update'):
+            return cls.task_status_update_event(response.status_update)
+        return cls.task_artifact_update_event(response.artifact_update)
 
     @classmethod
     def skill(cls, skill: a2a_pb2.AgentSkill) -> types.AgentSkill:

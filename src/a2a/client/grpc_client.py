@@ -1,6 +1,6 @@
 import logging
 
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, AsyncIterator
 
 
 try:
@@ -13,10 +13,21 @@ except ImportError as e:
     ) from e
 
 
+from a2a.client.client import (
+    Client,
+    ClientCallContext,
+    ClientConfig,
+    ClientEvent,
+    Consumer,
+)
+from a2a.client.client_task_manager import ClientTaskManager
+from a2a.client.middleware import ClientCallInterceptor
 from a2a.grpc import a2a_pb2, a2a_pb2_grpc
 from a2a.types import (
     AgentCard,
+    GetTaskPushNotificationConfigParams,
     Message,
+    MessageSendConfiguration,
     MessageSendParams,
     Task,
     TaskArtifactUpdateEvent,
@@ -33,17 +44,17 @@ logger = logging.getLogger(__name__)
 
 
 @trace_class(kind=SpanKind.CLIENT)
-class A2AGrpcClient:
-    """A2A Client for interacting with an A2A agent via gRPC."""
+class GrpcTransportClient:
+    """Transport specific details for interacting with an A2A agent via gRPC."""
 
     def __init__(
         self,
         grpc_stub: a2a_pb2_grpc.A2AServiceStub,
-        agent_card: AgentCard,
+        agent_card: AgentCard | None,
     ):
-        """Initializes the A2AGrpcClient.
+        """Initializes the GrpcTransportClient.
 
-        Requires an `AgentCard`
+        Requires an `AgentCard` and a grpc `A2AServiceStub`.
 
         Args:
             grpc_stub: A grpc client stub.
@@ -51,10 +62,19 @@ class A2AGrpcClient:
         """
         self.agent_card = agent_card
         self.stub = grpc_stub
+        # If they don't provide an agent card, but do have a stub, lookup the
+        # card from the stub.
+        self._needs_extended_card = (
+            agent_card.supports_authenticated_extended_card
+            if agent_card
+            else True
+        )
 
     async def send_message(
         self,
         request: MessageSendParams,
+        *,
+        context: ClientCallContext | None = None,
     ) -> Task | Message:
         """Sends a non-streaming message request to the agent.
 
@@ -80,6 +100,8 @@ class A2AGrpcClient:
     async def send_message_streaming(
         self,
         request: MessageSendParams,
+        *,
+        context: ClientCallContext | None = None,
     ) -> AsyncGenerator[
         Message | Task | TaskStatusUpdateEvent | TaskArtifactUpdateEvent
     ]:
@@ -125,6 +147,8 @@ class A2AGrpcClient:
     async def get_task(
         self,
         request: TaskQueryParams,
+        *,
+        context: ClientCallContext | None = None,
     ) -> Task:
         """Retrieves the current state and history of a specific task.
 
@@ -142,6 +166,8 @@ class A2AGrpcClient:
     async def cancel_task(
         self,
         request: TaskIdParams,
+        *,
+        context: ClientCallContext | None = None,
     ) -> Task:
         """Requests the agent to cancel a specific task.
 
@@ -159,6 +185,8 @@ class A2AGrpcClient:
     async def set_task_callback(
         self,
         request: TaskPushNotificationConfig,
+        *,
+        context: ClientCallContext | None = None,
     ) -> TaskPushNotificationConfig:
         """Sets or updates the push notification configuration for a specific task.
 
@@ -182,6 +210,8 @@ class A2AGrpcClient:
     async def get_task_callback(
         self,
         request: TaskIdParams,  # TODO: Update to a push id params
+        *,
+        context: ClientCallContext | None = None,
     ) -> TaskPushNotificationConfig:
         """Retrieves the push notification configuration for a specific task.
 
@@ -197,3 +227,188 @@ class A2AGrpcClient:
             )
         )
         return proto_utils.FromProto.task_push_notification_config(config)
+
+    async def get_card(
+        self,
+        *,
+        context: ClientCallContext | None = None,
+    ) -> AgentCard:
+        """Retrieves the authenticated card (if necessary) or the public one.
+
+        Args:
+            context: The client call context.
+
+        Returns:
+            A `AgentCard` object containing the card.
+
+        Raises:
+            grpc.RpcError: If a gRPC error occurs during the request.
+        """
+        # If we don't have the public card, try to get that first.
+        card = self.agent_card
+
+        if not self._needs_extended_card:
+            return card
+
+        card_pb = await self.stub.GetAgentCard(
+            a2a_pb2.GetAgentCardRequest(),
+        )
+        card = proto_utils.FromProto.agent_card(card_pb)
+        self.agent_card = card
+        self._needs_extended_card = False
+        return card
+
+
+class GrpcClient(Client):
+    """GrpcClient provides the Client interface for the gRPC transport."""
+
+    def __init__(
+        self,
+        card: AgentCard,
+        config: ClientConfig,
+        consumers: list[Consumer],
+        middleware: list[ClientCallInterceptor],
+    ):
+        super().__init__(consumers, middleware)
+        if not config.grpc_channel_factory:
+            raise Exception('GRPC client requires channel factory.')
+        self._card = card
+        self._config = config
+        # Defer init to first use.
+        self._transport_client = None
+        channel = self._config.grpc_channel_factory(self._card.url)
+        stub = a2a_pb2_grpc.A2AServiceStub(channel)
+        self._transport_client = GrpcTransportClient(stub, self._card)
+
+    async def send_message(
+        self,
+        request: Message,
+        *,
+        context: ClientCallContext | None = None,
+    ) -> AsyncIterator[ClientEvent | Message]:
+        config = MessageSendConfiguration(
+            accepted_output_modes=self._config.accepted_output_modes,
+            blocking=not self._config.polling,
+            push_notification_config=(
+                self._config.push_notification_configs[0]
+                if self._config.push_notification_configs
+                else None
+            ),
+        )
+        if not self._config.streaming or not self._card.capabilities.streaming:
+            response = await self._transport_client.send_message(
+                MessageSendParams(
+                    message=request,
+                    configuration=config,
+                ),
+                context=context,
+            )
+            result = (
+                (response, None) if isinstance(response, Task) else response
+            )
+            await self.consume(result, self._card)
+            yield result
+            return
+        # Get Task tracker
+        tracker = ClientTaskManager()
+        async for event in self._transport_client.send_message_streaming(
+            MessageSendParams(
+                message=request,
+                configuration=config,
+            ),
+            context=context,
+        ):
+            # Update task, check for errors, etc.
+            if isinstance(event, Message):
+                await self.consume(event, self._card)
+                yield event
+                return
+            await tracker.process(event)
+            result = (
+                tracker.get_task(),
+                None if isinstance(event, Task) else event,
+            )
+            await self.consume(result, self._card)
+            yield result
+
+    async def get_task(
+        self,
+        request: TaskQueryParams,
+        *,
+        context: ClientCallContext | None = None,
+    ) -> Task:
+        return await self._transport_client.get_task(
+            request,
+            context=context,
+        )
+
+    async def cancel_task(
+        self,
+        request: TaskIdParams,
+        *,
+        context: ClientCallContext | None = None,
+    ) -> Task:
+        return await self._transport_client.cancel_task(
+            request,
+            context=context,
+        )
+
+    async def set_task_callback(
+        self,
+        request: TaskPushNotificationConfig,
+        *,
+        context: ClientCallContext | None = None,
+    ) -> TaskPushNotificationConfig:
+        return await self._transport_client.set_task_callback(
+            request,
+            context=context,
+        )
+
+    async def get_task_callback(
+        self,
+        request: GetTaskPushNotificationConfigParams,
+        *,
+        context: ClientCallContext | None = None,
+    ) -> TaskPushNotificationConfig:
+        return await self._transport_client.get_task_callback(
+            request,
+            context=context,
+        )
+
+    async def resubscribe(
+        self,
+        request: TaskIdParams,
+        *,
+        context: ClientCallContext | None = None,
+    ) -> AsyncIterator[Task | Message]:
+        if not self._config.streaming or not self._card.capabilities.streaming:
+            raise Exception(
+                'client and/or server do not support resubscription.'
+            )
+        async for event in self._transport_client.resubscribe(
+            request,
+            context=context,
+        ):
+            # Update task, check for errors, etc.
+            yield event
+
+    async def get_card(
+        self,
+        *,
+        context: ClientCallContext | None = None,
+    ) -> AgentCard:
+        card = await self._transport_client.get_card(
+            context=context,
+        )
+        self._card = card
+        return card
+
+
+def NewGrpcClient(
+    card: AgentCard,
+    config: ClientConfig,
+    consumers: list[Consumer],
+    middleware: list[ClientCallInterceptor],
+) -> Client:
+    """Generator for the `GrpcClient` implementation."""
+    return GrpcClient(card, config, consumers, middleware)

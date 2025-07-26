@@ -66,6 +66,7 @@ pyi
 pypistats
 pyupgrade
 pyversions
+redef
 respx
 resub
 RUF
@@ -75,5 +76,6 @@ sse
 tagwords
 taskupdate
 testuuid
+Tful
 typeerror
 vulnz
