@@ -73,7 +73,7 @@ class A2AGrpcClient:
                 metadata=proto_utils.ToProto.metadata(request.metadata),
             )
         )
-        if response.task:
+        if response.HasField('task'):
             return proto_utils.FromProto.task(response.task)
         return proto_utils.FromProto.message(response.msg)
 
