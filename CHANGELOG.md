@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.2.17](https://github.com/a2aproject/a2a-python/compare/v0.2.16...v0.2.17) (2025-07-25)
+
+
+### Features
+
+* Add server-side support for plumbing requested and activated extensions ([#333](https://github.com/a2aproject/a2a-python/issues/333)) ([4d5b92c](https://github.com/a2aproject/a2a-python/commit/4d5b92c61747edcabcfd825256a5339bb66c3e91))
+* **spec:** Update A2A types from specification 🤖 ([#341](https://github.com/a2aproject/a2a-python/issues/341)) ([bc97cba](https://github.com/a2aproject/a2a-python/commit/bc97cba5945a49bea808feb2b1dc9eeb30007599))
+* **spec:** Update A2A types from specification 🤖 ([#347](https://github.com/a2aproject/a2a-python/issues/347)) ([d9e463c](https://github.com/a2aproject/a2a-python/commit/d9e463cf1f8fbe486d37da3dd9009a19fe874ff0))
+* support non-blocking `sendMessage` ([#349](https://github.com/a2aproject/a2a-python/issues/349)) ([70b4999](https://github.com/a2aproject/a2a-python/commit/70b499975f0811c8055ebd674bcb4070805506d4))
+
+
+### Bug Fixes
+
+* Add Input Validation for Task Context IDs in new_task Function ([#340](https://github.com/a2aproject/a2a-python/issues/340)) ([a7ed7ef](https://github.com/a2aproject/a2a-python/commit/a7ed7efed8fcdcc556616a5fc1cb8f968a116733))
+* Remove `DeprecationWarning` for regular properties ([#345](https://github.com/a2aproject/a2a-python/issues/345)) ([2806f3e](https://github.com/a2aproject/a2a-python/commit/2806f3eb7e1293924bb8637fd9c2cfe855858592))
+
 ## [0.2.16](https://github.com/a2aproject/a2a-python/compare/v0.2.15...v0.2.16) (2025-07-21)
 
 
