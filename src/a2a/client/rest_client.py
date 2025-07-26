@@ -75,7 +75,7 @@ class RestTransportClient:
         # their auth credentials based on the public card and get the updated
         # card.
         self._needs_extended_card = (
-            not agent_card.supportsAuthenticatedExtendedCard
+            not agent_card.supports_authenticated_extended_card
             if agent_card
             else True
         )
@@ -536,7 +536,9 @@ class RestTransportClient:
         if not card:
             resolver = A2ACardResolver(self.httpx_client, self.url)
             card = await resolver.get_agent_card(http_kwargs=http_kwargs)
-            self._needs_extended_card = card.supportsAuthenticatedExtendedCard
+            self._needs_extended_card = (
+                card.supports_authenticated_extended_card
+            )
             self.agent_card = card
 
         if not self._needs_extended_card:

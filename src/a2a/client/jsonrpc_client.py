@@ -9,7 +9,6 @@ import httpx
 
 from httpx_sse import SSEError, aconnect_sse
 
-from a2a.client import A2AClient
 from a2a.client.client import (
     A2ACardResolver,
     Client,
@@ -95,7 +94,7 @@ class JsonRpcTransportClient:
         # their auth credentials based on the public card and get the updated
         # card.
         self._needs_extended_card = (
-            not agent_card.supportsAuthenticatedExtendedCard
+            not agent_card.supports_authenticated_extended_card
             if agent_card
             else True
         )
@@ -130,7 +129,7 @@ class JsonRpcTransportClient:
         base_url: str,
         agent_card_path: str = AGENT_CARD_WELL_KNOWN_PATH,
         http_kwargs: dict[str, Any] | None = None,
-    ) -> 'A2AClient':
+    ) -> 'JsonRpcTransportClient':
         """[deprecated] Fetches the public AgentCard and initializes an A2A client.
 
         This method will always fetch the public agent card. If an authenticated
@@ -157,7 +156,9 @@ class JsonRpcTransportClient:
         ).get_agent_card(
             http_kwargs=http_kwargs
         )  # Fetches public card by default
-        return A2AClient(httpx_client=httpx_client, agent_card=agent_card)
+        return JsonRpcTransportClient(
+            httpx_client=httpx_client, agent_card=agent_card
+        )
 
     async def send_message(
         self,

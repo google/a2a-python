@@ -115,7 +115,11 @@ def mock_httpx_client() -> AsyncMock:
 
 @pytest.fixture
 def mock_agent_card() -> MagicMock:
-    return MagicMock(spec=AgentCard, url='http://agent.example.com/api')
+    mock = MagicMock(spec=AgentCard, url='http://agent.example.com/api')
+    # The attribute is accessed in the client's __init__ to determine if an
+    # extended card needs to be fetched.
+    mock.supports_authenticated_extended_card = False
+    return mock
 
 
 async def async_iterable_from_list(
@@ -397,7 +401,7 @@ class TestA2AClient:
         mock_resolver_instance.get_agent_card.return_value = mock_agent_card
 
         with patch(
-            'a2a.client.client.A2ACardResolver',
+            'a2a.client.jsonrpc_client.A2ACardResolver',
             return_value=mock_resolver_instance,
         ) as mock_resolver_class:
             client = await A2AClient.get_client_from_agent_card_url(
@@ -426,7 +430,7 @@ class TestA2AClient:
     ):
         error_to_raise = A2AClientHTTPError(404, 'Agent card not found')
         with patch(
-            'a2a.client.client.A2ACardResolver.get_agent_card',
+            'a2a.client.jsonrpc_client.A2ACardResolver.get_agent_card',
             new_callable=AsyncMock,
             side_effect=error_to_raise,
         ):
@@ -528,7 +532,7 @@ class TestA2AClient:
             ) == InvalidParamsError().model_dump(exclude_none=True)
 
     @pytest.mark.asyncio
-    @patch('a2a.client.client.aconnect_sse')
+    @patch('a2a.client.jsonrpc_client.aconnect_sse')
     async def test_send_message_streaming_success_request(
         self,
         mock_aconnect_sse: AsyncMock,
@@ -617,7 +621,7 @@ class TestA2AClient:
             )  # Default timeout for streaming
 
     @pytest.mark.asyncio
-    @patch('a2a.client.client.aconnect_sse')
+    @patch('a2a.client.jsonrpc_client.aconnect_sse')
     async def test_send_message_streaming_http_kwargs_passed(
         self,
         mock_aconnect_sse: AsyncMock,
@@ -658,7 +662,7 @@ class TestA2AClient:
         )  # Ensure custom timeout is used
 
     @pytest.mark.asyncio
-    @patch('a2a.client.client.aconnect_sse')
+    @patch('a2a.client.jsonrpc_client.aconnect_sse')
     async def test_send_message_streaming_sse_error_handling(
         self,
         mock_aconnect_sse: AsyncMock,
@@ -693,7 +697,7 @@ class TestA2AClient:
         assert 'Simulated SSE protocol error' in str(exc_info.value)
 
     @pytest.mark.asyncio
-    @patch('a2a.client.client.aconnect_sse')
+    @patch('a2a.client.jsonrpc_client.aconnect_sse')
     async def test_send_message_streaming_json_decode_error_handling(
         self,
         mock_aconnect_sse: AsyncMock,
@@ -731,7 +735,7 @@ class TestA2AClient:
         )  # Example of JSONDecodeError message
 
     @pytest.mark.asyncio
-    @patch('a2a.client.client.aconnect_sse')
+    @patch('a2a.client.jsonrpc_client.aconnect_sse')
     async def test_send_message_streaming_httpx_request_error_handling(
         self,
         mock_aconnect_sse: AsyncMock,
@@ -858,7 +862,7 @@ class TestA2AClient:
                 client, '_send_request', new_callable=AsyncMock
             ) as mock_send_req,
             patch(
-                'a2a.client.client.uuid4',
+                'a2a.client.jsonrpc_client.uuid4',
                 return_value=MagicMock(hex='testuuid'),
             ) as mock_uuid,
         ):
@@ -1003,7 +1007,7 @@ class TestA2AClient:
                 client, '_send_request', new_callable=AsyncMock
             ) as mock_send_req,
             patch(
-                'a2a.client.client.uuid4',
+                'a2a.client.jsonrpc_client.uuid4',
                 return_value=MagicMock(hex='testgetuuid'),
             ) as mock_uuid,
         ):

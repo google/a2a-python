@@ -65,7 +65,9 @@ class GrpcTransportClient:
         # If they don't provide an agent card, but do have a stub, lookup the
         # card from the stub.
         self._needs_extended_card = (
-            agent_card.supportsAuthenticatedExtendedCard if agent_card else True
+            agent_card.supports_authenticated_extended_card
+            if agent_card
+            else True
         )
 
     async def send_message(
